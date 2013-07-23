@@ -3,43 +3,62 @@ Kenneth Duncan, 2012
 Based on Alice Mortlock, Asa Bluck and Steven Bevan, (2011,2009,2007)
 This code produces synthetic spectral energy distributions for model galaxies. The process precisely mimmicks that of Bruzual & Charlot's csp_galaxev code - except that only a selection of model ages are output.
 
-Data is read from the Bruzual & Charlot S.S.P. files for each metallicity in turn. An array of star formation timescales 'tau' can be specified in units of Gyr, as well as an array of attenuation 'tauv' values.Only single values of the gas recycling (epsilon) and ISM attenuation (mu) parameters can be specified.
+Data is read from the Bruzual & Charlot S.S.params. files for each metallicity in turn. An array of star formation timescales 'tau' can be specified in units of Gyr, as well as an array of attenuation 'tauv' values.Only single values of the gas recycling (epsilon) and ISM attenuation (mu) parameters can be specified.
 """
 
 import numpy
 import array
-import re,os
+import argparse
+import importlib
+import re,os,sys
 from glob import glob
 from scipy.interpolate import griddata
 from scipy.integrate import simps
-
 from sm_functions import read_ised,calc_lyman,calc_beta
-import sm_params as p
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-p","--params", type=str, default="sm_params",
+					help = "Parameter file, default = sm_params")
+parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
+					action = "store_true")
+args = parser.parse_args()
+
+if args.quiet:
+	print "Shhhh"
 
 
-output = p.ssp_output
-ised_input = p.ssp_input
+params = importlib.import_module(re.split(".py",args.params)[0]) 
+
+print 'Loaded '+args.params+' as params'
+
+
+f = open("error.log", "w")
+original_stderr = sys.stderr
+sys.stderr = f
+
+output = params.ssp_output
+ised_input = params.ssp_input
 
 files = glob(ised_input+'*.ised')
 files.sort()
 
-tau = numpy.array(p.tau)*1e9
-tg = numpy.array(p.tg)*1e9
-tauv = numpy.array(p.tauv) 
-mu = p.mu
-epsilon = p.epsilon
+tau = numpy.array(params.tau)*1e9
+tg = numpy.array(params.tg)*1e9
+tauv = numpy.array(params.tauv) 
+mu = params.mu
+epsilon = params.epsilon
 
-#files = [files[a] for a in p.metallicities]
+#files = [files[a] for a in params.metallicities]
 
 add_nebular = False
-if p.add_nebular:
+if params.add_nebular:
     add_nebular = True
 
 # Load first SSP file to obtain age array 'ta' which is required
 # for section 1. It is assumed that 'ta' and 'wave' are the same
 # for all files.
 
-data = read_ised(files[abs(p.metallicities[0])])[0]
+data = read_ised(files[abs(params.metallicities[0])])[0]
 
 ta, metal, iw, wave, sed, strm, rmtm = data
 
@@ -52,7 +71,7 @@ tg = ta[tgi]
 #Calculate coefficients for the attenuation of the SEDs using 
 #2-component model of Charlot & Fall (2000). Used in Section 3
 
-if p.dust_model == "charlot":
+if params.dust_model == "charlot":
     ATT = numpy.empty([len(tauv),len(wave),len(ta)])
     for tvi in range(0,len(tauv)):
         tv = (tauv[tvi]*numpy.ones(len(ta)))  
@@ -60,7 +79,7 @@ if p.dust_model == "charlot":
         lam = numpy.array((5500/wave)**0.7)
         ATT[tvi,:,:] = (numpy.exp(-1*numpy.outer(lam,tv)))
 
-elif p.dust_model == "calzetti":
+elif params.dust_model == "calzetti":
     ATT = numpy.ones([len(tauv),len(wave),len(ta)])
 
     k = numpy.zeros_like(wave)
@@ -79,8 +98,8 @@ elif p.dust_model == "calzetti":
         for ti in range(0,len(ta)): 
             ATT[tvi,:,ti] *= numpy.power(10,-0.4*tv)
 
-if p.add_nebular:
-    nebular = numpy.loadtxt(p.neb_file,skiprows=1)
+if params.add_nebular:
+    nebular = numpy.loadtxt(params.neb_file,skiprows=1)
     neb_cont = nebular[:,1]
     neb_hlines = nebular[:,2]
     neb_metal = nebular[:,3:]
@@ -153,20 +172,20 @@ for ai in range(max(tgi)+1):
     DT[ai] = numpy.copy(dt[order])
 
  
-SED = numpy.empty([len(wave),len(tgi),len(tauv),len(tau),len(p.metallicities)])
-Nlyman = numpy.empty([len(tgi),len(tauv),len(tau),len(p.metallicities)])
-beta = numpy.empty([len(tgi),len(tauv),len(tau),len(p.metallicities)])
-STR = numpy.empty([max(tgi)+1,len(tau),len(p.metallicities)])
-SFR = numpy.empty([max(tgi)+1,len(tau),len(p.metallicities)])
+SED = numpy.empty([len(wave),len(tgi),len(tauv),len(tau),len(params.metallicities)])
+Nlyman = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
+beta = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
+STR = numpy.empty([max(tgi)+1,len(tau),len(params.metallicities)])
+SFR = numpy.empty([max(tgi)+1,len(tau),len(params.metallicities)])
 W = {}
-metal=[str((data[1]))[12:-3].strip()]*len(p.metallicities)
+metal=[str((data[1]))[12:-3].strip()]*len(params.metallicities)
 
 RMr = numpy.empty([max(tgi)+1])
 PRr = numpy.empty([max(tgi)+1])
 URr = numpy.empty([max(tgi)+1])
 Tr = numpy.empty([max(tgi)+1])
-for mi in range(len(p.metallicities)):
-    SSP = p.metallicities[mi]
+for mi in range(len(params.metallicities)):
+    SSP = params.metallicities[mi]
     if SSP < 0: add_nebular = True
     else: add_nebular = False
 
@@ -268,7 +287,7 @@ for mi in range(len(p.metallicities)):
     """
     SECTION 3
     Finally, for each tauv/tau/tg combination, perform a weighted 
-    sum of the S.S.P. spectral energy distribution 'sed1' to obtain the
+    sum of the S.S.params. spectral energy distribution 'sed1' to obtain the
     model S.E.D. 'y'. Add each record to the SED array.
     """
 
@@ -305,7 +324,7 @@ for mi in range(len(p.metallicities)):
                 if add_nebular:
                     total = neb_cont + neb_hlines + neb_metal[:,neb_z]
                     total *= 2.997925e18/(wave**2) #Convert to Flambda
-                    total *= (Nly*(1-p.fesc)) 
+                    total *= (Nly*(1-params.fesc)) 
 
                     y += total
 
@@ -341,6 +360,10 @@ parameters = [[wave,tg,tauv,tau,metal,mu,epsilon],
                'tauv, attenuation optical depth','SSP name',
                'ISM attenuation fraction','Gas recycling parameter']]
 
-numpy.savez(p.ssp_output,parameters=parameters,SED=SED,STR=STR,SFR=SFR,Nlyman=Nlyman,beta=beta)
+numpy.savez(params.ssp_output,parameters=parameters,SED=SED,STR=STR,SFR=SFR,Nlyman=Nlyman,beta=beta)
 
 print('Done')
+
+
+sys.stderr = original_stderr
+f.close() 
