@@ -36,7 +36,7 @@ tauv = [0.0]
 dust_model = 'calzetti'                # 'charlot' - Charlot & Fall or 'calzetti' - Caltzetti 2000
 mu = 0.3                              # Fraction of tauv from ISM
 epsilon = 0.                     # Gas recycling parameter
-metallicities = [4]       # Metallicities to use
+metallicities = [2,4]       # Metallicities to use
 
 csf = False                           # Set to constant SFR (overrides, tau values)
 

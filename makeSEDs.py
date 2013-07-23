@@ -23,14 +23,23 @@ parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
 					action = "store_true")
 args = parser.parse_args()
 
+params_root = re.split(".py",args.params)[0]
+if os.path.isfile(params_root+".pyc"):
+	os.remove(params_root+".pyc")
+
+params = importlib.import_module(params_root) 
+print 'Loaded '+args.params+' as params'
+
 if args.quiet:
 	print "Shhhh"
 
-
-params = importlib.import_module(re.split(".py",args.params)[0]) 
-
-print 'Loaded '+args.params+' as params'
-
+if args.quiet:
+	quietprint = lambda *a: None
+else:
+	def quietprint(*args):
+		for arg in args:
+			print arg,
+		print
 
 f = open("error.log", "w")
 original_stderr = sys.stderr
@@ -41,6 +50,10 @@ ised_input = params.ssp_input
 
 files = glob(ised_input+'*.ised')
 files.sort()
+quietprint('SSP binary files found:')
+for file in files:
+	quietprint(file)
+quietprint('')
 
 tau = numpy.array(params.tau)*1e9
 tg = numpy.array(params.tg)*1e9
@@ -186,17 +199,20 @@ URr = numpy.empty([max(tgi)+1])
 Tr = numpy.empty([max(tgi)+1])
 for mi in range(len(params.metallicities)):
     SSP = params.metallicities[mi]
-    if SSP < 0: add_nebular = True
-    else: add_nebular = False
-
-    print ".ised file: "+files[abs(SSP)] + " Nebular emission: " + str(add_nebular)
+    if SSP < 0: 
+    	add_nebular = True
+    else: 
+    	add_nebular = False
+    
+	quietprint("Metallicity "+str(mi+1)+":")
+    #print ".ised file: "+files[abs(SSP)]
     if mi != 0:
         data = read_ised(files[abs(SSP)])[0]
         sed = data[4]
         strm = data[5]
         rmtm = data[6]
         metal[mi]=str((data[1]))[12:-3].strip()
-    print metal[mi]
+    quietprint(metal[mi] + "\nInclude nebular emission: " + str(add_nebular))
 
     SSP_Z = float(re.split("Z=?",metal[mi])[1])
     if SSP_Z <= 0.0004: neb_z = 0
@@ -232,9 +248,10 @@ for mi in range(len(params.metallicities)):
 
             if tau[ti] > 0.:
                 sr = (1 + epsilon*pgas)*numpy.exp(-1*tp/tau[ti])/abs(tau[ti])
+                if len(sr) > 1:
                 #sr = numpy.exp(-1*tp/tau[ti])
-                norm = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti]),numpy.sort(tp))
-                sr /= norm
+                	norm = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti]),numpy.sort(tp))
+                	sr /= norm
                 
             elif tau[ti] < 0.:
                 sr = numpy.exp(-1*tp/tau[ti])
@@ -339,6 +356,8 @@ print "Saving to numpy binaries:",
 STR = STR[tgi,:,:]
 SFR = SFR[tgi,:,:]
 
+print(SED[:,0,0,0,0])
+print(STR[0,0,0])
 """
 Tr = Tr[tgi]
 RMr = RMr[tgi]/Tr
