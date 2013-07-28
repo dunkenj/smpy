@@ -188,6 +188,7 @@ for ai in range(max(tgi)+1):
 SED = numpy.empty([len(wave),len(tgi),len(tauv),len(tau),len(params.metallicities)])
 Nlyman = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
 beta = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
+norm = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
 STR = numpy.empty([max(tgi)+1,len(tau),len(params.metallicities)])
 SFR = numpy.empty([max(tgi)+1,len(tau),len(params.metallicities)])
 W = {}
@@ -248,22 +249,28 @@ for mi in range(len(params.metallicities)):
 
             if tau[ti] > 0.:
                 sr = (1 + epsilon*pgas)*numpy.exp(-1*tp/tau[ti])/abs(tau[ti])
-                if len(sr) > 1:
+                #norm = 1
+                #if len(sr) > 1:
                 #sr = numpy.exp(-1*tp/tau[ti])
-                	norm = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti]),numpy.sort(tp))
-                	sr /= norm
+                #	norm = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti]),numpy.sort(tp))
+                #	sr /= norm
+                #	print norm
                 
             elif tau[ti] < 0.:
-                sr = numpy.exp(-1*tp/tau[ti])
+                sr = numpy.exp(-1*tp/tau[ti])/abs(tau[ti])
+                norma = 1
                 if len(sr) > 1:
-                    norm = simps(numpy.exp(-1*numpy.logspace(0,numpy.log10(max(tp)),10000)/tau[ti]),
-                                 numpy.logspace(0,numpy.log10(max(tp)),10000))
-                    sr /= norm
-            
-
+                	tbins = numpy.logspace(0,numpy.log10(max(tp)),10000)
+                	norma = simps(numpy.exp(-1*tbins/tau[ti])/abs(tau[ti]),tbins)
+                	sr /= norma
+                #print sr[0]
+                
             w = sr*DT[ai]/2
             w1 = numpy.array(w[:ai+1])
             W[0,ai,ti] = w1
+            if len(sr) == 1:
+            	print DT[ai]
+            	print w1
 
 
             strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
@@ -299,7 +306,8 @@ for mi in range(len(params.metallicities)):
             RMr[ai] = rm
             Tr[ai] = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti])/tau[ti],numpy.sort(tp))
             STR[ai,ti,mi] = strr
-            SFR[ai,ti,mi] = numpy.exp(-ta[ai]/tau[ti])/simps(numpy.exp(-1*numpy.sort(tp)/tau[ti]),numpy.sort(tp))
+            SFR[ai,ti,mi] = numpy.exp(-ta[ai]/tau[ti])
+            #print numpy.exp(-ta[ai]/tau[ti])
                              
     """
     SECTION 3
@@ -347,11 +355,12 @@ for mi in range(len(params.metallicities)):
 
                 beta[ai1,tvi,ti,mi] = calc_beta(wave,y[0])
                 SED[:,ai1,tvi,ti,mi] = y
-
+                norm[ai1,tvi,ti,mi] = simps(numpy.exp(-1*numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000)/tau[ti]),numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000))
 """
 Section 4
 
 """
+b = SFR
 print "Saving to numpy binaries:",
 STR = STR[tgi,:,:]
 SFR = SFR[tgi,:,:]
