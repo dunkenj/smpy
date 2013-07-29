@@ -9,7 +9,6 @@ Data is read from the Bruzual & Charlot S.S.params. files for each metallicity i
 import numpy
 import array
 import argparse
-import importlib
 import re,os,sys
 from glob import glob
 from scipy.interpolate import griddata
@@ -27,8 +26,30 @@ params_root = re.split(".py",args.params)[0]
 if os.path.isfile(params_root+".pyc"):
 	os.remove(params_root+".pyc")
 
-params = importlib.import_module(params_root) 
-print 'Loaded '+args.params+' as params'
+version = sys.version_info[1]
+if version == 7:
+	import importlib
+	try:
+		params = importlib.import_module(params_root)
+		print 'Loaded '+args.params+' as params'
+	except:
+		print 'Failed to load "'+args.params+'" as params, loading default instead'
+		import sm_params as params
+		
+if version == 6:
+	import imp
+	try:
+		fp, pathname, description = imp.find_module(params_root)
+		params = imp.load_module(params_root, fp, pathname, description)
+	except:
+		print 'Failed to load "'+args.params+'" as params, loading default instead'
+		import sm_params as params
+		
+else:
+	if params_root != "sm_params":
+		print 'Import option only coded for python versions 2.6 and 2.7... \n',
+		print 'Loading default instead'
+	import sm_params as params
 
 if args.quiet:
 	print "Shhhh"
