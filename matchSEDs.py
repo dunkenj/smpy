@@ -92,17 +92,12 @@ def galaxyFit(send_q, recv_q, printlock):
 		if params.fit_mode == "colours":
 			psi = obs_err[gal,:]
 			mo = obs[gal,:]
-	
-			I = numpy.where(psi > -90)[0]
-	
+			I = numpy.where(numpy.abs(psi) < 90)[0]
 			I1 = I[:-1]
 			I2 = I[1:]
-	
 			Co = mo[I1] - mo[I2] # Observed Colours
 			psiqu = psi[I1]**2 + psi[I2]**2 # Errors
-		   
 			Cm = M[I1,j,:]-M[I2,j,:] # Model colours
-	
 			# Calculate chi-sq
 			chisq = 0.
 			for i in range(len(Co)):
@@ -111,7 +106,8 @@ def galaxyFit(send_q, recv_q, printlock):
 			chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
 	
 			if numpy.isinf(chimin) or numpy.isnan(minind) or len(Co) == 0:
-				recv_q.put(None)
+				recv_q.put('')
+				continue
 	
 		elif params.fit_mode == "flux":
 			fo = obs[gal,:]
@@ -133,9 +129,10 @@ def galaxyFit(send_q, recv_q, printlock):
 	
 			chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
 			if len(fo) == 0:
-				recv_q.put(None)
+				recv_q.put('')
+				continue
 		   
-		isreal = [numpy.isfinite(chisq)]
+		isreal = numpy.isfinite(chisq)
 		likelihood = numpy.exp(-0.5*chisq[isreal])
 		wmean = numpy.sum(likelihood*Mass[isreal])/numpy.sum(likelihood)
 		wmean = numpy.log10(wmean)
@@ -252,7 +249,7 @@ def getObservations(inputpath):
 				j+=1
 			
 		tot_mag = mags[:,params.tot]
-		return ID, zobs, tot_mag, fluxes, fluxerrs, i 
+		return ID, zobs, tot_mag, mags, PSI, i 
 	
 	
 	if params.fit_mode == "flux":
@@ -338,7 +335,7 @@ if __name__ == '__main__':
 		f /= f_tot
 	else:
 		f = numpy.load(input_binary+'.fluxes.npy')
-		f /= f[tot_mag_col]
+		f /= f[params.tot]
 	# Normalise template flux values to tot_mag filter fluxes
 	
 	

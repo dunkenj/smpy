@@ -199,7 +199,7 @@ for gal in range(len(ID)):
         if len(fo) == 0:
             continue
        
-    isreal = [numpy.isfinite(chisq)]
+    isreal = numpy.isfinite(chisq)
     likelihood = numpy.exp(-0.5*chisq[isreal])
     wmean = numpy.sum(likelihood*Mass[isreal])/numpy.sum(likelihood)
     wmean = numpy.log10(wmean)

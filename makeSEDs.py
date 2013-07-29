@@ -304,10 +304,6 @@ for mi in range(len(params.metallicities)):
             w = sr*DT[ai]/2
             w1 = numpy.array(w[:ai+1])
             W[0,ai,ti] = w1
-            if len(sr) == 1:
-            	print DT[ai]
-            	print w1
-
 
             strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
             rm = numpy.array(numpy.dot(w1,rmtm[:ai+1]))
