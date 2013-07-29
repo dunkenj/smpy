@@ -12,20 +12,21 @@ from sm_functions import dist
 """
 Command line arguments and parameter import section
 """
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-p","--params", type=str, default="sm_params",
-					help = "Parameter file, default = sm_params")
-parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
-					action = "store_true")
-args = parser.parse_args()
-
-params_root = re.split(".py",args.params)[0]
-if os.path.isfile(params_root+".pyc"):
-	os.remove(params_root+".pyc")
-
 version = sys.version_info[1]
 if version == 7:
+	import argparse
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-p","--params", type=str, default="sm_params",
+						help = "Parameter file, default = sm_params")
+	parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
+						action = "store_true")
+	args = parser.parse_args()
+	quiet = args.quiet
+
+	params_root = re.split(".py",args.params)[0]
+	if os.path.isfile(params_root+".pyc"):
+		os.remove(params_root+".pyc")
+
 	import importlib
 	try:
 		params = importlib.import_module(params_root)
@@ -35,6 +36,19 @@ if version == 7:
 		import sm_params as params
 		
 if version == 6:
+	import optparse
+	parser = optparse.OptionParser()
+	parser.add_option("-p","--params", type=str, default="sm_params",
+						dest="params",help = "Parameter file, default = sm_params")
+	parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
+						dest="quiet", default=False,
+						action = "store_true")
+	args, dump = parser.parse_args()
+	quiet = args.quiet
+
+	params_root = re.split(".py",args.params)[0]
+	if os.path.isfile(params_root+".pyc"):
+		os.remove(params_root+".pyc")
 	import imp
 	try:
 		fp, pathname, description = imp.find_module(params_root)
@@ -42,24 +56,25 @@ if version == 6:
 	except:
 		print 'Failed to load "'+args.params+'" as params, loading default instead'
 		import sm_params as params
+	
 		
 else:
-	if params_root != "sm_params":
-		print 'Import option only coded for python versions 2.6 and 2.7... \n',
-		print 'Loading default instead'
+	print 'Import option only coded for python versions 2.6 and 2.7... \n',
+	print 'Loading default instead'
 	import sm_params as params
+	quiet = False
 
-
-if args.quiet:
+if quiet:
 	print "Shhhh"
 
-if args.quiet:
+if quiet:
 	quietprint = lambda *a: None
 else:
 	def quietprint(*args):
 		for arg in args:
 			print arg,
 		print
+
 
 """
 Fitting function definition for later use by Processes
