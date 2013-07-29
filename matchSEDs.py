@@ -58,7 +58,7 @@ if version == 6:
 		import sm_params as params
 	
 		
-else:
+elif version not in [6, 7]:
 	print 'Import option only coded for python versions 2.6 and 2.7... \n',
 	print 'Loading default instead'
 	import sm_params as params
