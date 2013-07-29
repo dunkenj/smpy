@@ -39,7 +39,7 @@ if version == 6:
 	parser = optparse.OptionParser()
 	parser.add_option("-p","--params", type=str, default="sm_params",
 						dest="params",help = "Parameter file, default = sm_params")
-	parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
+	parser.add_option("-q", "--quiet", help = "Suppress extra outputs",
 						dest="quiet", default=False,
 						action = "store_true")
 	args, dump = parser.parse_args()
