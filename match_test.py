@@ -5,7 +5,7 @@ import os
 import atpy
 
 from sm_functions import dist
-import sm_params as p
+import sm_params as params
 
 """
 SECTION 1A
@@ -19,7 +19,7 @@ errors.
 
 #input_catalog = '/data/candels/catalogs/gs_all_tf_h_120607a_multi_highz_full.fits'
 
-input_catalog = p.input_catalog
+input_catalog = params.input_catalog
 if input_catalog[-3:] == 'cat': 
     input_data = atpy.Table(input_catalog,type='ascii')
 else:
@@ -27,52 +27,55 @@ else:
 
 column_names = input_data.columns.keys
 
-ID = input_data[p.ID_col]
-zobs = input_data[p.z_col]
+ID = input_data[params.ID_col]
+zobs = input_data[params.z_col]
 
-filts_used = p.filts_used
+filts_used = params.filts_used
 
-i,j = 0,0
-for ii in range(len(column_names)):   
-    if column_names[ii].lower().endswith(p.mag_col_end):
-        if i == 0:
-            mags = input_data[column_names[ii]]
-        else:
-            mags = numpy.column_stack((mags,input_data[column_names[ii]]))
-        i+=1
+if params.fit_mode == "colours":
+    i,j = 0,0
+    for ii in range(len(column_names)):   
+            if column_names[ii].lower().endswith(params.mag_col_end):
+                    if i == 0:
+                            mags = input_data[column_names[ii]]
+                    else:
+                            mags = numpy.column_stack((mags,input_data[column_names[ii]]))
+                    i+=1
+    
+            if column_names[ii].lower().endswith(params.magerr_col_end):
+                    if j == 0:
+                            PSI = input_data[column_names[ii]]
+                    else:
+                            PSI = numpy.column_stack((PSI,input_data[column_names[ii]]))
+                    j+=1
+            
+    tot_mag = mags[:,params.tot]
 
-    if column_names[ii].lower().endswith(p.magerr_col_end):
-        if j == 0:
-            PSI = input_data[column_names[ii]]
-        else:
-            PSI = numpy.column_stack((PSI,input_data[column_names[ii]]))
-        j+=1
-
-if p.fit_mode == "flux":
+if params.fit_mode == "flux":
     k,l = 0,0
     for ii in range(len(column_names)):   
-        if column_names[ii].lower().endswith(p.flux_col_end):
-            if k == 0:
-                fluxes = input_data[column_names[ii]]
-            else:
-                fluxes = numpy.column_stack((fluxes,input_data[column_names[ii]]))
-            k+=1
-                
-        if column_names[ii].lower().endswith(p.fluxerr_col_end):
-            if l == 0:
-                fluxerrs = input_data[column_names[ii]]
-            else:
-                fluxerrs = numpy.column_stack((fluxerrs,input_data[column_names[ii]]))
-            l+=1
+            if column_names[ii].lower().endswith(params.flux_col_end):
+                    if k == 0:
+                            fluxes = input_data[column_names[ii]]
+                    else:
+                            fluxes = numpy.column_stack((fluxes,input_data[column_names[ii]]))
+                    k+=1
+                            
+            if column_names[ii].lower().endswith(params.fluxerr_col_end):
+                    if l == 0:
+                            fluxerrs = input_data[column_names[ii]]
+                    else:
+                            fluxerrs = numpy.column_stack((fluxerrs,input_data[column_names[ii]]))
+                    l+=1
+
+    tot_mag = -2.5*numpy.log10(fluxes[:,params.tot]) + 23.9
 
     fluxes = fluxes[:,filts_used]
     fluxerrs = fluxerrs[:,filts_used]
+    i = k
 
+	
 
-
-
-tot_mag_col = p.tot
-tot_mag = mags[:,tot_mag_col]
 
 
 """
@@ -83,7 +86,7 @@ Loads the various numpy arrays from the synthesised magnitude binary
 """
 
 #Load in synthesised data
-input_binary = p.synmag_output
+input_binary = params.synmag_output
 
 print "Loading synthetic mags and mass array:"
 synmags = numpy.load(input_binary+'.main.npz')
@@ -98,7 +101,7 @@ n_tauv = Mshape[3]
 n_tau = Mshape[4]
 n_ssp = Mshape[5]
 
-calc_mode = p.calc_mode
+calc_mode = params.calc_mode
 
 MS = synmags['MS']
 MB = synmags['MB']
@@ -106,7 +109,7 @@ MUV = synmags['MUV']
 SFR = synmags['SFR']
 synmags.close()
 
-beta_data = numpy.load(p.ssp_output)
+beta_data = numpy.load(params.ssp_output)
 beta = beta_data['beta']
 
 if nfilts != i:
@@ -116,11 +119,11 @@ else:
 
 if nfilts != i:
     f = numpy.load(input_binary+'.fluxes.npy')[filts_used]
-    f_tot = numpy.load(input_binary+'.fluxes.npy')[tot_mag_col]
+    f_tot = numpy.load(input_binary+'.fluxes.npy')[params.tot]
     f /= f_tot
 else:
     f = numpy.load(input_binary+'.fluxes.npy')
-    f /= f[tot_mag_col]
+    f /= f[params.tot]
 # Normalise template flux values to tot_mag filter fluxes
 
 
@@ -153,7 +156,7 @@ for gal in range(len(ID)):
     Mass2 = MB[j,:]*numpy.power(10,-1*tot_mag[gal]/2.5)
     cSFR = SFR[j,:]*numpy.power(10,-1*tot_mag[gal]/2.5)
 
-    if p.fit_mode == "colours":
+    if params.fit_mode == "colours":
         psi = PSI[gal,:]
         mo = mags[gal,:]
 
@@ -177,12 +180,12 @@ for gal in range(len(ID)):
         if numpy.isinf(chimin) or numpy.isnan(minind) or len(Co) == 0:
             continue
 
-    elif p.fit_mode == "flux":
+    elif params.fit_mode == "flux":
         fo = fluxes[gal,:]
         ferr = fluxerrs[gal,:]
 
-        ferr /= fluxes[gal,tot_mag_col] # Normalise fluxes and errors
-        fo /= fluxes[gal,tot_mag_col]   # to Total Mag column
+        ferr /= fluxes[gal,params.tot] # Normalise fluxes and errors
+        fo /= fluxes[gal,params.tot]   # to Total Mag column
 
         fo[fo <= 0.] = 0.       # Set negative fluxes to zero
         #print fo
@@ -207,9 +210,9 @@ for gal in range(len(ID)):
 
     #Find the coordinate of the model with the bestfit mass
     zi,tgi,tvi,ti,mi = numpy.unravel_index(minind,(1,n_tg,n_tauv,n_tau,n_ssp))
-    Bestfit_Mass=numpy.log10(Mass[tgi,tvi,ti,mi]*p.flux_corr)
-    Bestfit_BMass=numpy.log10(Mass2[tgi,tvi,ti,mi]*p.flux_corr)
-    Bestfit_SFR = (cSFR[tgi,tvi,ti,mi]*p.flux_corr)
+    Bestfit_Mass=numpy.log10(Mass[tgi,tvi,ti,mi]*params.flux_corr)
+    Bestfit_BMass=numpy.log10(Mass2[tgi,tvi,ti,mi]*params.flux_corr)
+    Bestfit_SFR = (cSFR[tgi,tvi,ti,mi]*params.flux_corr)
     Bestfit_Beta = beta[tgi,tvi,ti,mi]
 
     M_chisq_plus1 = numpy.log10(Mass[chisq < chimin+1])
@@ -218,13 +221,13 @@ for gal in range(len(ID)):
     #Scale the observed tot_mag band of the template to be the same as the observed tot_mag band of the galaxy
     #Convert the templates so they are no longer units of per stellar mass
 
-    M_no_per_sm = M[tot_mag_col,j,tgi,tvi,ti,mi]-(2.5*Bestfit_Mass)-(2.5*numpy.log10(1+zobs[gal]))
+    M_no_per_sm = M[params.tot,j,tgi,tvi,ti,mi]-(2.5*Bestfit_Mass)-(2.5*numpy.log10(1+zobs[gal]))
     Temp_flux = numpy.power(10,M_no_per_sm/-2.5)
     gal_totabs = tot_mag[gal] - dist(zobs[gal])
     Gal_flux = numpy.power(10,(gal_totabs/-2.5))
     flux_scale = Gal_flux/Temp_flux
 
-    M_no_per_sm = (numpy.sum(M[tot_mag_col,j][isreal]*likelihood)/numpy.sum(likelihood)) -(2.5*Bestfit_Mass)-(2.5*numpy.log10(1+zobs[gal]))
+    M_no_per_sm = (numpy.sum(M[params.tot,j][isreal]*likelihood)/numpy.sum(likelihood)) -(2.5*Bestfit_Mass)-(2.5*numpy.log10(1+zobs[gal]))
     wTemp_flux = numpy.power(10,M_no_per_sm/-2.5)
     wgal_totabs = tot_mag[gal] - dist(zobs[gal])
     wGal_flux = numpy.power(10,(wgal_totabs/-2.5))
@@ -254,7 +257,7 @@ for gal in range(len(ID)):
     if calc_mode:
         a = len(numpy.ravel(chisq))
         b = sum(numpy.isnan(numpy.ravel(chisq)))
-        num_chosen = round(((a-b)/100.)*p.mode_mass_percentage)
+        num_chosen = round(((a-b)/100.)*params.mode_mass_percentage)
     
         chisq_order = numpy.argsort(chisq)
         chisq_sorted = chisq[chisq_order]
@@ -262,7 +265,7 @@ for gal in range(len(ID)):
         Mass_sorted = Mass[chisq_order]
         Mass_sorted[num_chosen:] = numpy.nan
 
-        Mass_sorted = Mass_sorted*p.flux_corr
+        Mass_sorted = Mass_sorted*params.flux_corr
 
         Binned_Mass  = numpy.arange(numpy.min(numpy.log10(Mass_sorted)),
                                     numpy.max(numpy.log10(Mass_sorted)),
@@ -281,7 +284,7 @@ for gal in range(len(ID)):
         print '{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>3d} {9:>5.2f}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,wmean)
 
 
-    temp_file.write('{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17} {18} {19} {20} {21}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, M_scaled[tot_mag_col], MUV_scaled, Bestfit_Min, Bestfit_Max,minind,Bestfit_BMass,Bestfit_SFR,len(I),Bestfit_Beta, wmean, wbeta, wMUV_rest, '\n'))
+    temp_file.write('{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17} {18} {19} {20} {21}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, M_scaled[params.tot], MUV_scaled, Bestfit_Min, Bestfit_Max,minind,Bestfit_BMass,Bestfit_SFR,len(I),Bestfit_Beta, wmean, wbeta, wMUV_rest, '\n'))
 
                    
 temp_file.close()
@@ -298,7 +301,7 @@ try:
 except:
     cols = len(data)
 
-output = atpy.Table()
+output = atpy.Table(name='Results')
 
 names = ['N','ID','z','Bestfit_Mass','Bestfit_chi2','Age','Dust_Tau','SFH_Tau','SSP_Number','H_rest', 'M1500','Bestfit_Min', 'Bestfit_Max','temp_index','Full_Mass','SFR','nfilts','Beta','MeanMass','MeanBeta','MeanM1500']
 units = [None,None,None,'log(Ms)',None,'Gyr',None,'Gyr',None, 'AB_mags', 'AB_mags','log(Ms)','log(Ms)',None,'log(Ms)','Ms/yr',None,None,'log(Ms)',None,'AB_mags']
@@ -309,6 +312,6 @@ for col in range(cols):
 #for col in range(cols):
 #    output.add_column(names[col], [data[col],0], unit=units[col], dtype=types[col])
 
-if os.path.isfile(p.output_name):
-    os.remove(p.output_name)
-output.write(p.output_name,type=p.table_format)
+if os.path.isfile(params.output_name):
+    os.remove(params.output_name)
+output.write(params.output_name,type=params.table_format)

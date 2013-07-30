@@ -16,9 +16,9 @@ if version == 7:
 	import argparse
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-p","--params", type=str, default="sm_params",
-						help = "Parameter file, default = sm_params")
+			    help = "Parameter file, default = sm_params")
 	parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
-						action = "store_true")
+			    action = "store_true")
 	args = parser.parse_args()
 	quiet = args.quiet
 
@@ -55,7 +55,6 @@ if version == 6:
 	except:
 		print 'Failed to load "'+args.params+'" as params, loading default instead'
 		import sm_params as params
-	
 		
 elif version not in [6, 7]:
 	print 'Import option only coded for python versions 2.6 and 2.7... \n',
@@ -131,7 +130,7 @@ def galaxyFit(send_q, recv_q, printlock):
 			if len(fo) == 0:
 				recv_q.put('')
 				continue
-		   
+			
 		isreal = numpy.isfinite(chisq)
 		likelihood = numpy.exp(-0.5*chisq[isreal])
 		wmean = numpy.sum(likelihood*Mass[isreal])/numpy.sum(likelihood)
@@ -362,7 +361,7 @@ if __name__ == '__main__':
 		print '{0:>4s} {1:>6s} {2:>5s} {3:>6s} {4:>8s} {5:>10s} {6:>5s} {7:>12s} {8:>4s}'.format('N','ID','zobs','Best', 'chimin', 'tg', 'tauv','tau','SSP')
 	
 	start = time.time()
-	ncpus = numpy.minimum(multiprocessing.cpu_count(),params.ncpus)
+	ncpus = numpy.clip(params.ncpus,1,multiprocessing.cpu_count())
 	
 	send_q = multiprocessing.Queue()
 	recv_q = multiprocessing.Queue()
@@ -411,9 +410,7 @@ if __name__ == '__main__':
 	for col in range(cols):
 		output.add_column(names[col], data[:,col], unit=units[col], dtype=types[col])
 	
-	#for col in range(cols):
-	#    output.add_column(names[col], [data[col],0], unit=units[col], dtype=types[col])
-	
+	output.sort('ID')
 	if os.path.isfile(params.output_name):
 		os.remove(params.output_name)
 	output.write(params.output_name,type=params.table_format)
