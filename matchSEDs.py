@@ -127,7 +127,7 @@ def galaxyFit(send_q, recv_q, printlock):
 				chisq += (((fm[i,:]-fo[i])**2)/(ferr[i])**2)
 	
 			chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
-			if len(fo) == 0:
+			if numpy.isinf(chimin) or numpy.isnan(minind) or len(fo) == 0:
 				recv_q.put('')
 				continue
 			

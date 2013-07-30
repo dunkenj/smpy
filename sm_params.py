@@ -115,10 +115,10 @@ beta_max, beta_min, beta_bins = 3., -3., 50
 
 #Output table parameters:
 #output_name = 'results/200912/gs_all_tf_h_130213a_multi.chab.MC.results'
-output_name = 'results.fits'
+output_name = '../MassData/results.fits'
 table_format = 'fits'                 # Available formats:'fits'/'ascii'/'IPAC'
                                       # (those available to local installation
                                       #  of AtPY)
 
-ncpus = 4
+ncpus = 0
 
