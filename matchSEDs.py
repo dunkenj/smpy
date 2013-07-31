@@ -385,9 +385,7 @@ if __name__ == '__main__':
 		send_q.put( gal )
 		
 	for gal in range( len(ID) ):
-		a = recv_q.get()
-		print a
-		temp_file.write( a )
+		temp_file.write( recv_q.get() )
 		
 	# Stop all the running processes
 	for i in range( ncpus ):
