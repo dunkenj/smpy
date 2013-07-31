@@ -105,7 +105,12 @@ def galaxyFit(send_q, recv_q, printlock):
 			chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
 	
 			if numpy.isinf(chimin) or numpy.isnan(minind) or len(Co) == 0:
-				recv_q.put('')
+				output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} \
+				{10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],
+										     -99,-99,-99,-99,-99,-99,
+										     -99, -99, -99, -99,-99,-99,-99,
+										     len(I),-99,'\n')
+				recv_q.put(output_string)
 				continue
 	
 		elif params.fit_mode == "flux":
@@ -128,7 +133,12 @@ def galaxyFit(send_q, recv_q, printlock):
 	
 			chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
 			if numpy.isinf(chimin) or numpy.isnan(minind) or len(fo) == 0:
-				recv_q.put('')
+				output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} \
+				{10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],
+										     -99,-99,-99,-99,-99,-99,
+										     -99, -99, -99, -99,-99,-99,-99,
+										     len(I),-99,'\n')
+				recv_q.put(output_string)
 				continue
 			
 		isreal = numpy.isfinite(chisq)
@@ -375,7 +385,9 @@ if __name__ == '__main__':
 		send_q.put( gal )
 		
 	for gal in range( len(ID) ):
-		temp_file.write( recv_q.get() )
+		a = recv_q.get()
+		print a
+		temp_file.write( a )
 		
 	# Stop all the running processes
 	for i in range( ncpus ):
@@ -385,11 +397,11 @@ if __name__ == '__main__':
 	send_q.close()
 	recv_q.close()
 	
+	
+	temp_file.close()
 	#print results
 	print "Time taken: "+str(time.time()-start)
-					   
-	temp_file.close()
-	
+					   	
 	
 	"""
 	Section 3
