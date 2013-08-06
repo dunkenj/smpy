@@ -1,19 +1,20 @@
-# aMasSED Code - A Python based SED fitting code
+## aMasSED Code ##
+__A Python based SED fitting code__
 
-## Pre-requisites:
+__Pre-requisites:__
 * Python v2.5+
 * scipy v0.9+
 * numpy 
 * Atpy:
 	* ascii_table - *if using ascii format input/outputs*
-	* PyFITS (For ) - *if using FITS format input/outputs*
+	* PyFITS - *if using FITS format input/outputs*
 
 
-Order of use:
+__Order of use:__
 
 makeSEDs -> processSEDs -> matchSEDs
 
 To use non default parameter file from command line, use e.g.:
 
-% python makeSEDs -p "parameter file"
+`% python makeSEDs -p "parameter file"`
 
