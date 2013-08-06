@@ -126,8 +126,6 @@ S = SED.shape
 F_mean = numpy.zeros((len(files),len(z),S[1],S[2],S[3],S[4]))
 F_mean_UV = numpy.zeros((len(z),S[1],S[2],S[3],S[4]))
 
-AB0 = 5*numpy.log10(1.7684e8*1e-5)
-
 
 """
 SECTION 1 
@@ -216,9 +214,7 @@ for filt in range(len(files)):
     nwf = len(wf)
 
     tpwf = tp/wf
-    
     f_mean2 = numpy.dot(dwf,(tpwf[:nwf-1]+tpwf[1:])/2)
-
     tpwf = tp*wf #Reassign tpwf as product
 
     print '{0:<15.2f}'.format(time.clock()-start_filtinterp),
@@ -246,8 +242,9 @@ for filt in range(len(files)):
     
         F_mean[filt,zi,:ai[zi]+1,:] = WR/2/z1[zi]/f_mean2/2.997925e18
 
-    print '{0:<20.2f}'.format((time.clock()-start_conv)/len(z))
 
+    print '{0:<20.2f}'.format((time.clock()-start_conv)/len(z))
+    
 
 """
 Compute rest-frame UV (1500A) flux
@@ -257,9 +254,9 @@ compute_MUV = True
 if compute_MUV:
     print('{0}{1}').format('\n','Calculating Rest-Frame UV (1500AA) Fluxes: '),
     start_filtinterp = time.clock()
-    wf = numpy.arange(1445,1551)
+    wf = numpy.arange(1445,1555)
     tp = numpy.zeros(len(wf))
-    tp[(wf>=1450) & (wf<1550)] = 1.0
+    tp[(wf>=1450) & (wf<1551)] = 1.0
 
     #Find SED wavelength entries within filter range
     wff = numpy.array([wf[0] < wave[i] < wf[-1] for i in range(len(wave))])
@@ -280,12 +277,8 @@ if compute_MUV:
     nwf = len(wf)
 
     tpwf = tp/wf
-
     f_mean2 = numpy.dot(dwf,(tpwf[:nwf-1]+tpwf[1:])/2)
-
     tpwf = tp*wf #Reassign tpwf as product
-
-    
 
     start_conv = time.clock()
     for zi in range(len(z)):
@@ -315,6 +308,10 @@ if compute_MUV:
 
 
 print('{0}').format('Converting Flux arrays to AB Magnitudes: '),
+AB0 = 5*numpy.log10(1.7684e8*1e-5)
+# dl = 10pc in Mpc
+# this factor is sqrt(4*pi*(3.0856e24)^2 Lsun)
+
 #Convert fluxes to AB magnitudes
 Mags = numpy.empty(F_mean.shape)
 Mags = AB0 - 2.5*numpy.log10(F_mean) - 48.6

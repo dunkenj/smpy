@@ -338,8 +338,11 @@ for mi in range(len(params.metallicities)):
             RMr[ai] = rm
             Tr[ai] = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti])/tau[ti],numpy.sort(tp))
             STR[ai,ti,mi] = strr
-            SFR[ai,ti,mi] = numpy.exp(-ta[ai]/tau[ti])
-            #print numpy.exp(-ta[ai]/tau[ti])
+            if tau[ti] > 0:
+                SFR[ai,ti,mi] = (1 + epsilon*prgas[ai])*numpy.exp(-ta[ai]/tau[ti])/abs(tau[ti])
+            elif tau[ti] < 0:
+                SFR[ai,ti,mi] = numpy.exp(-ta[ai]/tau[ti])/abs(tau[ti])/norma
+            print SFR[ai,ti,mi]
                              
     """
     SECTION 3
