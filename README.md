@@ -13,11 +13,11 @@ __Pre-requisites:__
 	* PyFITS - *if using FITS format input/outputs*  
 
 __Basic usage:__
-
+`
 	% python makeSEDs.py
 	% python processSED.py
 	% python matchSEDs.py
-
+`
 
 To use non default parameter file from command line, use e.g.:  
 `% python makeSEDs.py -p "parameter file"`
