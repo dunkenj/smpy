@@ -20,8 +20,8 @@ __Basic usage:__
 
 
 To use non default parameter file from command line, use e.g.:  
-`% python makeSEDs -p "parameter file"`
+`% python makeSEDs.py -p "parameter file"`
 
 Quiet mode - _Suppress some of the screen printouts_:  
-`% python processSEDs -q`
+`% python processSEDs.py -q`
 
