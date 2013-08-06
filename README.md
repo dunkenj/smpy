@@ -1,7 +1,13 @@
-aMasSED Code
-=======
+# aMasSED Code - A Python based SED fitting code
 
-Python based SED fitting code
+## Pre-requisites:
+* Python v2.5+
+* scipy v0.9+
+* numpy 
+* Atpy:
+	* ascii_table - *if using ascii format input/outputs*
+	* PyFITS (For ) - *if using FITS format input/outputs*
+
 
 Order of use:
 
