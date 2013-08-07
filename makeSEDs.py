@@ -16,66 +16,66 @@ from sm_functions import read_ised,calc_lyman,calc_beta
 
 version = sys.version_info[1]
 if version == 7:
-	import argparse
-	parser = argparse.ArgumentParser()
-	parser.add_argument("-p","--params", type=str, default="sm_params",
-						help = "Parameter file, default = sm_params")
-	parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
-						action = "store_true")
-	args = parser.parse_args()
-	quiet = args.quiet
+    import argparse
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-p","--params", type=str, default="sm_params",
+                                                help = "Parameter file, default = sm_params")
+        parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
+                                                action = "store_true")
+        args = parser.parse_args()
+        quiet = args.quiet
 
-	params_root = re.split(".py",args.params)[0]
-	if os.path.isfile(params_root+".pyc"):
-		os.remove(params_root+".pyc")
+        params_root = re.split(".py",args.params)[0]
+        if os.path.isfile(params_root+".pyc"):
+            os.remove(params_root+".pyc")
 
-	import importlib
-	try:
-		params = importlib.import_module(params_root)
-		print 'Loaded '+args.params+' as params'
-	except:
-		print 'Failed to load "'+args.params+'" as params, loading default instead'
-		import sm_params as params
-		
+        import importlib
+        try:
+            params = importlib.import_module(params_root)
+            print 'Loaded '+args.params+' as params'
+        except:
+            print 'Failed to load "'+args.params+'" as params, loading default instead'
+            import sm_params as params
+
 if version == 6:
-	import optparse
-	parser = optparse.OptionParser()
-	parser.add_option("-p","--params", type=str, default="sm_params",
-						dest="params",help = "Parameter file, default = sm_params")
-	parser.add_option("-q", "--quiet", help = "Suppress extra outputs",
-						dest="quiet", default=False,
-						action = "store_true")
-	args, dump = parser.parse_args()
-	quiet = args.quiet
+    import optparse
+    parser = optparse.OptionParser()
+    parser.add_option("-p","--params", type=str, default="sm_params",
+                                            dest="params",help = "Parameter file, default = sm_params")
+    parser.add_option("-q", "--quiet", help = "Suppress extra outputs",
+                                            dest="quiet", default=False,
+                                            action = "store_true")
+    args, dump = parser.parse_args()
+    quiet = args.quiet
 
-	params_root = re.split(".py",args.params)[0]
-	if os.path.isfile(params_root+".pyc"):
-		os.remove(params_root+".pyc")
-	import imp
-	try:
-		fp, pathname, description = imp.find_module(params_root)
-		params = imp.load_module(params_root, fp, pathname, description)
-	except:
-		print 'Failed to load "'+args.params+'" as params, loading default instead'
-		import sm_params as params
-	
-		
+    params_root = re.split(".py",args.params)[0]
+    if os.path.isfile(params_root+".pyc"):
+        os.remove(params_root+".pyc")
+    import imp
+    try:
+        fp, pathname, description = imp.find_module(params_root)
+        params = imp.load_module(params_root, fp, pathname, description)
+    except:
+        print 'Failed to load "'+args.params+'" as params, loading default instead'
+        import sm_params as params
+
+
 elif version not in [6, 7]:
-	print 'Import option only coded for python versions 2.6 and 2.7... \n',
-	print 'Loading default instead'
-	import sm_params as params
-	quiet = False
+    print 'Import option only coded for python versions 2.6 and 2.7... \n',
+    print 'Loading default instead'
+    import sm_params as params
+    quiet = False
 
 if quiet:
-	print "Shhhh"
+    print "Shhhh"
 
 if quiet:
-	quietprint = lambda *a: None
+    quietprint = lambda *a: None
 else:
-	def quietprint(*args):
-		for arg in args:
-			print arg,
-		print
+    def quietprint(*args):
+        for arg in args:
+            print arg,
+        print
 
 f = open("error.log", "w")
 original_stderr = sys.stderr
@@ -88,12 +88,12 @@ files = glob(ised_input+'*.ised')
 files.sort()
 quietprint('SSP binary files found:')
 for file in files:
-	quietprint(file)
+    quietprint(file)
 quietprint('')
 
 tau = numpy.array(params.tau)*1e9
 tg = numpy.array(params.tg)*1e9
-tauv = numpy.array(params.tauv) 
+tauv = numpy.array(params.tauv)
 mu = params.mu
 epsilon = params.epsilon
 
@@ -117,13 +117,13 @@ tdiff, tgi = numpy.min(abs(T1-T2),0),numpy.argmin(abs(T1-T2),0)
 tg = ta[tgi]
 
 
-#Calculate coefficients for the attenuation of the SEDs using 
+#Calculate coefficients for the attenuation of the SEDs using
 #2-component model of Charlot & Fall (2000). Used in Section 3
 
 if params.dust_model == "charlot":
     ATT = numpy.empty([len(tauv),len(wave),len(ta)])
     for tvi in range(0,len(tauv)):
-        tv = (tauv[tvi]*numpy.ones(len(ta)))  
+        tv = (tauv[tvi]*numpy.ones(len(ta)))
         tv[ta>1e7] = mu*tauv[tvi]
         lam = numpy.array((5500/wave)**0.7)
         ATT[tvi,:,:] = (numpy.exp(-1*numpy.outer(lam,tv)))
@@ -139,12 +139,12 @@ elif params.dust_model == "calzetti":
     k[w2] = 2.659*(-1.857 + 1.040/w_u[w2])
     k[w1] = 2.659*(-2.156 + (1.509/w_u[w1]) - (0.198/w_u[w1]**2) + (0.011/w_u[w1]**3))
     k += 4.05
-  
+
     k[k < 0.] = 0.
 
     for tvi in range(0,len(tauv)):
         tv = tauv[tvi]*k/4.05
-        for ti in range(0,len(ta)): 
+        for ti in range(0,len(ta)):
             ATT[tvi,:,ti] *= numpy.power(10,-0.4*tv)
 
 if params.add_nebular:
@@ -153,7 +153,7 @@ if params.add_nebular:
     neb_hlines = nebular[:,2]
     neb_metal = nebular[:,3:]
     neb_wave = nebular[:,0]
-    
+
     if len(neb_wave) != len(wave):
         neb_cont = griddata(neb_wave,neb_cont,wave)
         neb_hlines = griddata(neb_wave,neb_hlines,wave)
@@ -179,7 +179,7 @@ for ai in range(max(tgi)+1):
     if max(taux1) > 0.:
         taux2 = numpy.delete(taux2,numpy.where(taux2<taux1[numpy.flatnonzero(taux1)[0]]))
     #Remove values common to taux1 and taux2; calulate array TP
-    
+
 
     [T1,T2] = numpy.meshgrid(taux1,taux2)
     [i,j] = numpy.where(T1-T2==0)
@@ -191,9 +191,9 @@ for ai in range(max(tgi)+1):
     #The indicies correspond to those values of 'ta' which are just below
     #the entries in taux2. They are calculated by taking the difference
     #between the two arrays, then finding the last negative entry in the
-    #resulting array.  
+    #resulting array.
 
-    if l == 0: 
+    if l == 0:
         J[ai] = numpy.array([])
         A[ai] = numpy.array([])
     if l>0:
@@ -211,16 +211,16 @@ for ai in range(max(tgi)+1):
     #of the original taux values.
     taux = numpy.concatenate((taux1,taux2),axis=0)
     taux.sort()
- 
+
     b = numpy.searchsorted(taux,taux1)
     c = numpy.searchsorted(taux,taux2)
     order = numpy.concatenate((b,c))
- 
+
     d = numpy.diff(taux)
     dt = numpy.append(d,0) + numpy.append(0,d)
     DT[ai] = numpy.copy(dt[order])
 
- 
+
 SED = numpy.empty([len(wave),len(tgi),len(tauv),len(tau),len(params.metallicities)])
 Nlyman = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
 beta = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
@@ -236,12 +236,12 @@ URr = numpy.empty([max(tgi)+1])
 Tr = numpy.empty([max(tgi)+1])
 for mi in range(len(params.metallicities)):
     SSP = params.metallicities[mi]
-    if SSP < 0: 
-    	add_nebular = True
-    else: 
-    	add_nebular = False
-    
-	quietprint("Metallicity "+str(mi+1)+":")
+    if SSP < 0:
+        add_nebular = True
+    else:
+        add_nebular = False
+
+        quietprint("Metallicity "+str(mi+1)+":")
     #print ".ised file: "+files[abs(SSP)]
     if mi != 0:
         data = read_ised(files[abs(SSP)])[0]
@@ -258,14 +258,14 @@ for mi in range(len(params.metallicities)):
 
     """
     SECTION 2
-    Now calculate the integration coefficients w, and store them in the 
-    cell array W. Also calculate the stellar mass fraction str. The so 
+    Now calculate the integration coefficients w, and store them in the
+    cell array W. Also calculate the stellar mass fraction str. The so
     array is expanded and used by each successive iteration of the inner
     loop (ai). The outer loop repeats the operation for each tau value.
 
     """
-    
-    
+
+
     for ti in range(len(tau)):
         prgas = numpy.zeros(max(tgi)+1)
 
@@ -278,7 +278,7 @@ for mi in range(len(params.metallicities)):
                 prgas = numpy.zeros_like(ta)
             else:
                 i = numpy.where(tp<=ta[ai-1])
-                ii = numpy.where(tp>ta[ai-1]) 
+                ii = numpy.where(tp>ta[ai-1])
                 pgas[i] = griddata(ta,prgas,tp[i])
                 pgas[ii] = prgas[ai-1]
             #print prgas[ai]
@@ -288,19 +288,19 @@ for mi in range(len(params.metallicities)):
                 #norm = 1
                 #if len(sr) > 1:
                 #sr = numpy.exp(-1*tp/tau[ti])
-                #	norm = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti]),numpy.sort(tp))
-                #	sr /= norm
-                #	print norm
-                
+                #       norm = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti]),numpy.sort(tp))
+                #       sr /= norm
+                #       print norm
+
             elif tau[ti] < 0.:
                 sr = numpy.exp(-1*tp/tau[ti])/abs(tau[ti])
                 norma = 1
                 if len(sr) > 1:
-                	tbins = numpy.logspace(0,numpy.log10(max(tp)),10000)
-                	norma = simps(numpy.exp(-1*tbins/tau[ti])/abs(tau[ti]),tbins)
-                	sr /= norma
+                    tbins = numpy.logspace(0,numpy.log10(max(tp)),10000)
+                    norma = simps(numpy.exp(-1*tbins/tau[ti])/abs(tau[ti]),tbins)
+                    sr /= norma
                 #print sr[0]
-                
+
             w = sr*DT[ai]/2
             w1 = numpy.array(w[:ai+1])
             W[0,ai,ti] = w1
@@ -310,7 +310,7 @@ for mi in range(len(params.metallicities)):
 
             l = len(A[ai])
             if l>0:
-                
+
                 w2 = w[ai+1:ai+l+1]
                 wa = w2*A[ai]
                 wb = w2-wa
@@ -322,7 +322,7 @@ for mi in range(len(params.metallicities)):
 
 
             if strr > 1: strr= 1
-            
+
             if tau[ti] > 0.:
                 ugas = numpy.exp(-1*ta[ai]/tau[ti])
             elif tau[ti] < 0.:
@@ -343,17 +343,17 @@ for mi in range(len(params.metallicities)):
             elif tau[ti] < 0:
                 SFR[ai,ti,mi] = numpy.exp(-ta[ai]/tau[ti])/abs(tau[ti])/norma
             print SFR[ai,ti,mi]
-                             
+
     """
     SECTION 3
-    Finally, for each tauv/tau/tg combination, perform a weighted 
+    Finally, for each tauv/tau/tg combination, perform a weighted
     sum of the S.S.params. spectral energy distribution 'sed1' to obtain the
     model S.E.D. 'y'. Add each record to the SED array.
     """
 
     for tvi in range(len(tauv)):
         sed1 = sed*ATT[tvi]
- 
+
         for ti in range(len(tau)):
             for ai1 in range(len(tgi)):
                 ai = tgi[ai1]
@@ -361,7 +361,7 @@ for mi in range(len(params.metallicities)):
                 y_nodust = numpy.zeros([1,iw])
                 j = J[ai]
 
-                
+
                 w1 = W[0,ai,ti]
                 wa = W[1,ai,ti]
                 wb = W[2,ai,ti]
@@ -384,7 +384,7 @@ for mi in range(len(params.metallicities)):
                 if add_nebular:
                     total = neb_cont + neb_hlines + neb_metal[:,neb_z]
                     total *= 2.997925e18/(wave**2) #Convert to Flambda
-                    total *= (Nly*(1-params.fesc)) 
+                    total *= (Nly*(1-params.fesc))
 
                     y += total
 
@@ -429,4 +429,4 @@ print('Done')
 
 
 sys.stderr = original_stderr
-f.close() 
+f.close()

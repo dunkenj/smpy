@@ -11,7 +11,7 @@ ssp_output = '../MassData/temp_fitting.npz' # Output filename
 #tau = [0.01,0.025,0.05,0.1,      # Star formation timescales (Gyr)
 #       0.25,0.5,0.8,1.0,1.5,
 #       2.5,3.5,5.5,10.0,13.7]
-tau = [-0.5]
+tau = [0.5]
 #tau = [-10.,-5.,-2.5,-1.0,-0.5,-0.25,0.05,0.25,0.5,1.0,2.5,5.,10.,1000]
 #tg = [0.5,1,2,3,10]
 tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
@@ -28,15 +28,15 @@ tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
 #        2.25,  2.3 ,  2.35,  2.4 ,  2.45,  2.5 ,  2.55,  2.6 ,  2.65,
 #        2.7 ,  2.75,  2.8 ,  2.85,  2.9 ,  2.95,  3.  ]
 
-tauv = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,
-        1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]#4.5,5.0,5.5,6.0] # Dust Total Attenuation Values
+#tauv = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,
+#        1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]#4.5,5.0,5.5,6.0] # Dust Total Attenuation Values
 #tauv = [0.,0.4,0.6,0.8,1.0]
-#tauv = [0] 
+tauv = [0] 
 
 dust_model = 'calzetti'                # 'charlot' - Charlot & Fall or 'calzetti' - Caltzetti 2000
 mu = 0.3                              # Fraction of tauv from ISM
 epsilon = 0.                     # Gas recycling parameter
-metallicities = [2,4]       # Metallicities to use
+metallicities = [4]       # Metallicities to use
 
 csf = False                           # Set to constant SFR (overrides, tau values)
 
@@ -102,8 +102,8 @@ filts_used = [0,1,2,3,4,5,6,7,        # Filter columns from input used
 
 flux_corr = 1.0                       # Flux correction to convert to Total Mags
 
-fit_mode = 'flux'                     # Fit to Mag Colours - 'colours' or 'flux'
-#fit_mode = 'colours'
+#fit_mode = 'flux'                     # Fit to Mag Colours - 'colours' or 'flux'
+fit_mode = 'colours'
 
 calc_mode = False                     # Calculate Mode Mass
 mode_mass_percentage = 10.            # Top percentage of fits to use in mode
@@ -120,5 +120,5 @@ table_format = 'fits'                 # Available formats:'fits'/'ascii'/'IPAC'
                                       # (those available to local installation
                                       #  of AtPY)
 
-ncpus = 0
+ncpus = 4
 
