@@ -10,9 +10,184 @@ from scipy.optimize import leastsq, fsolve
 def read_ised(filename):
     """
     This function reads data from Bruzual & Charlot binary format
+    SSP files and returns the necessary data in an array The input files
+    should be '.ised' files, either 2003 or 2007.
+    
+    'ks' in the binary files is slightly different between 03/07 files
+    so the read length and index should be set appropriately, therefore 
+    the function tries '03 format first and retries with the '07 format
+    if the returned number of ages isn't as expected (e.g. 221 ages)
+    """
+
+    with open(filename,'rb') as f:
+        check = array.array('i')
+        check.fromfile(f,2)
+        
+    if check[1] == 221:
+        ksl, ksi = 2, 1
+    else:
+        ksl, ksi = 3, 2
+        
+    with open(filename,'rb') as f:
+        ks = array.array('i')
+        ks.fromfile(f,ksl)
+
+        ta = array.array('f')
+        ta.fromfile(f,ks[ksi])
+        ta = numpy.array(ta)
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+        ml,mul,iseg = tmp
+
+        if iseg > 0:
+            tmp = array.array('f')
+            tmp.fromfile(f,iseg*6)
+
+        tmp = array.array('f')
+        tmp.fromfile(f,5)
+        totm, totn, avs, jo, tauo = tmp
+
+
+        ids= array.array('c')
+        ids.fromfile(f,80)
+
+        tmp = array.array('f')
+        tmp.fromfile(f,4)
+        tcut = tmp[0]
+        ttt = tmp[1:]
+
+        ids = array.array('c')
+        ids.fromfile(f,80)
+
+        ids = array.array('c')
+        ids.fromfile(f,80)
+
+        igw = array.array('i')
+        igw.fromfile(f,1)
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        iw = array.array('i')
+        iw.fromfile(f,1)
+
+        wave = array.array('f')
+        wave.fromfile(f,iw[0])
+        wave = numpy.array(wave)
+
+        #SED Section
+        F = array.array('i')
+        F.fromfile(f,3)
+        iw = F[2] #Number of wavelength elements
+
+        sed = numpy.zeros((iw,ks[ksi]),dtype=numpy.float32)
+        G = array.array('f')
+        G.fromfile(f,iw)
+        sed[:,0] = G
+        ik = array.array('i')
+        ik.fromfile(f,1)
+
+        h = numpy.empty((ik[0],ks[ksi]),'f')
+        H = array.array('f')
+        H.fromfile(f,ik[0])
+        h[:,0] = H
+
+        for i in range(1,ks[ksi]): #Fill rest of array with SEDs
+            F = array.array('i')
+            F.fromfile(f,3)
+            iw = F[2]
+
+            G = array.array('f')
+            G.fromfile(f,iw)
+            sed[:,i] = G
+            ik = array.array('i')
+            ik.fromfile(f,1)
+
+            H = array.array('f')
+            H.fromfile(f,ik[0])
+            h[:,i] = H
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        bflx = array.array('f')
+        bflx.fromfile(f,tmp[2])
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        strm = array.array('f')
+        strm.fromfile(f,tmp[2])
+        strm = numpy.array(strm)
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        evf = array.array('f')
+        evf.fromfile(f,tmp[2])
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        evf = array.array('f')
+        evf.fromfile(f,tmp[2])
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        snr = array.array('f')
+        snr.fromfile(f,tmp[2])
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        pnr = array.array('f')
+        pnr.fromfile(f,tmp[2])
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        sn = array.array('f')
+        sn.fromfile(f,tmp[2])
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        bh = array.array('f')
+        bh.fromfile(f,tmp[2])
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        wd = array.array('f')
+        wd.fromfile(f,tmp[2])
+
+        tmp = array.array('i')
+        tmp.fromfile(f,3)
+
+        rmtm = array.array('f')
+        rmtm.fromfile(f,tmp[2])
+        rmtm = numpy.array(rmtm)
+
+        data = [[ta,ids,iw,wave,sed,strm,rmtm],
+                ['Ages(yr)', 'SSP ID', 
+                 'No. wavelength entries',
+                 'Wavelength array',
+                 'SEDs', 'Stellar mass history',
+                 'Remnant mass history']]
+
+    return data
+
+def read_ised2(filename):
+    """
+    This function reads data from Bruzual & Charlot binary format
     SSP files and returns the necessary data in an array
 
     The input files should be '.ised' files
+    
+    Original function, kept as backup in case the less verbose
+    version is bugged in some way not yet found.
     """
 
     with open(filename,'rb') as f:

@@ -12,30 +12,30 @@ import re,os,sys
 from glob import glob
 from scipy.interpolate import griddata
 from scipy.integrate import simps
-from sm_functions import read_ised,calc_lyman,calc_beta
+from sm_functions import read_ised,read_ised2,calc_lyman,calc_beta
 
 version = sys.version_info[1]
 if version == 7:
     import argparse
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-p","--params", type=str, default="sm_params",
-                                                help = "Parameter file, default = sm_params")
-        parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
-                                                action = "store_true")
-        args = parser.parse_args()
-        quiet = args.quiet
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p","--params", type=str, default="sm_params",
+                                            help = "Parameter file, default = sm_params")
+    parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
+                                            action = "store_true")
+    args = parser.parse_args()
+    quiet = args.quiet
 
-        params_root = re.split(".py",args.params)[0]
-        if os.path.isfile(params_root+".pyc"):
-            os.remove(params_root+".pyc")
+    params_root = re.split(".py",args.params)[0]
+    if os.path.isfile(params_root+".pyc"):
+        os.remove(params_root+".pyc")
 
-        import importlib
-        try:
-            params = importlib.import_module(params_root)
-            print 'Loaded '+args.params+' as params'
-        except:
-            print 'Failed to load "'+args.params+'" as params, loading default instead'
-            import sm_params as params
+    import importlib
+    try:
+        params = importlib.import_module(params_root)
+        print 'Loaded '+args.params+' as params'
+    except:
+        print 'Failed to load "'+args.params+'" as params, loading default instead'
+        import sm_params as params
 
 if version == 6:
     import optparse
@@ -107,7 +107,7 @@ if params.add_nebular:
 # for section 1. It is assumed that 'ta' and 'wave' are the same
 # for all files.
 
-data = read_ised(files[abs(params.metallicities[0])])[0]
+data = read_ised2(files[abs(params.metallicities[0])])[0]
 
 ta, metal, iw, wave, sed, strm, rmtm = data
 
@@ -244,7 +244,7 @@ for mi in range(len(params.metallicities)):
         quietprint("Metallicity "+str(mi+1)+":")
     #print ".ised file: "+files[abs(SSP)]
     if mi != 0:
-        data = read_ised(files[abs(SSP)])[0]
+        data = read_ised2(files[abs(SSP)])[0]
         sed = data[4]
         strm = data[5]
         rmtm = data[6]
@@ -342,7 +342,7 @@ for mi in range(len(params.metallicities)):
                 SFR[ai,ti,mi] = (1 + epsilon*prgas[ai])*numpy.exp(-ta[ai]/tau[ti])/abs(tau[ti])
             elif tau[ti] < 0:
                 SFR[ai,ti,mi] = numpy.exp(-ta[ai]/tau[ti])/abs(tau[ti])/norma
-            print SFR[ai,ti,mi]
+            #print SFR[ai,ti,mi]
 
     """
     SECTION 3

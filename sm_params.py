@@ -11,7 +11,7 @@ ssp_output = '../MassData/temp_fitting.npz' # Output filename
 #tau = [0.01,0.025,0.05,0.1,      # Star formation timescales (Gyr)
 #       0.25,0.5,0.8,1.0,1.5,
 #       2.5,3.5,5.5,10.0,13.7]
-tau = [0.5]
+tau = [-0.5,-0.25,0.25,0.5]
 #tau = [-10.,-5.,-2.5,-1.0,-0.5,-0.25,0.05,0.25,0.5,1.0,2.5,5.,10.,1000]
 #tg = [0.5,1,2,3,10]
 tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
@@ -102,8 +102,8 @@ filts_used = [0,1,2,3,4,5,6,7,        # Filter columns from input used
 
 flux_corr = 1.0                       # Flux correction to convert to Total Mags
 
-#fit_mode = 'flux'                     # Fit to Mag Colours - 'colours' or 'flux'
-fit_mode = 'colours'
+fit_mode = 'flux'                     # Fit to Mag Colours - 'colours' or 'flux'
+#fit_mode = 'colours'
 
 calc_mode = False                     # Calculate Mode Mass
 mode_mass_percentage = 10.            # Top percentage of fits to use in mode
@@ -120,5 +120,5 @@ table_format = 'fits'                 # Available formats:'fits'/'ascii'/'IPAC'
                                       # (those available to local installation
                                       #  of AtPY)
 
-ncpus = 4
+ncpus = 1
 

@@ -5,6 +5,7 @@ import re
 import time
 import multiprocessing
 import atpy
+import logging
 
 from sm_functions import dist
 
@@ -225,7 +226,7 @@ def galaxyFit(inputQueue, printQueue, printlock):
         printlock.release()
         printQueue.put(output_string)
 
-def galaxyFitPlus(inputQueue, printQueue, massQueue, muvQueue, betaQueue, printlock):
+def galaxyFitPlus(inputQueue, printQueue, printlock):
     for gal in iter(inputQueue.get, 'STOP'):
         j = numpy.argmin(numpy.abs(z-zobs[gal])) # Find closest model redshift
 
@@ -262,8 +263,10 @@ def galaxyFitPlus(inputQueue, printQueue, massQueue, muvQueue, betaQueue, printl
                 muvLikelihood = numpy.zeros(params.muv_bins+1)
                 muvLikelihood[0] = gal
                 betaLikelihood = numpy.zeros(params.beta_bins+1)
-                betaLikelihood[0] = gal                
-                printQueue.put([output_string,massLikelihood,muvLikelihood,betaLikelihood])
+                betaLikelihood[0] = gal            
+                tauLikelihood = numpy.zeros(n_tau)   
+                tauLikelihood = numpy.insert(tauLikelihood,0,gal) 
+                printQueue.put([output_string,massLikelihood,muvLikelihood,betaLikelihood,tauLikelihood])
                 continue
 
         elif params.fit_mode == "flux":
@@ -298,8 +301,10 @@ def galaxyFitPlus(inputQueue, printQueue, massQueue, muvQueue, betaQueue, printl
                 muvLikelihood = numpy.zeros(params.muv_bins+1)
                 muvLikelihood[0] = gal
                 betaLikelihood = numpy.zeros(params.beta_bins+1)
-                betaLikelihood[0] = gal                
-                printQueue.put([output_string,massLikelihood,muvLikelihood,betaLikelihood])
+                betaLikelihood[0] = gal
+                tauLikelihood = numpy.zeros(n_tau)        
+                tauLikelihood = numpy.insert(tauLikelihood,0,gal)        
+                printQueue.put([output_string,massLikelihood,muvLikelihood,betaLikelihood,tauLikelihood])
                 continue
 
         #Find the coordinate of the model with the bestfit mass
@@ -390,7 +395,9 @@ def galaxyFitPlus(inputQueue, printQueue, massQueue, muvQueue, betaQueue, printl
         """
         
         isreal = numpy.isfinite(chisq)
-        likelihood = numpy.exp(-0.5*chisq[isreal])
+        likelihood = numpy.exp(-0.5*chisq)
+        likelihood_shaped = numpy.reshape(likelihood,(n_tg,n_tauv,n_tau,n_ssp))
+        likelihood = likelihood[isreal]
         
         massBins = numpy.linspace(params.mass_min,params.mass_max,params.mass_bins)
         muvBins = numpy.linspace(params.muv_max,params.muv_min,params.muv_bins)
@@ -427,6 +434,10 @@ def galaxyFitPlus(inputQueue, printQueue, massQueue, muvQueue, betaQueue, printl
         betaLikelihoods /= numpy.trapz(betaLikelihoods,betaBins)        
         betaLikelihoods = numpy.insert(betaLikelihoods,0,gal)
         #betaQueue.put(betaLikelihoods)
+
+        tauLikelihood = numpy.nansum(likelihood_shaped,2)
+        tauLikelihood /= sum(tauLikelihood)
+        tauLikelihood = numpy.insert(tauLikelihood,0,gal)
         
         printlock.acquire()
 
@@ -438,7 +449,7 @@ def galaxyFitPlus(inputQueue, printQueue, massQueue, muvQueue, betaQueue, printl
         output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,Bestfit_restframeMags[params.tot],Bestfit_restframeMUV, Bestfit_Min, Bestfit_Max,minind,Bestfit_BMass,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
 
         printlock.release()
-        printQueue.put([output_string, massLikelihoods, muvLikelihoods, betaLikelihoods])
+        printQueue.put([output_string, massLikelihoods, muvLikelihoods, betaLikelihoods, tauLikelihood])
 
 
 def getObservations(inputpath):
@@ -580,6 +591,7 @@ if __name__ == '__main__':
     mass_file = open("temp_masses.prob", "wb")
     muv_file = open("temp_muv.prob", "wb")
     beta_file = open("temp_betas.prob", "wb")
+    tau_file = open("temp_taus.prob","wb")
     
 
     """
@@ -598,28 +610,28 @@ if __name__ == '__main__':
 
     inputQueue = multiprocessing.Queue()
     printQueue = multiprocessing.Queue()
-    massQueue = multiprocessing.Queue()
-    muvQueue = multiprocessing.Queue()
-    betaQueue = multiprocessing.Queue()
+    #massQueue = multiprocessing.Queue()
+    #muvQueue = multiprocessing.Queue()
+    #betaQueue = multiprocessing.Queue()
     
     printlock = multiprocessing.Lock()
     for i in range( ncpus ):
         #multiprocessing.Process( target = galaxyFit, args = ( inputQueue , printQueue, printlock ) ).start()
         multiprocessing.Process( target = galaxyFitPlus,
-                                args = (inputQueue, printQueue, massQueue, 
-                                        muvQueue, betaQueue, printlock ) ).start()
+                                args = (inputQueue, printQueue, printlock ) ).start()
 
     # Put elements in the send queue for processing
     for gal in range( len(ID) ):
         inputQueue.put( gal )
 
     for gal in range( len(ID) ):
-        printout, mass_array, muv_array, beta_array = printQueue.get()
+        printout, mass_array, muv_array, beta_array, tau_array = printQueue.get()
         temp_file.write( printout )
         #print len(mass_array), len(muv_array), len(beta_array)
         mass_array.tofile(mass_file)
         muv_array.tofile(muv_file)
         beta_array.tofile(beta_file)
+        tau_array.tofile(tau_file)
 
     # Stop all the running processes
     for i in range( ncpus ):
@@ -628,15 +640,16 @@ if __name__ == '__main__':
     # Close both send and receive queues
     inputQueue.close()
     printQueue.close()
-    massQueue.close()
-    muvQueue.close()
-    betaQueue.close()
+    #massQueue.close()
+    #muvQueue.close()
+    #betaQueue.close()
 
 
     temp_file.close()
     mass_file.close()
     muv_file.close()
     beta_file.close()
+    tau_file.close()
     #print results
     print "Fitting time taken: "+str(time.time()-loop_start)
     print
@@ -730,11 +743,32 @@ if __name__ == '__main__':
         
         output_binary.close()
         print('Done')
+
+    print('{0:<20s}'.format('Taus')),
+    with open(tau_file.name) as tau_binary:
+        tau_likelihood = array.array('d')
+        tau_likelihood.fromfile(tau_binary,len(ID)*(n_tau + 1))
+        tau_likelihood = numpy.reshape(tau_likelihood,(len(ID),(n_tau + 1)))
+        tau_likelihood = tau_likelihood[numpy.argsort(tau_likelihood[:,0]),1:]
+    
+        output_binary = open(params.output_name+".sfh.prob","wb")
+        tau_params = array.array('i',[len(ID),len(params.tau)])
+        tau_params.tofile(output_binary)
+        
+        taus = numpy.array(params.tau)
+        taus.tofile(output_binary)
+        
+        for gal in range(len(ID)):
+            tau_likelihood[gal,:].tofile(output_binary)
+        
+        output_binary.close()
+        print('Done')
     
     
     os.remove(mass_file.name)
     os.remove(muv_file.name)
     os.remove(beta_file.name)
+    os.remove(tau_file.name)
 
     print
     print "Total time taken: "+str(time.time()-start)
