@@ -586,13 +586,13 @@ if __name__ == '__main__':
     Setting up output table
     """
     if os.path.isfile(params.output_name+"temp_output.txt"):
-        os.remove(params.output_name"temp_output.txt")
-    temp_file = open(params.output_name"temp_output.txt","w")
+        os.remove(params.output_name+"temp_output.txt")
+    temp_file = open(params.output_name+"temp_output.txt","w")
     
-    mass_file = open(params.output_name"temp_masses.prob", "wb")
-    muv_file = open(params.output_name"temp_muv.prob", "wb")
-    beta_file = open(params.output_name"temp_betas.prob", "wb")
-    tau_file = open(params.output_name"temp_taus.prob","wb")
+    mass_file = open(params.output_name+"temp_masses.prob", "wb")
+    muv_file = open(params.output_name+"temp_muv.prob", "wb")
+    beta_file = open(params.output_name+"temp_betas.prob", "wb")
+    tau_file = open(params.output_name+"temp_taus.prob","wb")
     
 
     """
