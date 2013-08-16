@@ -120,5 +120,5 @@ table_format = 'fits'                 # Available formats:'fits'/'ascii'/'IPAC'
                                       # (those available to local installation
                                       #  of AtPY)
 
-ncpus = 1
+ncpus = 4
 

@@ -435,8 +435,9 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
         betaLikelihoods = numpy.insert(betaLikelihoods,0,gal)
         #betaQueue.put(betaLikelihoods)
 
-        tauLikelihood = numpy.nansum(likelihood_shaped,2)
+        tauLikelihood = numpy.nansum(likelihood_shaped,2).flatten()
         tauLikelihood /= sum(tauLikelihood)
+        print tauLikelihood.shape
         tauLikelihood = numpy.insert(tauLikelihood,0,gal)
         
         printlock.acquire()
@@ -444,9 +445,9 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
         if calc_mode:
             print '{0:4d} {1:6d} {2:>6.2f} {3:>8.1f} {4:>6.2f}'.format(gal+1,ID[gal],Bestfit_Mass,chimin, numpy.log10(Mode_Mass), '/n')
         else:
-            print '{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>3d} {9:>5.2f}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,numpy.log10(Bestfit_SFR))
+            print '{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>3d} {9:>5.2f}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,numpy.log10(Bestfit_SFR))
 
-        output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,Bestfit_restframeMags[params.tot],Bestfit_restframeMUV, Bestfit_Min, Bestfit_Max,minind,Bestfit_BMass,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
+        output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,Bestfit_restframeMags[params.tot],Bestfit_restframeMUV, Bestfit_Min, Bestfit_Max,minind,Bestfit_BMass,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
 
         printlock.release()
         printQueue.put([output_string, massLikelihoods, muvLikelihoods, betaLikelihoods, tauLikelihood])
@@ -584,14 +585,14 @@ if __name__ == '__main__':
     SECTION 1C
     Setting up output table
     """
-    if os.path.isfile("temp_output.txt"):
-        os.remove("temp_output.txt")
-    temp_file = open("temp_output.txt","w")
+    if os.path.isfile(params.output_name+"temp_output.txt"):
+        os.remove(params.output_name"temp_output.txt")
+    temp_file = open(params.output_name"temp_output.txt","w")
     
-    mass_file = open("temp_masses.prob", "wb")
-    muv_file = open("temp_muv.prob", "wb")
-    beta_file = open("temp_betas.prob", "wb")
-    tau_file = open("temp_taus.prob","wb")
+    mass_file = open(params.output_name"temp_masses.prob", "wb")
+    muv_file = open(params.output_name"temp_muv.prob", "wb")
+    beta_file = open(params.output_name"temp_betas.prob", "wb")
+    tau_file = open(params.output_name"temp_taus.prob","wb")
     
 
     """
@@ -600,10 +601,10 @@ if __name__ == '__main__':
 
     """
     if calc_mode:
-        print '{0:>4s} {1:>6s} {2:>6s} {3:>8s} {4:>6s}'.format('N','ID','Best', 'chimin', 'Mode')
+        print '{0:>4s} {1:>8s} {2:>6s} {3:>8s} {4:>6s}'.format('N','ID','Best', 'chimin', 'Mode')
 
     else:
-        print '{0:>4s} {1:>6s} {2:>5s} {3:>6s} {4:>8s} {5:>10s} {6:>5s} {7:>12s} {8:>4s}'.format('N','ID','zobs','Best', 'chimin', 'tg', 'tauv','tau','SSP')
+        print '{0:>4s} {1:>8s} {2:>5s} {3:>6s} {4:>8s} {5:>10s} {6:>5s} {7:>12s} {8:>4s}'.format('N','ID','zobs','Best', 'chimin', 'tg', 'tauv','tau','SSP')
 
     loop_start = time.time()
     ncpus = numpy.clip(params.ncpus,1,multiprocessing.cpu_count())
