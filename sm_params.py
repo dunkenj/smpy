@@ -31,12 +31,12 @@ tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
 #tauv = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,
 #        1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]#4.5,5.0,5.5,6.0] # Dust Total Attenuation Values
 #tauv = [0.,0.4,0.6,0.8,1.0]
-tauv = [0] 
+tauv = [0,0.25,0.5,0.75,1.,1.5,2] 
 
 dust_model = 'calzetti'                # 'charlot' - Charlot & Fall or 'calzetti' - Caltzetti 2000
 mu = 0.3                              # Fraction of tauv from ISM
 epsilon = 0.                     # Gas recycling parameter
-metallicities = [4]       # Metallicities to use
+metallicities = [-1,-2,-4]       # Metallicities to use
 
 csf = False                           # Set to constant SFR (overrides, tau values)
 

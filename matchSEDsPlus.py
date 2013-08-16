@@ -434,10 +434,10 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
         betaLikelihoods /= numpy.trapz(betaLikelihoods,betaBins)        
         betaLikelihoods = numpy.insert(betaLikelihoods,0,gal)
         #betaQueue.put(betaLikelihoods)
-
-        tauLikelihood = numpy.nansum(likelihood_shaped,2).flatten()
+        likelihood_shaped[numpy.invert(numpy.isfinite(likelihood_shaped))] = 0.
+        tauLikelihood = numpy.sum(likelihood_shaped,axis=(0,1,3))
         tauLikelihood /= sum(tauLikelihood)
-        print tauLikelihood.shape
+        #print tauLikelihood
         tauLikelihood = numpy.insert(tauLikelihood,0,gal)
         
         printlock.acquire()
