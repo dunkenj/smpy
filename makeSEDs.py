@@ -223,6 +223,7 @@ for ai in range(max(tgi)+1):
 
 SED = numpy.empty([len(wave),len(tgi),len(tauv),len(tau),len(params.metallicities)])
 Nlyman = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
+Nlyman_final = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
 beta = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
 norm = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
 STR = numpy.empty([max(tgi)+1,len(tau),len(params.metallicities)])
@@ -387,6 +388,13 @@ for mi in range(len(params.metallicities)):
                     total *= (Nly*(1-params.fesc))
 
                     y += total
+                    
+                Nly = calc_lyman(wave,y[0])
+                if Nly > 0.:
+                    Nlyman_final[ai1,tvi,ti,mi] = numpy.log10(Nly)
+                else:
+                    Nlyman_final[ai1,tvi,ti,mi] = 0.
+
 
                 beta[ai1,tvi,ti,mi] = calc_beta(wave,y[0])
                 SED[:,ai1,tvi,ti,mi] = y
@@ -423,7 +431,7 @@ parameters = [[wave,tg,tauv,tau,metal,mu,epsilon],
                'tauv, attenuation optical depth','SSP name',
                'ISM attenuation fraction','Gas recycling parameter']]
 
-numpy.savez(params.ssp_output,parameters=parameters,SED=SED,STR=STR,SFR=SFR,Nlyman=Nlyman,beta=beta)
+numpy.savez(params.ssp_output,parameters=parameters,SED=SED,STR=STR,SFR=SFR,Nlyman=Nlyman,Nlyman_final = Nlyman_final, beta=beta)
 
 print('Done')
 

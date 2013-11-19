@@ -437,7 +437,7 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
         likelihood_shaped[numpy.invert(numpy.isfinite(likelihood_shaped))] = 0.
         tauLikelihood = numpy.sum(likelihood_shaped,axis=(0,1,3))
         tauLikelihood /= sum(tauLikelihood)
-        #print tauLikelihood
+        print tauLikelihood
         tauLikelihood = numpy.insert(tauLikelihood,0,gal)
         
         printlock.acquire()
