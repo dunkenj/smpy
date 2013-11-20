@@ -283,21 +283,24 @@ for mi in range(len(params.metallicities)):
                 pgas[i] = griddata(ta,prgas,tp[i])
                 pgas[ii] = prgas[ai-1]
             #print prgas[ai]
-
+            
+            tbins = numpy.logspace(0,numpy.log10(max(tp)),10000)
+            npgas = numpy.zeros_like(tbins)
             if tau[ti] > 0.:
                 sr = (1 + epsilon*pgas)*numpy.exp(-1*tp/tau[ti])/abs(tau[ti])
-                #norm = 1
-                #if len(sr) > 1:
-                #sr = numpy.exp(-1*tp/tau[ti])
-                #       norm = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti]),numpy.sort(tp))
-                #       sr /= norm
-                #       print norm
+                norm = 1
+                if len(sr) > 1:
+                    i = numpy.where(tbins <= ta[ai-1])
+                    ii = numpy.where(tbins > ta[ai-1])
+                    npgas[i] = griddata(ta,prgas,tbins[i])
+                    npgas[ii] = prgas[ai-1]
+                    norm = simps((1+ epsilon*npgas)*numpy.exp(-1*tbins/tau[ti])/abs(tau[ti]),tbins)
+                    sr /= norm
 
             elif tau[ti] < 0.:
                 sr = numpy.exp(-1*tp/tau[ti])/abs(tau[ti])
                 norma = 1
                 if len(sr) > 1:
-                    tbins = numpy.logspace(0,numpy.log10(max(tp)),10000)
                     norma = simps(numpy.exp(-1*tbins/tau[ti])/abs(tau[ti]),tbins)
                     sr /= norma
                 #print sr[0]
@@ -391,7 +394,7 @@ for mi in range(len(params.metallicities)):
                     
                 Nly = calc_lyman(wave,y[0])
                 if Nly > 0.:
-                    Nlyman_final[ai1,tvi,ti,mi] = numpy.log10(Nly)
+                    Nlyman_final[ai1,tvi,ti,mi] = numpy.log10(Nly) + 33. + numpy.log10(3.826)
                 else:
                     Nlyman_final[ai1,tvi,ti,mi] = 0.
 
