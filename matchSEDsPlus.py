@@ -84,11 +84,6 @@ def galaxyFit(inputQueue, printQueue, printlock):
     for gal in iter(inputQueue.get, 'STOP'):
         j = numpy.argmin(numpy.abs(z-zobs[gal])) # Find closest model redshift
 
-        # Turn MS into full mass
-        Mass = MS[j,:]*numpy.power(10,-1*tot_mag[gal]/2.5)
-        Mass2 = MB[j,:]*numpy.power(10,-1*tot_mag[gal]/2.5)
-        cSFR = SFR[j,:]*numpy.power(10,-1*tot_mag[gal]/2.5)
-
 
         fo = obs[gal,:]
         ferr = obs_err[gal,:]
@@ -101,10 +96,22 @@ def galaxyFit(inputQueue, printQueue, printlock):
         fo = fo[I]                    # and exclude from fit
         ferr = ferr[I]
         fm = f[I,j,:]
+
             #print fm[:,0,0,0,0]
+
+        top = 0.
+        bottom = 0.
+    
+        for i in range(len(fo)):
+            top += (fm[i,:]*fo[i])/(ferr[i]**2)
+            bottom += (fm[i,:]**2)/(ferr[i]**2)
+    
+        scale = top/bottom
+        scale = numpy.reshape(scale,(n_tg,n_tauv,n_tau,n_ssp))  
+
         chisq = 0.
         for i in range(len(fo)):
-            chisq += (((fm[i,:]-fo[i])**2)/(ferr[i])**2)
+            chisq += (((scale*fm[i,:]-fo[i])**2)/(ferr[i])**2)
 
         chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
         if numpy.isinf(chimin) or numpy.isnan(minind) or len(fo) == 0:
@@ -118,37 +125,28 @@ def galaxyFit(inputQueue, printQueue, printlock):
 
 
         #Find the coordinate of the model with the bestfit mass
-        zi,tgi,tvi,ti,mi = numpy.unravel_index(minind,(1,n_tg,n_tauv,n_tau,n_ssp))
-        Bestfit_Mass=numpy.log10(Mass[tgi,tvi,ti,mi]*params.flux_corr)
-        Bestfit_BMass=numpy.log10(Mass2[tgi,tvi,ti,mi]*params.flux_corr)
-        Bestfit_SFR = (cSFR[tgi,tvi,ti,mi]*params.flux_corr)
+        tgi,tvi,ti,mi = numpy.unravel_index(minind,(n_tg,n_tauv,n_tau,n_ssp))
+        Bestfit_Mass = numpy.log10(scale[tgi,tvi,ti,mi]*params.flux_corr)
+        Bestfit_BMass = numpy.log10(Mass2[tgi,tvi,ti,mi]*params.flux_corr)
+        Bestfit_SFR = (scale[tgi,tvi,ti,mi]*SFR[tgi,ti,mi]*params.flux_corr)
         Bestfit_Beta = beta[tgi,tvi,ti,mi]
 
-        M_chisq_plus1 = numpy.log10(Mass[chisq < chimin+1])
+        M_chisq_plus1 = numpy.log10(scale.flatten()[chisq < chimin+1])
         Bestfit_Min, Bestfit_Max = numpy.min(M_chisq_plus1), numpy.max(M_chisq_plus1)
-
-        l68err = Bestfit_Mass-Bestfit_Min
-        u68err = Bestfit_Max - Bestfit_Mass
-
-        l68err = numpy.sqrt(l68err**2 + mtoterr**2)
-        u68err = numpy.sqrt(u68err**2 + mtoterr**2)
-
-        Bestfit_Min = Bestfit_Mass - l68err
-        Bestfit_Max = Bestfit_Mass + u68err
 
 
         #Scale the observed tot_mag band of the template to be the same as the observed tot_mag band of the galaxy
         #Convert the templates so they are no longer units of per stellar mass
 
-        M_no_per_sm = M[params.tot,j,tgi,tvi,ti,mi]-(2.5*Bestfit_Mass)-(2.5*numpy.log10(1+zobs[gal]))
-        Temp_flux = numpy.power(10,M_no_per_sm/-2.5)
-        gal_totabs = tot_mag[gal] - dist(zobs[gal])
-        Gal_flux = numpy.power(10,(gal_totabs/-2.5))
-        flux_scale = Gal_flux/Temp_flux
+        F_rest = f[:,0]*scale[tgi,tvi,ti,mi]*params.flux_corr
+        restframeMags = 23.9 - 2.5*numpy.log10(F_rest)
+    
+        UV_rest = UV_flux[0]*scale[tgi,tvi,ti,mi]*params.flux_corr
+        restframeMUV = 23.9 - 2.5*numpy.log10(UV_rest)
 
-        M_scaled = M[:,0,tgi,tvi,ti,mi] - (2.5*Bestfit_Mass) - (2.5*numpy.log10(1+zobs[gal]))-2.5*numpy.log10(flux_scale)
-        MUV_scaled = MUV[0,tgi,tvi,ti,mi] - (2.5*Bestfit_Mass) - (2.5*numpy.log10(1+zobs[gal]))-2.5*numpy.log10(flux_scale)
-
+        M_scaled = restframeMags[:,tgi,tvi,ti,mi]
+        MUV_scaled = restframeMUV[tgi,tvi,ti,mi]
+        
         if numpy.isnan(Bestfit_Mass) or numpy.isinf(chimin):
             Bestfit_Mass = -99
             #M_scaled[:] = -99
@@ -171,7 +169,7 @@ def galaxyFit(inputQueue, printQueue, printlock):
             chisq_order = numpy.argsort(chisq)
             chisq_sorted = chisq[chisq_order]
 
-            Mass_sorted = Mass[chisq_order]
+            Mass_sorted = scale.flatten()[chisq_order]
             Mass_sorted[num_chosen:] = numpy.nan
 
             Mass_sorted = Mass_sorted*params.flux_corr
@@ -217,7 +215,8 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
         fo = fo[I]                    # and exclude from fit
         ferr = ferr[I]
         fm = f[I,j,:]
-        #print fm[:,0,0,0,0]
+        #print fm[:,0,0,0,0]        
+
         chisq = numpy.zeros((params.mass_bins,n_tg,n_tauv,n_tau,n_ssp))
 
         for m, mass in enumerate(mass_range):
@@ -328,8 +327,7 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
 
 
 def getObservations(inputpath):
-    input_data = atpy.Table(inputpath,
-                                                    type=params.input_format)
+    input_data = atpy.Table(inputpath,type=params.input_format)
 
     column_names = input_data.columns.keys
 
@@ -457,23 +455,36 @@ if __name__ == '__main__':
     #betaQueue = multiprocessing.Queue()
     
     printlock = multiprocessing.Lock()
+    
+    if params.calc_pdf:
+        fitFunction = galaxyFitPlus
+    else:
+        fitFunction = galaxyFit
+    
     for i in range( ncpus ):
         #multiprocessing.Process( target = galaxyFit, args = ( inputQueue , printQueue, printlock ) ).start()
-        multiprocessing.Process( target = galaxyFitPlus,
+        multiprocessing.Process( target = fitFunction,
                                 args = (inputQueue, printQueue, printlock ) ).start()
 
     # Put elements in the send queue for processing
     for gal in range( len(ID) ):
         inputQueue.put( gal )
 
-    for gal in range( len(ID) ):
-        printout, mass_array, muv_array, beta_array = printQueue.get()
-        temp_file.write( printout )
-        #print len(mass_array), len(muv_array), len(beta_array)
-        mass_array.tofile(mass_file)
-        muv_array.tofile(muv_file)
-        beta_array.tofile(beta_file)
+    if params.calc_pdf:
+        for gal in range( len(ID) ):
+            printout, mass_array, muv_array, beta_array = printQueue.get()
+            temp_file.write( printout )
+            #print len(mass_array), len(muv_array), len(beta_array)
+            mass_array.tofile(mass_file)
+            muv_array.tofile(muv_file)
+            beta_array.tofile(beta_file)
         #tau_array.tofile(tau_file)
+    else:
+        for gal in range( len(ID) ):
+            printout, mass_array, muv_array, beta_array = printQueue.get()
+            temp_file.write( printout )
+            #print len(mass_array), len(muv_array), len(beta_array)
+       
 
     # Stop all the running processes
     for i in range( ncpus ):
@@ -523,91 +534,93 @@ if __name__ == '__main__':
         os.remove(params.output_name)
     output.write(params.output_name,type=params.table_format)
     print('Catalog saved')
-    print
-    print('Opening, re-ordering and saving binaries:')
     
-    print('{0:<20s}'.format('Masses')),
-    with open(mass_file.name) as mass_binary:
-        mass_likelihood = array.array('d')
-        mass_likelihood.fromfile(mass_binary,len(ID)*(params.mass_bins + 1))
-        mass_likelihood = numpy.reshape(mass_likelihood,(len(ID),(params.mass_bins + 1)))
-        mass_likelihood = mass_likelihood[numpy.argsort(mass_likelihood[:,0]),1:]
+    if params.calc_pdf:
+        print
+        print('Opening, re-ordering and saving binaries:')
     
-        output_binary = open(params.output_name+".masses.prob","wb")
-        mass_params = array.array('i',[len(ID),params.mass_bins])
-        mass_params.tofile(output_binary)
-        
-        mass_bins = numpy.linspace(params.mass_min,params.mass_max,params.mass_bins)
-        mass_bins.tofile(output_binary)
-        
-        for gal in range(len(ID)):
-            mass_likelihood[gal,:].tofile(output_binary)
-        
-        output_binary.close()
-        print('Done')
+        print('{0:<20s}'.format('Masses')),
+        with open(mass_file.name) as mass_binary:
+            mass_likelihood = array.array('d')
+            mass_likelihood.fromfile(mass_binary,len(ID)*(params.mass_bins + 1))
+            mass_likelihood = numpy.reshape(mass_likelihood,(len(ID),(params.mass_bins + 1)))
+            mass_likelihood = mass_likelihood[numpy.argsort(mass_likelihood[:,0]),1:]
     
-    print('{0:<20s}'.format('MUVs')),
-    with open(muv_file.name) as muv_binary:
-        muv_likelihood = array.array('d')
-        muv_likelihood.fromfile(muv_binary,len(ID)*(params.muv_bins + 1))
-        muv_likelihood = numpy.reshape(muv_likelihood,(len(ID),(params.muv_bins + 1)))
-        muv_likelihood = muv_likelihood[numpy.argsort(muv_likelihood[:,0]),1:]
+            output_binary = open(params.output_name+".masses.prob","wb")
+            mass_params = array.array('i',[len(ID),params.mass_bins])
+            mass_params.tofile(output_binary)
+        
+            mass_bins = numpy.linspace(params.mass_min,params.mass_max,params.mass_bins)
+            mass_bins.tofile(output_binary)
+        
+            for gal in range(len(ID)):
+                mass_likelihood[gal,:].tofile(output_binary)
+        
+            output_binary.close()
+            print('Done')
     
-        output_binary = open(params.output_name+".muv.prob","wb")
-        muv_params = array.array('i',[len(ID),params.muv_bins])
-        muv_params.tofile(output_binary)
-        
-        muv_bins = numpy.linspace(params.muv_max,params.muv_min,params.muv_bins)
-        muv_bins.tofile(output_binary)
-        
-        for gal in range(len(ID)):
-            muv_likelihood[gal,:].tofile(output_binary)
-        
-        output_binary.close()
-        print('Done')
-        
-    print('{0:<20s}'.format('Betas')),
-    with open(beta_file.name) as beta_binary:
-        beta_likelihood = array.array('d')
-        beta_likelihood.fromfile(beta_binary,len(ID)*(params.beta_bins + 1))
-        beta_likelihood = numpy.reshape(beta_likelihood,(len(ID),(params.beta_bins + 1)))
-        beta_likelihood = beta_likelihood[numpy.argsort(beta_likelihood[:,0]),1:]
+        print('{0:<20s}'.format('MUVs')),
+        with open(muv_file.name) as muv_binary:
+            muv_likelihood = array.array('d')
+            muv_likelihood.fromfile(muv_binary,len(ID)*(params.muv_bins + 1))
+            muv_likelihood = numpy.reshape(muv_likelihood,(len(ID),(params.muv_bins + 1)))
+            muv_likelihood = muv_likelihood[numpy.argsort(muv_likelihood[:,0]),1:]
     
-        output_binary = open(params.output_name+".muv.prob","wb")
-        beta_params = array.array('i',[len(ID),params.beta_bins])
-        beta_params.tofile(output_binary)
+            output_binary = open(params.output_name+".muv.prob","wb")
+            muv_params = array.array('i',[len(ID),params.muv_bins])
+            muv_params.tofile(output_binary)
         
-        beta_bins = numpy.linspace(params.beta_min,params.beta_max,params.beta_bins)
-        beta_bins.tofile(output_binary)
+            muv_bins = numpy.linspace(params.muv_max,params.muv_min,params.muv_bins)
+            muv_bins.tofile(output_binary)
         
-        for gal in range(len(ID)):
-            beta_likelihood[gal,:].tofile(output_binary)
+            for gal in range(len(ID)):
+                muv_likelihood[gal,:].tofile(output_binary)
         
-        output_binary.close()
-        print('Done')
+            output_binary.close()
+            print('Done')
+        
+        print('{0:<20s}'.format('Betas')),
+        with open(beta_file.name) as beta_binary:
+            beta_likelihood = array.array('d')
+            beta_likelihood.fromfile(beta_binary,len(ID)*(params.beta_bins + 1))
+            beta_likelihood = numpy.reshape(beta_likelihood,(len(ID),(params.beta_bins + 1)))
+            beta_likelihood = beta_likelihood[numpy.argsort(beta_likelihood[:,0]),1:]
+    
+            output_binary = open(params.output_name+".muv.prob","wb")
+            beta_params = array.array('i',[len(ID),params.beta_bins])
+            beta_params.tofile(output_binary)
+        
+            beta_bins = numpy.linspace(params.beta_min,params.beta_max,params.beta_bins)
+            beta_bins.tofile(output_binary)
+        
+            for gal in range(len(ID)):
+                beta_likelihood[gal,:].tofile(output_binary)
+        
+            output_binary.close()
+            print('Done')
 
-    """
-    print('{0:<20s}'.format('Taus')),
-    with open(tau_file.name) as tau_binary:
-        tau_likelihood = array.array('d')
-        tau_likelihood.fromfile(tau_binary,len(ID)*(n_tau + 1))
-        tau_likelihood = numpy.reshape(tau_likelihood,(len(ID),(n_tau + 1)))
-        tau_likelihood = tau_likelihood[numpy.argsort(tau_likelihood[:,0]),1:]
+        """
+        print('{0:<20s}'.format('Taus')),
+        with open(tau_file.name) as tau_binary:
+            tau_likelihood = array.array('d')
+            tau_likelihood.fromfile(tau_binary,len(ID)*(n_tau + 1))
+            tau_likelihood = numpy.reshape(tau_likelihood,(len(ID),(n_tau + 1)))
+            tau_likelihood = tau_likelihood[numpy.argsort(tau_likelihood[:,0]),1:]
     
-        output_binary = open(params.output_name+".sfh.prob","wb")
-        tau_params = array.array('i',[len(ID),len(params.tau)])
-        tau_params.tofile(output_binary)
+            output_binary = open(params.output_name+".sfh.prob","wb")
+            tau_params = array.array('i',[len(ID),len(params.tau)])
+            tau_params.tofile(output_binary)
         
-        taus = numpy.array(params.tau)
-        taus.tofile(output_binary)
+            taus = numpy.array(params.tau)
+            taus.tofile(output_binary)
         
-        for gal in range(len(ID)):
-            tau_likelihood[gal,:].tofile(output_binary)
+            for gal in range(len(ID)):
+                tau_likelihood[gal,:].tofile(output_binary)
         
-        output_binary.close()
-        print('Done')
+            output_binary.close()
+            print('Done')
     
-    """
+        """
     os.remove(mass_file.name)
     os.remove(muv_file.name)
     os.remove(beta_file.name)

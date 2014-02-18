@@ -83,98 +83,69 @@ def galaxyFit(send_q, recv_q, printlock):
     for gal in iter(send_q.get, 'STOP'):
         j = numpy.argmin(numpy.abs(z-zobs[gal])) # Find closest model redshift
 
-        # Turn MS into full mass
-        Mass = MS[j,:]*numpy.power(10,-1*tot_mag[gal]/2.5)
-        Mass2 = MB[j,:]*numpy.power(10,-1*tot_mag[gal]/2.5)
-        cSFR = SFR[j,:]*numpy.power(10,-1*tot_mag[gal]/2.5)
 
-        if params.fit_mode == "colours":
-            psi = obs_err[gal,:]
-            mo = obs[gal,:]
-            mtoterr = obs_err[gal,params.tot]
-            I = numpy.where(numpy.abs(psi) < 90)[0]
-            I1 = I[:-1]
-            I2 = I[1:]
-            Co = mo[I1] - mo[I2] # Observed Colours
-            psiqu = psi[I1]**2 + psi[I2]**2 # Errors
-            Cm = M[I1,j,:]-M[I2,j,:] # Model colours
-            # Calculate chi-sq
-            chisq = 0.
-            for i in range(len(Co)):
-                chisq += (((Cm[i,:]-Co[i])**2)/psiqu[i])
+        fo = obs[gal,:]
+        ferr = obs_err[gal,:]
 
-            chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
+        #mtoterr = numpy.log10(numpy.e)*fo[params.tot]/ferr[params.tot]
 
-            if numpy.isinf(chimin) or numpy.isnan(minind) or len(Co) == 0:
-                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} \
-                {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],
-                                                                     -99,-99,-99,-99,-99,-99,
-                                                                     -99, -99, -99, -99,-99,-99,-99,
-                                                                     len(I),-99,'\n')
-                recv_q.put(output_string)
-                continue
+        fo[fo <= 0.] = 0.       # Set negative fluxes to zero
+        #print fo
+        I = numpy.where(ferr > 0.)[0] # Find bands with no observation
+        fo = fo[I]                    # and exclude from fit
+        ferr = ferr[I]
+        fm = f[I,j,:]
 
-        elif params.fit_mode == "flux":
-            fo = obs[gal,:]
-            ferr = obs_err[gal,:]
-
-            ferr /= obs[gal,params.tot] # Normalise fluxes and errors
-            fo /= obs[gal,params.tot]   # to Total Mag column
-            mtoterr = numpy.log10(numpy.e)*fo[params.tot]/ferr[params.tot]
-
-            fo[fo <= 0.] = 0.       # Set negative fluxes to zero
-            #print fo
-            I = numpy.where(ferr > 0.)[0] # Find bands with no observation
-            fo = fo[I]                    # and exclude from fit
-            ferr = ferr[I]
-            fm = f[I,j,:]
             #print fm[:,0,0,0,0]
-            chisq = 0.
-            for i in range(len(fo)):
-                chisq += (((fm[i,:]-fo[i])**2)/(ferr[i])**2)
 
-            chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
-            if numpy.isinf(chimin) or numpy.isnan(minind) or len(fo) == 0:
-                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} \
-                {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],
-                                                                     -99,-99,-99,-99,-99,-99,
-                                                                     -99, -99, -99, -99,-99,-99,-99,
-                                                                     len(I),-99,'\n')
-                recv_q.put(output_string)
-                continue
+        top = 0.
+        bottom = 0.
+    
+        for i in range(len(fo)):
+            top += (fm[i,:]*fo[i])/(ferr[i]**2)
+            bottom += (fm[i,:]**2)/(ferr[i]**2)
+    
+        scale = top/bottom
+        scale = numpy.reshape(scale,(n_tg,n_tauv,n_tau,n_ssp))  
+
+        chisq = 0.
+        for i in range(len(fo)):
+            chisq += (((scale*fm[i,:]-fo[i])**2)/(ferr[i])**2)
+
+        chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
+        if numpy.isinf(chimin) or numpy.isnan(minind) or len(fo) == 0:
+            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} \
+            {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],
+                                                                 -99,-99,-99,-99,-99,-99,
+                                                                 -99, -99, -99, -99,-99,-99,-99,
+                                                                 len(I),-99,'\n')
+            printQueue.put(output_string)
+            continue
+
 
         #Find the coordinate of the model with the bestfit mass
-        zi,tgi,tvi,ti,mi = numpy.unravel_index(minind,(1,n_tg,n_tauv,n_tau,n_ssp))
-        Bestfit_Mass=numpy.log10(Mass[tgi,tvi,ti,mi]*params.flux_corr)
-        Bestfit_BMass=numpy.log10(Mass2[tgi,tvi,ti,mi]*params.flux_corr)
-        Bestfit_SFR = (cSFR[tgi,tvi,ti,mi]*params.flux_corr)
+        tgi,tvi,ti,mi = numpy.unravel_index(minind,(n_tg,n_tauv,n_tau,n_ssp))
+        Bestfit_Mass = numpy.log10(scale[tgi,tvi,ti,mi]*params.flux_corr)
+        Bestfit_BMass = numpy.log10(Mass2[tgi,tvi,ti,mi]*params.flux_corr)
+        Bestfit_SFR = (scale[tgi,tvi,ti,mi]*SFR[tgi,ti,mi]*params.flux_corr)
         Bestfit_Beta = beta[tgi,tvi,ti,mi]
 
-        M_chisq_plus1 = numpy.log10(Mass[chisq < chimin+1])
+        M_chisq_plus1 = numpy.log10(scale.flatten()[chisq < chimin+1])
         Bestfit_Min, Bestfit_Max = numpy.min(M_chisq_plus1), numpy.max(M_chisq_plus1)
-
-        l68err = Bestfit_Mass-Bestfit_Min
-        u68err = Bestfit_Max - Bestfit_Mass
-
-        l68err = numpy.sqrt(l68err**2 + mtoterr**2)
-        u68err = numpy.sqrt(u68err**2 + mtoterr**2)
-
-        Bestfit_Min = Bestfit_Mass - l68err
-        Bestfit_Max = Bestfit_Mass + u68err
 
 
         #Scale the observed tot_mag band of the template to be the same as the observed tot_mag band of the galaxy
         #Convert the templates so they are no longer units of per stellar mass
 
-        M_no_per_sm = M[params.tot,j,tgi,tvi,ti,mi]-(2.5*Bestfit_Mass)-(2.5*numpy.log10(1+zobs[gal]))
-        Temp_flux = numpy.power(10,M_no_per_sm/-2.5)
-        gal_totabs = tot_mag[gal] - dist(zobs[gal])
-        Gal_flux = numpy.power(10,(gal_totabs/-2.5))
-        flux_scale = Gal_flux/Temp_flux
+        F_rest = f[:,0]*scale[tgi,tvi,ti,mi]*params.flux_corr
+        restframeMags = 23.9 - 2.5*numpy.log10(F_rest)
+    
+        UV_rest = UV_flux[0]*scale[tgi,tvi,ti,mi]*params.flux_corr
+        restframeMUV = 23.9 - 2.5*numpy.log10(UV_rest)
 
-        M_scaled = M[:,0,tgi,tvi,ti,mi] - (2.5*Bestfit_Mass) - (2.5*numpy.log10(1+zobs[gal]))-2.5*numpy.log10(flux_scale)
-        MUV_scaled = MUV[0,tgi,tvi,ti,mi] - (2.5*Bestfit_Mass) - (2.5*numpy.log10(1+zobs[gal]))-2.5*numpy.log10(flux_scale)
-
+        M_scaled = restframeMags[:,tgi,tvi,ti,mi]
+        MUV_scaled = restframeMUV[tgi,tvi,ti,mi]
+        
         if numpy.isnan(Bestfit_Mass) or numpy.isinf(chimin):
             Bestfit_Mass = -99
             #M_scaled[:] = -99
@@ -197,7 +168,7 @@ def galaxyFit(send_q, recv_q, printlock):
             chisq_order = numpy.argsort(chisq)
             chisq_sorted = chisq[chisq_order]
 
-            Mass_sorted = Mass[chisq_order]
+            Mass_sorted = scale.flatten()[chisq_order]
             Mass_sorted[num_chosen:] = numpy.nan
 
             Mass_sorted = Mass_sorted*params.flux_corr
@@ -226,8 +197,7 @@ def galaxyFit(send_q, recv_q, printlock):
         recv_q.put(output_string)
 
 def getObservations(inputpath):
-    input_data = atpy.Table(inputpath,
-                                                    type=params.input_format)
+    input_data = atpy.Table(inputpath,type=params.input_format)
 
     column_names = input_data.columns.keys
 
@@ -236,50 +206,28 @@ def getObservations(inputpath):
 
     filts_used = params.filts_used
 
-    if params.fit_mode == "colours":
-        i,j = 0,0
-        for ii in range(len(column_names)):
-            if column_names[ii].lower().endswith(params.mag_col_end):
-                if i == 0:
-                    mags = input_data[column_names[ii]]
-                else:
-                    mags = numpy.column_stack((mags,input_data[column_names[ii]]))
-                i+=1
+    k,l = 0,0
+    for ii in range(len(column_names)):
+        if column_names[ii].lower().endswith(params.flux_col_end):
+            if k == 0:
+                fluxes = input_data[column_names[ii]]
+            else:
+                fluxes = numpy.column_stack((fluxes,input_data[column_names[ii]]))
+            k+=1
 
-            if column_names[ii].lower().endswith(params.magerr_col_end):
-                if j == 0:
-                    PSI = input_data[column_names[ii]]
-                else:
-                    PSI = numpy.column_stack((PSI,input_data[column_names[ii]]))
-                j+=1
+        if column_names[ii].lower().endswith(params.fluxerr_col_end):
+            if l == 0:
+                fluxerrs = input_data[column_names[ii]]
+            else:
+                fluxerrs = numpy.column_stack((fluxerrs,input_data[column_names[ii]]))
+            l+=1
 
-        tot_mag = mags[:,params.tot]
-        return ID, zobs, tot_mag, mags, PSI, i
+    tot_mag = -2.5*numpy.log10(fluxes[:,params.tot]) + 23.9
 
+    fluxes = fluxes[:,filts_used]
+    fluxerrs = fluxerrs[:,filts_used]
 
-    if params.fit_mode == "flux":
-        k,l = 0,0
-        for ii in range(len(column_names)):
-            if column_names[ii].lower().endswith(params.flux_col_end):
-                if k == 0:
-                    fluxes = input_data[column_names[ii]]
-                else:
-                    fluxes = numpy.column_stack((fluxes,input_data[column_names[ii]]))
-                k+=1
-
-            if column_names[ii].lower().endswith(params.fluxerr_col_end):
-                if l == 0:
-                    fluxerrs = input_data[column_names[ii]]
-                else:
-                    fluxerrs = numpy.column_stack((fluxerrs,input_data[column_names[ii]]))
-                l+=1
-
-        tot_mag = -2.5*numpy.log10(fluxes[:,params.tot]) + 23.9
-
-        fluxes = fluxes[:,filts_used]
-        fluxerrs = fluxerrs[:,filts_used]
-
-        return ID, zobs, tot_mag, fluxes, fluxerrs, k
+    return ID, zobs, tot_mag, fluxes, fluxerrs, k
 
 
 if __name__ == '__main__':
@@ -328,20 +276,11 @@ if __name__ == '__main__':
 
     calc_mode = params.calc_mode
 
-
-    if nfilts != filters_found:
-        M = numpy.load(input_binary+'.mags.npy')[params.filts_used]
-    else:
-        M = numpy.load(input_binary+'.mags.npy')
-
     if nfilts != filters_found:
         f = numpy.load(input_binary+'.fluxes.npy')[params.filts_used]
         f_tot = numpy.load(input_binary+'.fluxes.npy')[params.tot]
-        f /= f_tot
     else:
         f = numpy.load(input_binary+'.fluxes.npy')
-        f /= f[params.tot]
-    # Normalise template flux values to tot_mag filter fluxes
 
 
     print "Done."

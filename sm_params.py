@@ -109,6 +109,8 @@ calc_mode = False                     # Calculate Mode Mass
 mode_mass_percentage = 10.            # Top percentage of fits to use in mode
                                       # mass calculations
 
+calc_pdf = True
+
 muv_max, muv_min, muv_bins = -23., -16., 100 # PDF bins
 mass_max, mass_min, mass_bins = 12., 7., 250
 beta_max, beta_min, beta_bins = 3., -3., 50 
