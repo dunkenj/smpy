@@ -1,0 +1,3 @@
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/atpy/fitstable.py:194: PendingDeprecationWarning: The get_comment function will be deprecated in a future version.
+        Use ``header['COMMENT']`` instead.
+  for comment in header.get_comment():

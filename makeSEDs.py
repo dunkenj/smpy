@@ -146,6 +146,137 @@ elif params.dust_model == "calzetti":
         tv = tauv[tvi]*k/4.05
         for ti in range(0,len(ta)):
             ATT[tvi,:,ti] *= numpy.power(10,-0.4*tv)
+            
+"""
+def Calzetti(wave):
+    k = numpy.zeros_like(wave)
+    w1 = [wave < 6300]
+    w2 = [wave >= 6300]
+    w_u = wave/1e4
+
+    k[w2] = 2.659*(-1.857 + 1.040/w_u[w2])
+    k[w1] = 2.659*(-2.156 + (1.509/w_u[w1]) - (0.198/w_u[w1]**2) + (0.011/w_u[w1]**3))
+    k += 4.05
+
+    k[k < 0.] = 0.
+    tv = k/4.05   
+    return tv
+
+def red(wave,C1,C2,C3,C4,x0,gamma,Rv):
+    x = 1e4/wave
+    xsq = x**2
+    #SMC Coefficients   
+    #C1 = C1/Rv
+    #C2 /= Rv
+    #C3 /= Rv
+    #C4 /= Rv
+    
+    #LMC
+    C1 = -0.890
+    C2 = 0.998
+    C3 = 2.719
+    C4 = 0.400
+    x0 = 4.579
+    gamma = 0.934
+    Rv = 3.41
+    
+    D = xsq / ((xsq - x0**2)**2 + xsq*(gamma**2))
+    #D=xsq*((xsq-x0*x0)**2+xsq*gamma*gamma)**-2
+    Cx4 = (x >= 5.9)
+    F = 0.5392 *((x[Cx4]-5.9)**2) + 0.05644*((x[Cx4]-5.9)**3)
+    Elam = C1 + C2*x + C3*D
+    Elam[Cx4] += C4*F
+    
+    # Elam = E(lam - V)/E(B-V)
+    Alam = (Elam/Rv) +1    
+    return Alam
+
+def SMC(wave):            
+#elif params.dust_model == 'smc':
+    #ATT = numpy.ones([len(tauv),len(wave),len(ta)])
+    x = 1e4/wave
+    xsq = x**2
+    #SMC Coefficients   
+    C1 = -4.959
+    C2 = 2.264
+    C3 = 0.389
+    C4 = 0.461
+    x0 = 4.6
+    gamma = 1
+    Rv = 2.74
+    #C1 = C1/Rv
+    #C2 /= Rv
+    #C3 /= Rv
+    #C4 /= Rv
+    
+    #LMC
+    C1 = -0.890
+    C2 = 0.998
+    C3 = 2.719
+    C4 = 0.400
+    x0 = 4.579
+    gamma = 0.934
+    Rv = 3.41
+    
+    D = xsq / ((xsq - x0**2)**2 + xsq*(gamma**2))
+    #D=xsq*((xsq-x0*x0)**2+xsq*gamma*gamma)**-2
+    Cx4 = (x >= 5.9)
+    F = 0.5392 *((x[Cx4]-5.9)**2) + 0.05644*((x[Cx4]-5.9)**3)
+    Elam = C1 + C2*x + C3*D
+    Elam[Cx4] += C4*F
+    
+    # Elam = E(lam - V)/E(B-V)
+    Alam = (Elam/Rv) +1    
+    return Alam
+    
+def LMC(wave):            
+#elif params.dust_model == 'smc':
+    #ATT = numpy.ones([len(tauv),len(wave),len(ta)])
+    x = 1e4/wave
+    xsq = x**2
+    
+    #SMC Coefficients   
+    C1 = -4.959
+    C2 = 2.264
+    C3 = 0.389
+    C4 = 0.461
+    x0 = 4.6
+    gamma = 1
+    Rv = 2.74
+    
+    #LMC
+    C1 = -0.890
+    C2 = 0.998
+    C3 = 2.719
+    C4 = 0.400
+    x0 = 4.579
+    gamma = 0.934
+    Rv = 3.41
+    
+    #C1 = C1/Rv +1
+    #C2 /= Rv
+    #C3 /= Rv
+    #C4 /= Rv
+    
+    D = xsq / ((xsq - x0**2)**2 + xsq*(gamma**2))
+    #D=xsq*((xsq-x0*x0)**2+xsq*gamma*gamma)**-2
+    Cx4 = (x >= 5.9)
+    F = (0.5392 * (x[Cx4]-5.9)**2) + (0.05644 * (x[Cx4]-5.9)**3)
+    
+    Elam = C1 + C2*x + C3*D
+    Elam[Cx4] += C4*F
+    
+    # Elam = E(lam - V)/E(B-V)
+    Alam = (Elam/Rv) +1  
+    return Alam
+        
+    ext = numpy.maximum(ext,0)
+    
+    for tvi in range(0,len(tauv)):
+        tv = tauv[tvi]*ext
+        for ti in range(0,len(ta)):
+            ATT[tvi,:,ti] *= numpy.power(10,-0.4*tv)
+"""
 
 if params.add_nebular:
     nebular = numpy.loadtxt(params.neb_file,skiprows=1)
@@ -288,14 +419,14 @@ for mi in range(len(params.metallicities)):
             npgas = numpy.zeros_like(tbins)
             if tau[ti] > 0.:
                 sr = (1 + epsilon*pgas)*numpy.exp(-1*tp/tau[ti])/abs(tau[ti])
-                norm = 1
+                norma = 1
                 if len(sr) > 1:
                     i = numpy.where(tbins <= ta[ai-1])
                     ii = numpy.where(tbins > ta[ai-1])
                     npgas[i] = griddata(ta,prgas,tbins[i])
                     npgas[ii] = prgas[ai-1]
-                    norm = simps((1+ epsilon*npgas)*numpy.exp(-1*tbins/tau[ti])/abs(tau[ti]),tbins)
-                    sr /= norm
+                    norma = simps((1+ epsilon*npgas)*numpy.exp(-1*tbins/tau[ti])/abs(tau[ti]),tbins)
+                    sr /= norma
 
             elif tau[ti] < 0.:
                 sr = numpy.exp(-1*tp/tau[ti])/abs(tau[ti])
@@ -341,12 +472,16 @@ for mi in range(len(params.metallicities)):
             PRr[ai] = prgas[ai]
             RMr[ai] = rm
             Tr[ai] = simps(numpy.exp(-1*numpy.sort(tp)/tau[ti])/tau[ti],numpy.sort(tp))
+
             STR[ai,ti,mi] = strr
             if tau[ti] > 0:
-                SFR[ai,ti,mi] = (1 + epsilon*prgas[ai])*numpy.exp(-ta[ai]/tau[ti])/abs(tau[ti])
+                SFR[ai,ti,mi] = (1 + epsilon*prgas[ai])*numpy.exp(-ta[ai]/tau[ti])/abs(tau[ti])/norma
             elif tau[ti] < 0:
                 SFR[ai,ti,mi] = numpy.exp(-ta[ai]/tau[ti])/abs(tau[ti])/norma
             #print SFR[ai,ti,mi]
+            
+            SFR[ai,ti,mi] /= STR[ai,ti,mi]
+
 
     """
     SECTION 3
@@ -356,7 +491,7 @@ for mi in range(len(params.metallicities)):
     """
 
     for tvi in range(len(tauv)):
-        sed1 = sed*ATT[tvi]
+        sed1 = sed*ATT[tvi] #dust-attenuated SED
 
         for ti in range(len(tau)):
             for ai1 in range(len(tgi)):
@@ -400,19 +535,24 @@ for mi in range(len(params.metallicities)):
 
 
                 beta[ai1,tvi,ti,mi] = calc_beta(wave,y[0])
-                SED[:,ai1,tvi,ti,mi] = y
+                #print ai,ai1
+                #print STR[ai1,ti,mi]
+                SED[:,ai1,tvi,ti,mi] = y/STR[ai,ti,mi] #normalised to 1 solar mass
                 norm[ai1,tvi,ti,mi] = simps(numpy.exp(-1*numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000)/tau[ti]),numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000))
+
+
 """
 Section 4
 
 """
 b = SFR
 print "Saving to numpy binaries:",
+#print(SED[:,0,0,0,0])
+#print(STR[0,0,0])
+
 STR = STR[tgi,:,:]
 SFR = SFR[tgi,:,:]
 
-print(SED[:,0,0,0,0])
-print(STR[0,0,0])
 """
 Tr = Tr[tgi]
 RMr = RMr[tgi]/Tr
