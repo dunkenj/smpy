@@ -351,12 +351,10 @@ def getObservations(inputpath):
                 fluxerrs = numpy.column_stack((fluxerrs,input_data[column_names[ii]]))
             l+=1
 
-    tot_mag = -2.5*numpy.log10(fluxes[:,params.tot]) + 23.9
-
     fluxes = fluxes[:,filts_used]
     fluxerrs = fluxerrs[:,filts_used]
 
-    return ID, zobs, tot_mag, fluxes, fluxerrs, k
+    return ID, zobs, fluxes, fluxerrs, k
 
 
 if __name__ == '__main__':
@@ -376,7 +374,7 @@ if __name__ == '__main__':
 
     """
 
-    ID, zobs, tot_mag, obs, obs_err, filters_found = getObservations(params.input_catalog)
+    ID, zobs, obs, obs_err, filters_found = getObservations(params.input_catalog)
 
     """
     Section 1C
@@ -585,7 +583,7 @@ if __name__ == '__main__':
             beta_likelihood = numpy.reshape(beta_likelihood,(len(ID),(params.beta_bins + 1)))
             beta_likelihood = beta_likelihood[numpy.argsort(beta_likelihood[:,0]),1:]
     
-            output_binary = open(params.output_name+".muv.prob","wb")
+            output_binary = open(params.output_name+".betas.prob","wb")
             beta_params = array.array('i',[len(ID),params.beta_bins])
             beta_params.tofile(output_binary)
         
