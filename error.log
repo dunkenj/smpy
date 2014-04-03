@@ -1,4 +1,0 @@
-makeSEDs.py:422: RuntimeWarning: divide by zero encountered in log10
-  norma = 1
-makeSEDs.py:487: RuntimeWarning: divide by zero encountered in double_scalars
-  SECTION 3
