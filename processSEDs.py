@@ -127,7 +127,7 @@ S = SED.shape
 F_mean = numpy.zeros((len(files),len(z),S[1],S[2],S[3],S[4]))
 F_mean_UV = numpy.zeros((len(z),S[1],S[2],S[3],S[4]))
 
-
+print S
 """
 SECTION 1 
 Calculate cosmological distance modulus 'dm' and the age of the universe
@@ -307,7 +307,6 @@ if compute_MUV:
 
     print('Done')
 
-
 print('{0}').format('Converting Flux arrays to AB Magnitudes: '),
 AB0 = 5*numpy.log10(1.7684e8*1e-5)
 # dl = 10pc in Mpc
@@ -317,16 +316,12 @@ AB0 = 5*numpy.log10(1.7684e8*1e-5)
 Mags = numpy.empty(F_mean.shape)
 Mags = AB0 - 2.5*numpy.log10(F_mean) - 48.6
 
+
 MUV = numpy.empty(F_mean_UV.shape)
 MUV = AB0 - 2.5*numpy.log10(F_mean_UV) - 48.6
 
 #Store mass-to-light ratio for selected filter
 
-MLRb = F_mean[mlr,0,:,:,:,:]**-1
-STRx = numpy.empty(F_mean[mlr,0,:,:,:,:].shape)
-for i in range(S[2]):
-    STRx[:,i,:,:] = STR
-MLR = STRx/F_mean[mlr,0,:,:,:,:]
 
 print('Done')
 
@@ -336,19 +331,13 @@ SECTION 3
 """
 
 S = Mags.shape
-MS = numpy.copy(Mags[tot,:,:,:,:,:])
-MB = numpy.copy(Mags[tot,:,:,:,:,:])
-SFRb = numpy.copy(Mags[tot,:,:,:,:,:])
 
 for r in range(S[1]):
-    MS[r,:] = numpy.power(10,((MS[r,:] + dmo[r])/2.5))
-    MB[r,:] = numpy.power(10,((MB[r,:] + dmo[r])/2.5))
-    SFRb[r,:] = numpy.power(10,((SFRb[r,:] + dmo[r])/2.5))
-   
-    for t in range(S[3]):
-        MS[r,:,t,:,:]=(MS[r,:,t,:,:])*STR
-        SFRb[r,:,t,:,:]=(SFRb[r,:,t,:,:])*SFR
+    Mags[:,r,:,:,:,:] += dmo[r]
+    MUV[r,:,:,:,:] += dmo[r]
 
+Fluxes = 10**((23.9 - Mags)/2.5) #uJy 
+UV_Fluxes = 10**((23.9 - MUV)/2.5) #uJy 
 
 print('{0} {1}{2}').format('Saving output binaries to',output_binary,':'),
 if os.path.isfile(output_binary+'.main'+'.npz'):
@@ -358,9 +347,9 @@ if os.path.isfile(output_binary+'.mags'+'.npy'):
 if os.path.isfile(output_binary+'.fluxes'+'.npy'):
     os.remove(output_binary+'.fluxes'+'.npy')
 
-numpy.savez(output_binary+'.main',parameters=parameters,z=z,filters=files,MS=MS,MB=MB,MLR=MLR,SFR=SFRb,Mshape=S,MUV=MUV)
+numpy.savez(output_binary+'.main',parameters=parameters,z=z,filters=files,SFR=SFR,Mshape=S,MUV=MUV,UV_flux=UV_Fluxes)
 numpy.save(output_binary+'.mags',Mags)
-numpy.save(output_binary+'.fluxes',F_mean)
+numpy.save(output_binary+'.fluxes',Fluxes)
 print('Done')
 
 print('{0}{1}{2}{3:s} {4:.1f}').format('\n','All finished!','\n','Time elapsed:',(time.clock()-start_time))
