@@ -191,7 +191,10 @@ def galaxyFit(inputQueue, printQueue, printlock):
         else:
             print '{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>3d} {9:>5.2f}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,numpy.log10(Bestfit_SFR))
 
-        output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, M_scaled[params.tot], MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
+        if params.include_rest:
+            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, M_scaled[params.tot], MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,M_scaled,'\n')
+        else:
+            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, M_scaled[params.tot], MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
 
         printlock.release()
         printQueue.put(output_string)
@@ -334,6 +337,7 @@ def getObservations(inputpath):
     zobs = input_data[params.z_col]
 
     filts_used = params.filts_used
+    filter_names = []
 
     k,l = 0,0
     for ii in range(len(column_names)):
@@ -343,6 +347,7 @@ def getObservations(inputpath):
             else:
                 fluxes = numpy.column_stack((fluxes,input_data[column_names[ii]]))
             k+=1
+            filter_names.append(column_names[ii])
 
         if column_names[ii].lower().endswith(params.fluxerr_col_end):
             if l == 0:
@@ -354,7 +359,7 @@ def getObservations(inputpath):
     fluxes = fluxes[:,filts_used]
     fluxerrs = fluxerrs[:,filts_used]
 
-    return ID, zobs, fluxes, fluxerrs, k
+    return ID, zobs, fluxes, fluxerrs, k, filter_names
 
 
 if __name__ == '__main__':
@@ -374,7 +379,7 @@ if __name__ == '__main__':
 
     """
 
-    ID, zobs, obs, obs_err, filters_found = getObservations(params.input_catalog)
+    ID, zobs, obs, obs_err, filters_found, filter_names = getObservations(params.input_catalog)
 
     """
     Section 1C
@@ -523,6 +528,12 @@ if __name__ == '__main__':
     names = ['N','ID','z','Bestfit_Mass','Bestfit_chi2','Age','Dust_Tau','SFH_Tau','SSP_Number','H_rest', 'M1500','temp_index','SFR','nfilts','Beta']
     units = [None,None,None,'log(Ms)',None,'Gyr',None,'Gyr',None, 'AB_mags', 'AB_mags',None,'Ms/yr',None,None,'log(Ms)',None,'AB_mags']
     types = ['i4','i4','f4','f4','f4','f4','f4','f4','i4', 'f4', 'f4','f4','f4','i4','f4','f4','i4','f4','f4','f4','f4']
+    if params.include_rest:
+        for name in filter_names:
+            names.append(name[:-len(params.flux_col_end)]+'_rest')
+            units.append('AB_mags')
+            types.append('f4')
+        
     for col in range(cols):
         output.add_column(names[col], data[:,col], unit=units[col], dtype=types[col])
 

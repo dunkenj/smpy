@@ -122,9 +122,12 @@ tg = ta[tgi]
 
 if params.dust_model == "charlot":
     ATT = numpy.empty([len(tauv),len(wave),len(ta)])
+    ATT_mufrac = numpy.ones([len(tauv),len(wave),len(ta)])
     for tvi in range(0,len(tauv)):
         tv = (tauv[tvi]*numpy.ones(len(ta)))
         tv[ta>1e7] = mu*tauv[tvi]
+        ATT_mufrac[tvi,:,[ta>1e7]]*=mu
+        ATT_mufrac = numpy.exp(-1*ATT_mufrac)
         lam = numpy.array((5500/wave)**0.7)
         ATT[tvi,:,:] = (numpy.exp(-1*numpy.outer(lam,tv)))
 
@@ -353,6 +356,7 @@ for ai in range(max(tgi)+1):
 
 
 SED = numpy.empty([len(wave),len(tgi),len(tauv),len(tau),len(params.metallicities)])
+MF = numpy.empty([len(wave),len(tgi),len(tauv),len(tau),len(params.metallicities)])
 Nlyman = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
 Nlyman_final = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
 beta = numpy.empty([len(tgi),len(tauv),len(tau),len(params.metallicities)])
@@ -492,10 +496,11 @@ for mi in range(len(params.metallicities)):
 
     for tvi in range(len(tauv)):
         sed1 = sed*ATT[tvi] #dust-attenuated SED
-
+        mufrac = ATT_mufrac[tvi]
         for ti in range(len(tau)):
             for ai1 in range(len(tgi)):
                 ai = tgi[ai1]
+                cf = numpy.zeros([1,iw])
                 y = numpy.zeros([1,iw])
                 y_nodust = numpy.zeros([1,iw])
                 j = J[ai]
@@ -508,10 +513,12 @@ for mi in range(len(params.metallicities)):
                 for i in range(ai):
                     y += (w1[i]*sed1[:,i])
                     y_nodust += (w1[i]*sed[:,i])
+                    cf += (w1[i]*mufrac[:,i])/w1[i]
 
                 for i in range(len(wb)):
                     y += (wb[i]*sed1[:,j[i]] + wa[i]*sed1[:,j[i]+1])
                     y_nodust += (wb[i]*sed[:,j[i]] + wa[i]*sed[:,j[i]+1])
+                    cf += (((wb[i]*mufrac[:,j[i]])/wb[i]) + ((wa[i]*mufrac[:,j[i]+1])/wa[i]))
 
 
                 Nly = calc_lyman(wave,y_nodust[0])
@@ -540,6 +547,7 @@ for mi in range(len(params.metallicities)):
                 SED[:,ai1,tvi,ti,mi] = y/STR[ai,ti,mi] #normalised to 1 solar mass
                 norm[ai1,tvi,ti,mi] = simps(numpy.exp(-1*numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000)/tau[ti]),numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000))
 
+                MF[:,ai1,tvi,ti,mi] = cf
 
 """
 Section 4
