@@ -167,40 +167,36 @@ for gal in range(len(ID)-20,len(ID)):
     ferr = ferr[I]
     fm = f[I,j,:]
     
-    msize= 200
+    msize= 250
 	#print fm[:,0,0,0,0]
-    chisq = 0. #numpy.zeros((msize,n_tg,n_tauv,n_tau,n_ssp))
-    chisqMC = numpy.zeros((msize,n_tg,n_tauv,n_tau,n_ssp))
-    MCrange = numpy.logspace(-0.15,0.15,msize)
+    chisq = numpy.zeros((msize,n_tg,n_tauv,n_tau,n_ssp))
+    #chisqMC = numpy.zeros((msize,n_tg,n_tauv,n_tau,n_ssp))
+    #MCrange = numpy.logspace(-0.15,0.15,msize)
     top = 0.
     bottom = 0.
-
+    
     for i in range(len(fo)):
         top += (fm[i,:]*fo[i])/(ferr[i]**2)
         bottom += (fm[i,:]**2)/(ferr[i]**2)
     
     scale = top/bottom
-    scale = numpy.reshape(scale,(n_tg,n_tauv,n_tau,n_ssp))    
-    
-    #for s, scale in enumerate(srange):
-    for i in range(len(fo)):
+    scale = numpy.reshape(scale,(n_tg,n_tauv,n_tau,n_ssp))   
+     
+    srange = numpy.logspace(7,12,msize)
+    for s, mass in enumerate(srange):
+        for i in range(len(fo)):
         #print scale*fm[i,:]
-        chisq += (((scale*fm[i,:]-fo[i])**2)/(ferr[i])**2)
-        for m, mod in enumerate(MCrange):
-            chisqMC[m] += ((((mod*scale*fm[i,:])-fo[i])**2)/(ferr[i])**2)
+            chisq[s] += (((mass*fm[i,:]-fo[i])**2)/(ferr[i])**2)
 
     chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
-	
-    scaleMC = numpy.zeros(msize)
-    chiminMC = numpy.zeros(msize)
-    for m, mod in enumerate(MCrange):
-        chiminMC[m], ind = numpy.nanmin(chisqMC[m]), numpy.nanargmin(chisqMC[m])
-        tgi,tvi,ti,mi = numpy.unravel_index(ind,(n_tg,n_tauv,n_tau,n_ssp))
-        scaleMC[m] = scale[tgi,tvi,ti,mi]*mod
-    
 
-    plt.plot(numpy.log10(scaleMC),numpy.exp(-0.5*chiminMC)/sum(numpy.exp(-0.5*chiminMC)))
+    likelihood = numpy.exp(-0.5*chisq)
+    likelihood /= numpy.sum(likelihood)
+
+    pofm = likelihood.sum(axis=(1,2,3,4))
     
+    scale_best = srange[likelihood.argmax(axis=0)]
+
     
     if numpy.isinf(chimin) or numpy.isnan(minind) or len(fo) == 0:
         output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99,-99, -99, -99, -99,-99,-99,-99,len(I),-99,'\n')
@@ -208,29 +204,14 @@ for gal in range(len(ID)-20,len(ID)):
         continue
             
     #Find the coordinate of the model with the bestfit mass
-    tgi,tvi,ti,mi = numpy.unravel_index(minind,(n_tg,n_tauv,n_tau,n_ssp))
+    si,tgi,tvi,ti,mi = numpy.unravel_index(minind,(msize,n_tg,n_tauv,n_tau,n_ssp))
     #Bestfit_Mass=numpy.log10(srange[si]*params.flux_corr)
-    Bestfit_Mass=numpy.log10(scale[tgi,tvi,ti,mi]*params.flux_corr)
+    Bestfit_Mass=numpy.log10(srange[si]*params.flux_corr)
     #Bestfit_BMass=numpy.log10(Mass2[tgi,tvi,ti,mi]*params.flux_corr)
     #Bestfit_SFR = numpy.log10(srange[si]*SFR[tgi,ti,mi]*params.flux_corr)
-    Bestfit_SFR = numpy.log10(scale[tgi,tvi,ti,mi]*SFR[tgi,ti,mi]*params.flux_corr)
+    Bestfit_SFR = numpy.log10(srange[si]*SFR[tgi,ti,mi]*params.flux_corr)
     Bestfit_Beta = beta[tgi,tvi,ti,mi]
-    M_chisq_plus1 = numpy.log10(scaleMC[chiminMC < chimin+1])
-    M_chisq_plus1 = numpy.log10(scale[chisq < chimin+1])
-    Bestfit_Min, Bestfit_Max = numpy.min(M_chisq_plus1), numpy.max(M_chisq_plus1)
-	
-    l68err, u68err = (Bestfit_Mass-Bestfit_Min), (Bestfit_Max-Bestfit_Mass)
-    
-    if params.fit_mode == "colours":
-        Mtoterr = PSI[gal,params.tot]
-    
-    elif params.fit_mode == "flux":
-        ftoterr = fluxerrs[gal,params.tot]
-        ftot = fluxes[gal,params.tot]
-        Mtoterr = 2.5*numpy.log10(numpy.e)*(ftoterr/ftot)
-    
-    l68err = numpy.sqrt(l68err**2 + Mtoterr**2)
-    u68err = numpy.sqrt(u68err**2 + Mtoterr**2)
+
     
     #Bestfit_Min = Bestfit_Mass - l68err
     #Bestfit_Max = Bestfit_Mass + u68err
@@ -245,11 +226,26 @@ for gal in range(len(ID)-20,len(ID)):
     #flux_scale = Gal_flux/Temp_flux
     
     #Rest-frame magnitudes:
-    F_rest = f[:,0,tgi,tvi,ti,mi]*scale[tgi,tvi,ti,mi]*params.flux_corr
+    F_rest = f[:,0,tgi,tvi,ti,mi]*scale_best[tgi,tvi,ti,mi]*params.flux_corr
     M_rest = 23.9 - 2.5*numpy.log10(F_rest)
     
-    UV_rest = UV_flux[0,tgi,tvi,ti,mi]*scale[tgi,tvi,ti,mi]*params.flux_corr
+    UV_rest = UV_flux[0]*scale_best*params.flux_corr
     MUV_rest = 23.9 - 2.5*numpy.log10(UV_rest)
+
+    muvBins = numpy.linspace(params.muv_max,params.muv_min,params.muv_bins)
+    muvLikelihoods = array.array('d')
+    muvSize = numpy.diff(muvBins)[0]
+
+    for m, muv in enumerate(muvBins):
+        window = ((MUV_rest.flatten() > muv - 0.5*muvSize) * 
+                  (MUV_rest.flatten() <= muv + 0.5*muvSize))
+        muvLikelihoods.append(numpy.sum(likelihood.sum(axis=0).flatten()[window]))
+    
+    norm = numpy.trapz(muvLikelihoods,muvBins)
+
+    muvLikelihoods = numpy.insert(muvLikelihoods,0,gal)
+
+
     if numpy.isnan(Bestfit_Mass) or numpy.isinf(chimin):
 		Bestfit_Mass = -99
 		#M_scaled[:] = -99
