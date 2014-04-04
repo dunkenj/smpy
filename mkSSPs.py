@@ -179,7 +179,12 @@ class SSP:
         
         """
         SECTION 1
-        First calculate and store those parameters that are functions of the age array 'ta' only - these are the same for every model to be made. The parameters are the age array TP, the time interval array DT, the interpolation coefficient 'a' and the interpolation indices J. Each are stored in cell arrays of size ks, with the data corresponding to the original age array first, and the interpolated data second.
+        First calculate and store those parameters that are functions of the age array 
+        'ta' only - these are the same for every model to be made. The parameters are 
+        the age array TP, the time interval array DT, the interpolation coefficient 
+        'a' and the interpolation indices J. Each are stored in cell arrays of size ks,
+        with the data corresponding to the original age array first, and the 
+        interpolated data second.
         """
         TP = {}
         A = {}
@@ -301,7 +306,7 @@ class SSP:
 
             w = sr*DT[ai]/2
             w1 = numpy.array(w[:ai+1])
-            W[0,ai,ti] = w1
+            W[0,ai] = w1
 
             strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
             rm = numpy.array(numpy.dot(w1,rmtm[:ai+1]))
@@ -313,8 +318,8 @@ class SSP:
                 wa = w2*A[ai]
                 wb = w2-wa
 
-                W[1,ai,ti] = wa
-                W[2,ai,ti] = wb
+                W[1,ai] = wa
+                W[2,ai] = wb
                 strr += (numpy.dot(wb,strm[j]) + numpy.dot(wa,strm[j+1]))
                 rm += (numpy.dot(wb,rmtm[j]) + numpy.dot(wa,rmtm[j+1]))
 
@@ -361,9 +366,9 @@ class SSP:
         j = J[ai]
 
 
-        w1 = W[0,ai,ti]
-        wa = W[1,ai,ti]
-        wb = W[2,ai,ti]
+        w1 = W[0,ai]
+        wa = W[1,ai]
+        wb = W[2,ai]
 
         for i in range(ai):
             y += (w1[i]*sed1[:,i])
@@ -409,7 +414,8 @@ class SSP:
         self.beta = beta
         self.Nly = Nlyman_final
         
-        def __add__(self,)
+        def __add__(self,other):
+            return
         
         
 a = SSP()

@@ -341,7 +341,7 @@ def getObservations(inputpath):
 
     k,l = 0,0
     for ii in range(len(column_names)):
-        if column_names[ii].lower().endswith(params.flux_col_end):
+        if column_names[ii].lower().endswith(params.flux_col_end.lower()):
             if k == 0:
                 fluxes = input_data[column_names[ii]]
             else:
@@ -349,7 +349,7 @@ def getObservations(inputpath):
             k+=1
             filter_names.append(column_names[ii])
 
-        if column_names[ii].lower().endswith(params.fluxerr_col_end):
+        if column_names[ii].lower().endswith(params.fluxerr_col_end.lower()):
             if l == 0:
                 fluxerrs = input_data[column_names[ii]]
             else:
