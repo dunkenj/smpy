@@ -526,9 +526,9 @@ if __name__ == '__main__':
 
     output = atpy.Table(name='Results')
 
-    names = ['N','ID','z','Bestfit_Mass','Bestfit_chi2','Age','Dust_Tau','SFH_Tau','SSP_Number','H_rest', 'M1500','temp_index','SFR','nfilts','Beta']
-    units = [None,None,None,'log(Ms)',None,'Gyr',None,'Gyr',None, 'AB_mags', 'AB_mags',None,'Ms/yr',None,None,'log(Ms)',None,'AB_mags']
-    types = ['i4','i4','f4','f4','f4','f4','f4','f4','i4', 'f4', 'f4','f4','f4','i4','f4','f4','i4','f4','f4','f4','f4']
+    names = ['N','ID','z','Bestfit_Mass','Bestfit_chi2','Age','Dust_Tau','SFH_Tau','SSP_Number','TotCol_rest', 'M1500','temp_index','SFR','nfilts','Beta']
+    units = [None,None,None,'log(Ms)',None,'Gyr',None,'Gyr',None, 'AB_mags', 'AB_mags',None,'Ms/yr',None,None]
+    types = ['i4','i4','f4','f4','f4','f4','f4','f4','i4', 'f4', 'f4','f4','f4','i4','f4']
     if params.include_rest:
         for name in filter_names:
             names.append(name[:-len(params.flux_col_end)]+'_rest')
