@@ -29,8 +29,8 @@ tg = [0.01,0.5,1]
 
 #tauv = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,
 #        1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]#4.5,5.0,5.5,6.0] # Dust Total Attenuation Values
-tauv = [0]
-#tauv = [0.,0.4,0.6,0.8,1.0]
+#tauv = [0]
+tauv = [0.,0.4,0.6,0.8,1.0]
 #tauv = [0,0.25,0.5,0.75,1.,1.5,2] 
 #tauv = [0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0]
 
@@ -70,7 +70,7 @@ mlr = 11 # ID/No. of filter used for mass-to-light ratio computation
 # Redshift Grid 
 zmin = 0.
 zmax = 9.
-zstep = 0.02
+zstep = 0.2
 
 madau = True                           # Include HI absorption (Madau 1995)
 
@@ -112,7 +112,7 @@ mode_mass_percentage = 10.            # Top percentage of fits to use in mode
                                       # mass calculations
 
 calc_pdf = False
-include_rest = False
+include_rest = True
 
 muv_max, muv_min, muv_bins = -23., -16., 100 # PDF bins
 mass_max, mass_min, mass_bins = 12., 7., 250

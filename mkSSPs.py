@@ -413,10 +413,26 @@ class SSP:
         self.STR = STR
         self.beta = beta
         self.Nly = Nlyman_final
+        return self
         
-        def __add__(self,other):
-            return
+    def __str__(self):
         
+        return 'Age: '+str(self.tg/1e9)+'\n'+'SFR: '+str(self.SFR)+'\n'
+    
+    def __add__(self,other):
+        self.SED = self.SED + other.SED
+            
+        return self
+    
+    def __mul__(self,other):
+        self.SED *= other
+        
+    def __rmul__(self,other):
+        self.SED *= other
         
 a = SSP()
 a.build(0.5,0.5,1,2)
+b = SSP()
+b.build(10,0.01,1,4)
+
+a*1e8 + b*5e9

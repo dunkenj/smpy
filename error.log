@@ -3,41 +3,9 @@
   for comment in header.get_comment():
 matchSEDsPlus.py:109: RuntimeWarning: invalid value encountered in divide
   scale = top/bottom
-Process Process-2:
-Process Process-4:
 matchSEDsPlus.py:109: RuntimeWarning: invalid value encountered in divide
   scale = top/bottom
-Process Process-1:
-Process Process-3:
-Traceback (most recent call last):
-  File "/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
-    self.run()
-  File "/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/multiprocessing/process.py", line 114, in run
-    self._target(*self._args, **self._kwargs)
-  File "/Users/ken/Documents/PhD/code/aMasSED-code/matchSEDsPlus.py", line 131, in galaxyFit
-    Bestfit_Beta = beta[tgi,tvi,ti,mi]
-IndexError: index 17 is out of bounds for axis 0 with size 3
-Traceback (most recent call last):
-  File "/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
-    self.run()
-  File "/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/multiprocessing/process.py", line 114, in run
-    self._target(*self._args, **self._kwargs)
-  File "/Users/ken/Documents/PhD/code/aMasSED-code/matchSEDsPlus.py", line 131, in galaxyFit
-    Bestfit_Beta = beta[tgi,tvi,ti,mi]
-IndexError: index 14 is out of bounds for axis 0 with size 3
-Traceback (most recent call last):
-  File "/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
-    self.run()
-  File "/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/multiprocessing/process.py", line 114, in run
-    self._target(*self._args, **self._kwargs)
-  File "/Users/ken/Documents/PhD/code/aMasSED-code/matchSEDsPlus.py", line 131, in galaxyFit
-    Bestfit_Beta = beta[tgi,tvi,ti,mi]
-IndexError: index 8 is out of bounds for axis 0 with size 3
-Traceback (most recent call last):
-  File "/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
-    self.run()
-  File "/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/multiprocessing/process.py", line 114, in run
-    self._target(*self._args, **self._kwargs)
-  File "/Users/ken/Documents/PhD/code/aMasSED-code/matchSEDsPlus.py", line 131, in galaxyFit
-    Bestfit_Beta = beta[tgi,tvi,ti,mi]
-IndexError: index 9 is out of bounds for axis 0 with size 3
+matchSEDsPlus.py:109: RuntimeWarning: invalid value encountered in divide
+  scale = top/bottom
+matchSEDsPlus.py:109: RuntimeWarning: invalid value encountered in divide
+  scale = top/bottom
