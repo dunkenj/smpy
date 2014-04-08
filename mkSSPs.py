@@ -1,10 +1,12 @@
 import numpy
 import array
-import re,os,sys
+import re,os,sys, copy
 from glob import glob
 from scipy.interpolate import griddata
-from scipy.integrate import simps
+from scipy.integrate import simps,quad
 from sm_functions import read_ised,read_ised2,calc_lyman,calc_beta
+
+from astropy import cosmology as C
 
 version = sys.version_info[1]
 if version == 7:
@@ -413,26 +415,222 @@ class SSP:
         self.STR = STR
         self.beta = beta
         self.Nly = Nlyman_final
-        return self
         
     def __str__(self):
+        AA = ['Age', 'SFH Tau', 'Dust Tau', 'SFR',  'Beta']
+        BB = [self.tg/1e9, self.tau/1e9, self.tauv, self.SFR, self.beta]
+        CC = ['Gyr', 'Gyr', 'Av', 'Ms/yr','']
+        output = ['{:>10s}'.format(AA[i]) +': '+ '{:<.3g}'.format(BB[i]) +' '+CC[i] for i in range(len(AA))]
         
-        return 'Age: '+str(self.tg/1e9)+'\n'+'SFR: '+str(self.SFR)+'\n'
+        return '\n'.join(output)
     
     def __add__(self,other):
-        self.SED = self.SED + other.SED
-            
+        if isinstance(other,SSP):
+            self.SED += other.SED
+            self.SFR += other.SFR 
+            self.Nly = numpy.log10( 10**self.Nly + 10**other.Nly )
+            self.beta = calc_beta(self.wave,self.SED)
         return self
     
     def __mul__(self,other):
         self.SED *= other
+        self.SFR *= other
+        self.Nly += numpy.log10(other)
         
     def __rmul__(self,other):
         self.SED *= other
+        self.SFR *= other
+        self.Nly += numpy.log10(other)
         
+class Filter(object):
+    def __init__(self):
+        self.wave = []
+        self.response = []
+        
+class FileFilter(Filter):
+    def __init__(self,filepath):
+        self.path = filepath
+        
+        try:
+            data = numpy.loadtxt(self.path)
+            self.wave = data[:,0]
+            self.response = data[:,1]
+        
+        except:
+            print 'Ohhhhh dear.'
+        
+        
+class TophatFilter(Filter):
+    def __init__(self, centre, width, steps = 200):
+        self.centre = centre
+        self.width = width
+        self.steps = steps
+
+        upper, lower = centre+width, centre-width
+        resp_upper, resp_lower = centre+(width*0.5), centre-(width*0.5)
+
+        self.wave = numpy.linspace(lower,upper,steps)
+        self.response = numpy.zeros_like(self.wave)
+
+        tophat = (self.wave >= resp_lower)*(self.wave < resp_upper)
+
+        self.response[tophat] = 1
+        
+class FilterSet:
+    def __init__(self,path):
+        self.directory = path
+        self.files = glob(self.directory)
+        
+        self.filters = []
+        
+        for file in self.files:
+            self.filters.append(FileFilter(file))
+
+    def addFileFilter(self,path):
+        self.filters.append(FileFilter(path))
+    
+    def addTophatFilter(self,centre, width, steps = 200):
+        self.filters.append(TophatFilter(centre, width, steps))
+
+
+class Observe:
+    def __init__(self,SED,Filters,redshift,force_age = True):
+        self.SED = SED
+        self.F = Filters
+        self.z = redshift
+        self.wave = self.SED.wave
+        
+        self.lyman_abs = numpy.ones(len(self.wave))
+        ly_cont_w = numpy.array([(self.wave<=912.)][0])
+        ly_b_w = numpy.array([(self.wave > 912.) & (self.wave <= 1026.)][0])
+        ly_a_w = numpy.array([(self.wave > 1026.) & (self.wave <= 1216.)][0])
+        
+        dec_a = (1/(120*(1+self.z)))*quad(self.dec_a_func,
+                1050*(1+self.z),1170*(1+self.z))[0]
+        dec_b= (1/(95*(1+self.z)))*quad(self.dec_b_func,
+                920*(1+self.z),1015*(1+self.z))[0]
+        
+        self.lyman_abs[ly_cont_w] = 0.
+        self.lyman_abs[ly_b_w] = dec_b
+        self.lyman_abs[ly_a_w] = dec_a
+        
+        if self.z > 0:
+            self.dm = cosmo.distmod(self.z)
+        else:
+            self.dm = 0.
+        
+        if (self.SED.tg/1e9 > cosmo.age(self.z)) and force_age:
+            print 'SSP age older than universe...stopping.'
+        else:            
+            self.fluxes = []
+            self.mags = []
+            
+            for filt in self.F.filters:
+                print filt.wave[0]
+                flux, mag = self.calcFlux(filt)
+                self.fluxes.append(flux)
+                self.mags.append(mag)
+    
+    def dec_a_func(self,wave_obs):
+        return numpy.exp(-1*0.0036*(numpy.power(wave_obs/1216.,3.46)))
+
+    def dec_b_func(self,wave_obs):
+        teff_beta=1.7e-3*(numpy.power(wave_obs/1026.,3.46))
+        teff_gamma=1.2e-3*(numpy.power(wave_obs/973.,3.46))
+        teff_delta=9.3e-4*(numpy.power(wave_obs/950.,3.46))
+        #The above absorption lines dominate the average absorption over the range 
+        #but higher order lines should be added in future
+    
+        teff_total=teff_beta+teff_gamma+teff_delta
+
+        return numpy.exp(-1*teff_total)
+        
+    def calcFlux(self,filt):
+        wf = filt.wave
+        tp = filt.response
+        z1 = self.z+1
+
+        if len(wf) > 1000: #Re-sample large filters for performance
+            wfx = numpy.linspace(wf[0],wf[-1],1000)
+            tpx = griddata(wf,tp,wfx)
+
+            wf = wfx
+            tp = tpx
+        
+
+        #Find SED wavelength entries within filter range
+        wff = numpy.array([wf[0] < self.wave[i] < wf[-1] 
+                            for i in range(len(self.wave))])
+        wft = self.wave[wff]
+    
+        #Interpolate to find throughput values at new wavelength points
+        tpt = griddata(wf,tp,wft)
+    
+        #Join arrays and sort w.r.t to wf
+        wf = numpy.concatenate((wf,wft))
+        tp = numpy.concatenate((tp,tpt))
+    
+        order = numpy.argsort(wf)
+        wf = wf[order]
+        tp = tp[order]
+
+        dwf = numpy.diff(wf)
+        nwf = len(wf)
+
+        tpwf = tp/wf
+        f_mean2 = numpy.dot(dwf,(tpwf[:nwf-1]+tpwf[1:])/2)
+        tpwf = tp*wf #Reassign tpwf as product
+
+        wf1 = wf/z1
+
+        WR = 0.
+        for i in range(nwf):
+            #Interpolation indices
+            j = numpy.where(self.wave<wf1[i])[0][-1]
+            
+            a = (wf1[i] - self.wave[j])/(self.wave[j+1]-self.wave[j])
+            tpa = (tpwf[i]*((1-a)*(self.SED.SED[j]*self.lyman_abs[j]) + 
+                    a*self.SED.SED[j+1]*self.lyman_abs[j+1]))
+            if i != 0:
+                WR += dwf[i-1]*(tpb+tpa)
+
+            tpb = tpa
+            
+        F_mean = WR/2/z1/f_mean2/2.997925e18
+        #print 'F_mean shape '+ len(F_mean)
+        AB0 = 5*numpy.log10(1.7684e8*1e-5)
+        # dl = 10pc in Mpc
+        # this factor is sqrt(4*pi*(3.0856e24)^2 Lsun)
+
+        #Convert fluxes to AB magnitudes
+        Mag = AB0 - 2.5*numpy.log10(F_mean) - 48.6
+        Mag += self.dm
+        
+        Flux = 10**((23.9 - Mag)/2.5) #uJy
+        
+        return Flux, Mag 
+        
+
+cosmo = C.FlatLambdaCDM(H0=70,Om0=0.3)
+
 a = SSP()
 a.build(0.5,0.5,1,2)
-b = SSP()
-b.build(10,0.01,1,4)
+#print a
 
-a*1e8 + b*5e9
+b = SSP()
+b.build(1.5,0.01,3,4)
+#print b
+
+a*1e9
+b*5e9
+a+b
+print a
+
+filt_dir = 'GOODS-S_18_FilterCurves/Filter*.txt'
+
+Filts = FilterSet(filt_dir)
+Filts.addTophatFilter(1500,100)
+
+BB = Observe(b,Filts,2)
+
+AA = Observe(a,Filts,2)
