@@ -614,7 +614,7 @@ class Observe:
 cosmo = C.FlatLambdaCDM(H0=70,Om0=0.3)
 
 a = SSP()
-a.build(0.5,0.5,1,2)
+a.build(0.5,0.5,1,2) #(Age, Tau, Dust, Metallicity Index)
 #print a
 
 b = SSP()
@@ -631,6 +631,6 @@ filt_dir = 'GOODS-S_18_FilterCurves/Filter*.txt'
 Filts = FilterSet(filt_dir)
 Filts.addTophatFilter(1500,100)
 
-BB = Observe(b,Filts,2)
+BB = Observe(b,Filts,2) #Observe b through the filters in Filts at redshift 2
 
 AA = Observe(a,Filts,2)
