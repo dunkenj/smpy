@@ -90,7 +90,11 @@ files.sort()
 tot = params.tot #Filter to use as total magnitude
 mlr = params.mlr #Filter to use for mass-to-light ratio
 
-z = numpy.arange(params.zmin,params.zmax,params.zstep)
+if params.zspacing = 'linear':
+    z = numpy.arange(params.zmin,params.zmax,params.zstep)
+elif params.zspacing = 'log':
+    z = numpy.logspace(params.zmin,params.zmax,params.n_zsteps)
+    z = numpy.insert(z,[0],[0.])
 z1= z+1
 
 quietprint('{0:s} {1:.1f} {2:s} {3:.1f} {4:s} {5} {6:s} {7}'.format('Redshifts range from',params.zmin,'to',params.zmax,'in',len(z),'steps','\n')) 
@@ -180,6 +184,7 @@ Compute fluxes for each filter in turn
 print('{0:30s} {1:15s} {2:15s} {3:20s}').format('Filter', 'Filter length','Prep Time', 'Calc Time (per z)') 
 
 for filt in range(len(files)):
+    
     head, tail = os.path.split(files[filt])
     print '{0:30s}'.format(tail),
     sys.stdout.flush()

@@ -610,7 +610,7 @@ class Observe:
         
         return Flux, Mag 
         
-
+#must define cosmo before calling an Observe
 cosmo = C.FlatLambdaCDM(H0=70,Om0=0.3)
 
 a = SSP()
@@ -621,9 +621,9 @@ b = SSP()
 b.build(1.5,0.01,3,4)
 #print b
 
-a*1e9
-b*5e9
-a+b
+a*1e9 #Multiply by a factor, equivalent to *=
+b*5e9 
+a+b #Add b to a (a += b)
 print a
 
 filt_dir = 'GOODS-S_18_FilterCurves/Filter*.txt'
@@ -631,6 +631,6 @@ filt_dir = 'GOODS-S_18_FilterCurves/Filter*.txt'
 Filts = FilterSet(filt_dir)
 Filts.addTophatFilter(1500,100)
 
-BB = Observe(b,Filts,2) #Observe b through the filters in Filts at redshift 2
-
-AA = Observe(a,Filts,2)
+AA = Observe(a,Filts,2) # Observe a (built from two initial SEDs) 
+                        # through the filters in Filts at redshift of z = 2 
+BB = Observe(b,Filts,2) 

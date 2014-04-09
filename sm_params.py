@@ -68,9 +68,11 @@ tot = 11 # ID/No. of filter used for total magnitude measurement
 mlr = 11 # ID/No. of filter used for mass-to-light ratio computation
 
 # Redshift Grid 
-zmin = 0.
-zmax = 9.
+zspacing = 'linear' # or 'log'
+zmin = 0. # log(zmin) if using log spacing
+zmax = 9. # log(zmax) if using log spacing
 zstep = 0.2
+n_zsteps = 100 #Number of steps for log spacing +1 additional z = 0 step
 
 madau = True                           # Include HI absorption (Madau 1995)
 
