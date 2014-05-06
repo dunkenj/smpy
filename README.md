@@ -38,9 +38,8 @@ The code is split into three seperate parts which must be run individually and i
         
 3. matchSEDs.py:
         The final part of the code is the part which does the SED fitting in order to derive the stellar masses, stellar population parameters or rest-frame absolute magnitudes. Currently, this part of the code has two setttings:
-
         * Simple - what should be used in most circumstances and when testing the code. In this mode, the normalisations for each template are calculated analytically before the best-fitting template is selected. _Currently this does not include full error analysis._
-
         * Full PDF calculation - this mode calculates the full mass likelihood distribution for a range of stellar masses while marginalising over the other population parameters. It outputs a likelihood distribution for the mass, UV continuum slope and rest-frame UV magnitude. It doesn't include any improvements in the output of other rest-frame magnitudes so the simple mode will suffice.
-    
         The desired mode is chosen by setting the parameter `calc_pdf = True` for the full PDF mode or `calc_pdf = False` for the simple mode. _See the explanation of the parameter file later._
+        
+__The parameter file__
