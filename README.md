@@ -8,16 +8,16 @@ __Pre-requisites:__
 * Python v2.5+  
 * scipy v0.9+  
 * numpy  
-* Atpy:  
+* Atpy + either/both of the following:  
 	* ascii_table - *if using ascii format input/outputs*  
 	* PyFITS - *if using FITS format input/outputs*  
 
 __Basic usage:__
-`
+
 	% python makeSEDs.py
 	% python processSED.py
 	% python matchSEDs.py
-`
+
 
 To use non default parameter file from command line, use e.g.:  
 `% python makeSEDs.py -p "parameter file"`
