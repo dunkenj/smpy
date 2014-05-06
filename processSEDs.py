@@ -90,9 +90,9 @@ files.sort()
 tot = params.tot #Filter to use as total magnitude
 mlr = params.mlr #Filter to use for mass-to-light ratio
 
-if params.zspacing = 'linear':
+if params.zspacing == 'linear':
     z = numpy.arange(params.zmin,params.zmax,params.zstep)
-elif params.zspacing = 'log':
+elif params.zspacing == 'log':
     z = numpy.logspace(params.zmin,params.zmax,params.n_zsteps)
     z = numpy.insert(z,[0],[0.])
 z1= z+1

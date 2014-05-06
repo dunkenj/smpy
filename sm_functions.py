@@ -170,12 +170,13 @@ def read_ised(filename):
         rmtm.fromfile(f,tmp[2])
         rmtm = numpy.array(rmtm)
 
-        data = [[ta,ids,iw,wave,sed,strm,rmtm],
+        data = [[ta,ids,iw,wave,sed,strm,rmtm,sn],
                 ['Ages(yr)', 'SSP ID', 
                  'No. wavelength entries',
                  'Wavelength array',
                  'SEDs', 'Stellar mass history',
-                 'Remnant mass history']]
+                 'Remnant mass history',
+                 'Supernovae']]
 
     return data
 
@@ -318,6 +319,7 @@ def read_ised2(filename):
 
             sn = array.array('f')
             sn.fromfile(f,tmp[2])
+            sn = numpy.array(sn)
 
             tmp = array.array('i')
             tmp.fromfile(f,3)
@@ -338,12 +340,13 @@ def read_ised2(filename):
             rmtm.fromfile(f,tmp[2])
             rmtm = numpy.array(rmtm)
 
-            data = [[ta,ids,iw,wave,sed,strm,rmtm],
+            data = [[ta,ids,iw,wave,sed,strm,rmtm,sn],
                     ['Ages(yr)', 'SSP ID', 
                      'No. wavelength entries',
                      'Wavelength array',
                      'SEDs', 'Stellar mass history',
-                     'Remnant mass history']]
+                     'Remnant mass history',
+                    'Supernovae']]
 
     else:       
         with open(filename,'rb') as f:
@@ -496,12 +499,13 @@ def read_ised2(filename):
             rmtm.fromfile(f,tmp[4])
             rmtm = numpy.array(rmtm)
 
-            data = [[ta,ids,iw,wave,sed,strm,rmtm],
+            data = [[ta,ids,iw,wave,sed,strm,rmtm,sn],
                     ['Ages(yr)', 'SSP ID', 
                      'No. wavelength entries',
                      'Wavelength array',
                      'SEDs', 'Stellar mass history',
-                     'Remnant mass history']]
+                     'Remnant mass history',
+                     'Supernovae']]
 
     return data
 
