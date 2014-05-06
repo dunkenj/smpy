@@ -11,11 +11,12 @@ ssp_output = '../MassData/temp_fitting.npz' # Output filename
 #tau = [0.01,0.025,0.05,0.1,      # Star formation timescales (Gyr)
 #       0.25,0.5,0.8,1.0,1.5,
 #       2.5,3.5,5.5,10.0,13.7]
-tau = [0.01,0.5,1.]
+tau = [2]
 #tau = [-10.,-5.,-2.5,-1.0,-0.5,-0.25,0.05,0.25,0.5,1.0,2.5,5.,10.,1000]
-tg = [0.01,0.5,1]
-#tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
-#      0.2512,0.3,0.4,0.5,0.6310,0.7,0.8,1.0,1.13,1.28,1.43,1.6]                 #Model ages (Gyr)
+
+tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
+      0.2512,0.3,0.4,0.5,0.6310,0.7,0.8,1.0,1.13,1.28,1.43,1.6]                 #Model ages (Gyr)
+
 #tg = [0.0100,0.0158,0.0251,0.0398,0.0631,0.08,0.1000,0.1585,0.2,0.2512,0.3981,
 #      0.5,0.6,0.7,0.8,0.9,1.0,1.13,1.28,1.43,1.6,2.0,2.3,2.5,2.7,3.0]                 #Model ages (Gyr)
 
@@ -29,16 +30,13 @@ tg = [0.01,0.5,1]
 
 #tauv = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,
 #        1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]#4.5,5.0,5.5,6.0] # Dust Total Attenuation Values
-#tauv = [0]
-tauv = [0.,0.4,0.6,0.8,1.0]
-#tauv = [0,0.25,0.5,0.75,1.,1.5,2] 
-#tauv = [0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0]
+#tauv = [0.,0.4,0.6,0.8,1.0]
+tauv = [1.0] 
 
-dust_model = 'charlot'
-#dust_model = 'calzetti'                # 'charlot' - Charlot & Fall or 'calzetti' - Caltzetti 2000
+dust_model = 'calzetti'                # 'charlot' - Charlot & Fall or 'calzetti' - Caltzetti 2000
 mu = 0.3                              # Fraction of tauv from ISM
 epsilon = 0.                     # Gas recycling parameter
-metallicities = [4]       # Metallicities to use
+metallicities = [2]       # Metallicities to use
 
 csf = False                           # Set to constant SFR (overrides, tau values)
 
@@ -52,11 +50,11 @@ Synthetic Magnitudes Parameters
 process.py
 
 """
-synmag_output = '../MassData/temp_fitting_proc.npz'
-#synmag_output = '/data/stellarmasses/synmags/200912/temp_fitting_neb.npz'
+
+synmag_output = '/data/stellarmasses/synmags/200912/temp_fitting_neb.npz'
 
 # Filter Directory and Naming Convention - Assumes Ordered Numerically
-filt_dir = 'GOODS-S_18_FilterCurves/'
+filt_dir = '/data/candels/catalogs/Filters/GOODS-S_18_FilterCurves/'
 #filt_dir = '/data/candels/catalogs/Filters/ForNina/'
 #filt_dir = '/home/ppxkd/astroraid/work/data/CANDELS_filters/test2/'
 filt_names = 'Filter*.txt'
@@ -68,6 +66,7 @@ tot = 11 # ID/No. of filter used for total magnitude measurement
 mlr = 11 # ID/No. of filter used for mass-to-light ratio computation
 
 # Redshift Grid 
+
 zspacing = 'linear' # or 'log'
 zmin = 0. # log(zmin) if using log spacing
 zmax = 9. # log(zmax) if using log spacing
@@ -88,8 +87,7 @@ match.py
 #input_catalog = '/data/candels/photz/GOODS-S/130213/gs_all_tf_h_130213a_multi.sample.phot.fits'
 #input_catalog = '/data/MRC0406_irac.mag.fits'
 #input_catalog = '/data/candels/catalogs/mocks/regions/mockset1_wide.sample.fits'
-input_catalog = '../MassData/gs_all_tf_h_130213a_multi.sample.MC1.fits'
-input_format = 'fits'
+input_catalog = '/data/candels/catalogs/GOODS-S/MCcatalogs/gs_all_tf_h_130213a_multi.sample.MCmaster.fits'
 
 ID_col = 'ID'
 z_col = 'z_a'
@@ -113,19 +111,15 @@ calc_mode = False                     # Calculate Mode Mass
 mode_mass_percentage = 10.            # Top percentage of fits to use in mode
                                       # mass calculations
 
-calc_pdf = False
-include_rest = True
-
 muv_max, muv_min, muv_bins = -23., -16., 100 # PDF bins
-mass_max, mass_min, mass_bins = 12., 7., 250
+mass_max, mass_min, mass_bins = 12., 6., 100
 beta_max, beta_min, beta_bins = 3., -3., 50 
 
 #Output table parameters:
+output_name = '/data/candels/catalogs/mocks/MC/gs_all_tf_h_130213a_multi.chab.CB07.MC.neb.results'
 #output_name = 'results/200912/gs_all_tf_h_130213a_multi.chab.MC.results'
-output_name = '../MassData/results.fits'
+#output_name = '/data/MRC0406_inc.SED.fits'
 table_format = 'fits'                 # Available formats:'fits'/'ascii'/'IPAC'
                                       # (those available to local installation
                                       #  of AtPY)
-
-ncpus = 4
 
