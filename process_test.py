@@ -1,6 +1,8 @@
 """
 Say stuff
 """
+import argparse
+import importlib
 import numpy, array, time, os, sys, re
 from scipy.interpolate import griddata
 from scipy.integrate import quad
@@ -8,65 +10,28 @@ from sm_functions import tl,t0,dm,dist,dec_a_func,dec_b_func
 from glob import glob
 import sm_params as p
 
-
 """
 Command line arguments and parameter import section
 """
-version = sys.version_info[1]
-if version == 7:
-	import argparse
-	parser = argparse.ArgumentParser()
-	parser.add_argument("-p","--params", type=str, default="sm_params",
-						help = "Parameter file, default = sm_params")
-	parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
-						action = "store_true")
-	args = parser.parse_args()
-	quiet = args.quiet
 
-	params_root = re.split(".py",args.params)[0]
-	if os.path.isfile(params_root+".pyc"):
-		os.remove(params_root+".pyc")
+parser = argparse.ArgumentParser()
+parser.add_argument("-p","--params", type=str, default="sm_params",
+					help = "Parameter file, default = sm_params")
+parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
+					action = "store_true")
+args = parser.parse_args()
 
-	import importlib
-	try:
-		params = importlib.import_module(params_root)
-		print 'Loaded '+args.params+' as params'
-	except:
-		print 'Failed to load "'+args.params+'" as params, loading default instead'
-		import sm_params as params
-		
-if version == 6:
-	import optparse
-	parser = optparse.OptionParser()
-	parser.add_option("-p","--params", type=str, default="sm_params",
-						dest="params",help = "Parameter file, default = sm_params")
-	parser.add_option("-q", "--quiet", help = "Suppress extra outputs",
-						dest="quiet", default=False,
-						action = "store_true")
-	args, dump = parser.parse_args()
-	quiet = args.quiet
+params_root = re.split(".py",args.params)[0]
+if os.path.isfile(params_root+".pyc"):
+	os.remove(params_root+".pyc")
 
-	params_root = re.split(".py",args.params)[0]
-	if os.path.isfile(params_root+".pyc"):
-		os.remove(params_root+".pyc")
-	import imp
-	try:
-		fp, pathname, description = imp.find_module(params_root)
-		params = imp.load_module(params_root, fp, pathname, description)
-	except:
-		print 'Failed to load "'+args.params+'" as params, loading default instead'
-		import sm_params as params
-	
-elif version not in [6, 7]:		
-	print 'Import option only coded for python versions 2.6 and 2.7... \n',
-	print 'Loading default instead'
-	import sm_params as params
-	quiet = False
+params = importlib.import_module(params_root) 
+print 'Loaded '+args.params+' as params'
 
-if quiet:
+if args.quiet:
 	print "Shhhh"
 
-if quiet:
+if args.quiet:
 	quietprint = lambda *a: None
 else:
 	def quietprint(*args):
@@ -90,11 +55,7 @@ files.sort()
 tot = params.tot #Filter to use as total magnitude
 mlr = params.mlr #Filter to use for mass-to-light ratio
 
-if params.zspacing = 'linear':
-    z = numpy.arange(params.zmin,params.zmax,params.zstep)
-elif params.zspacing = 'log':
-    z = numpy.logspace(params.zmin,params.zmax,params.n_zsteps)
-    z = numpy.insert(z,[0],[0.])
+z = numpy.arange(params.zmin,params.zmax,params.zstep)
 z1= z+1
 
 quietprint('{0:s} {1:.1f} {2:s} {3:.1f} {4:s} {5} {6:s} {7}'.format('Redshifts range from',params.zmin,'to',params.zmax,'in',len(z),'steps','\n')) 
@@ -131,7 +92,9 @@ S = SED.shape
 F_mean = numpy.zeros((len(files),len(z),S[1],S[2],S[3],S[4]))
 F_mean_UV = numpy.zeros((len(z),S[1],S[2],S[3],S[4]))
 
-print S
+AB0 = 5*numpy.log10(1.7684e8*1e-5)
+
+
 """
 SECTION 1 
 Calculate cosmological distance modulus 'dm' and the age of the universe
@@ -184,7 +147,6 @@ Compute fluxes for each filter in turn
 print('{0:30s} {1:15s} {2:15s} {3:20s}').format('Filter', 'Filter length','Prep Time', 'Calc Time (per z)') 
 
 for filt in range(len(files)):
-    
     head, tail = os.path.split(files[filt])
     print '{0:30s}'.format(tail),
     sys.stdout.flush()
@@ -220,7 +182,9 @@ for filt in range(len(files)):
     nwf = len(wf)
 
     tpwf = tp/wf
+    
     f_mean2 = numpy.dot(dwf,(tpwf[:nwf-1]+tpwf[1:])/2)
+
     tpwf = tp*wf #Reassign tpwf as product
 
     print '{0:<15.2f}'.format(time.clock()-start_filtinterp),
@@ -248,9 +212,8 @@ for filt in range(len(files)):
     
         F_mean[filt,zi,:ai[zi]+1,:] = WR/2/z1[zi]/f_mean2/2.997925e18
 
-
     print '{0:<20.2f}'.format((time.clock()-start_conv)/len(z))
-    
+
 
 """
 Compute rest-frame UV (1500A) flux
@@ -260,9 +223,9 @@ compute_MUV = True
 if compute_MUV:
     print('{0}{1}').format('\n','Calculating Rest-Frame UV (1500AA) Fluxes: '),
     start_filtinterp = time.clock()
-    wf = numpy.arange(1445,1555)
+    wf = numpy.arange(1445,1551)
     tp = numpy.zeros(len(wf))
-    tp[(wf>=1450) & (wf<1551)] = 1.0
+    tp[(wf>=1450) & (wf<1550)] = 1.0
 
     #Find SED wavelength entries within filter range
     wff = numpy.array([wf[0] < wave[i] < wf[-1] for i in range(len(wave))])
@@ -283,8 +246,12 @@ if compute_MUV:
     nwf = len(wf)
 
     tpwf = tp/wf
+
     f_mean2 = numpy.dot(dwf,(tpwf[:nwf-1]+tpwf[1:])/2)
+
     tpwf = tp*wf #Reassign tpwf as product
+
+    
 
     start_conv = time.clock()
     for zi in range(len(z)):
@@ -312,21 +279,22 @@ if compute_MUV:
 
     print('Done')
 
-print('{0}').format('Converting Flux arrays to AB Magnitudes: '),
-AB0 = 5*numpy.log10(1.7684e8*1e-5)
-# dl = 10pc in Mpc
-# this factor is sqrt(4*pi*(3.0856e24)^2 Lsun)
 
+print('{0}').format('Converting Flux arrays to AB Magnitudes: '),
 #Convert fluxes to AB magnitudes
 Mags = numpy.empty(F_mean.shape)
 Mags = AB0 - 2.5*numpy.log10(F_mean) - 48.6
-
 
 MUV = numpy.empty(F_mean_UV.shape)
 MUV = AB0 - 2.5*numpy.log10(F_mean_UV) - 48.6
 
 #Store mass-to-light ratio for selected filter
 
+MLRb = F_mean[mlr,0,:,:,:,:]**-1
+STRx = numpy.empty(F_mean[mlr,0,:,:,:,:].shape)
+for i in range(S[2]):
+    STRx[:,i,:,:] = STR
+MLR = STRx/F_mean[mlr,0,:,:,:,:]
 
 print('Done')
 
@@ -336,13 +304,19 @@ SECTION 3
 """
 
 S = Mags.shape
+MS = numpy.copy(Mags[tot,:,:,:,:,:])
+MB = numpy.copy(Mags[tot,:,:,:,:,:])
+SFRb = numpy.copy(Mags[tot,:,:,:,:,:])
 
 for r in range(S[1]):
-    Mags[:,r,:,:,:,:] += dmo[r]
-    MUV[r,:,:,:,:] += dmo[r]
+    MS[r,:] = numpy.power(10,((MS[r,:] + dmo[r])/2.5))
+    MB[r,:] = numpy.power(10,((MB[r,:] + dmo[r])/2.5))
+    SFRb[r,:] = numpy.power(10,((SFRb[r,:] + dmo[r])/2.5))
+   
+    for t in range(S[3]):
+        MS[r,:,t,:,:]=(MS[r,:,t,:,:])*STR
+        SFRb[r,:,t,:,:]=(SFRb[r,:,t,:,:])*SFR
 
-Fluxes = 10**((23.9 - Mags)/2.5) #uJy 
-UV_Fluxes = 10**((23.9 - MUV)/2.5) #uJy 
 
 print('{0} {1}{2}').format('Saving output binaries to',output_binary,':'),
 if os.path.isfile(output_binary+'.main'+'.npz'):
@@ -352,9 +326,9 @@ if os.path.isfile(output_binary+'.mags'+'.npy'):
 if os.path.isfile(output_binary+'.fluxes'+'.npy'):
     os.remove(output_binary+'.fluxes'+'.npy')
 
-numpy.savez(output_binary+'.main',parameters=parameters,z=z,filters=files,SFR=SFR,Mshape=S,MUV=MUV,UV_flux=UV_Fluxes)
+numpy.savez(output_binary+'.main',parameters=parameters,z=z,filters=files,MS=MS,MB=MB,MLR=MLR,SFR=SFRb,Mshape=S,MUV=MUV)
 numpy.save(output_binary+'.mags',Mags)
-numpy.save(output_binary+'.fluxes',Fluxes)
+numpy.save(output_binary+'.fluxes',F_mean)
 print('Done')
 
 print('{0}{1}{2}{3:s} {4:.1f}').format('\n','All finished!','\n','Time elapsed:',(time.clock()-start_time))
