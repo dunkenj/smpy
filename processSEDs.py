@@ -87,9 +87,6 @@ input_head,input_tail = os.path.split(input_binary)
 files = glob(params.filt_dir+params.filt_names) #Array of filter paths
 files.sort()
 
-tot = params.tot #Filter to use as total magnitude
-mlr = params.mlr #Filter to use for mass-to-light ratio
-
 if params.zspacing = 'linear':
     z = numpy.arange(params.zmin,params.zmax,params.zstep)
 elif params.zspacing = 'log':
