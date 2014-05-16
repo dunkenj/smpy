@@ -193,9 +193,9 @@ def galaxyFit(inputQueue, printQueue, printlock):
 
         if params.include_rest:
             restframe_output = ' '.join(M_scaled.astype('str'))
-            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, M_scaled[params.tot], MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,z[j],restframe_output,'\n')
+            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,z[j],restframe_output,'\n')
         else:
-            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, M_scaled[params.tot], MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
+            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
 
         printlock.release()
         printQueue.put(output_string)
@@ -415,7 +415,6 @@ if __name__ == '__main__':
 
     if nfilts != filters_found:
         f = numpy.load(input_binary+'.fluxes.npy')[params.filts_used]
-        f_tot = numpy.load(input_binary+'.fluxes.npy')[params.tot]
     else:
         f = numpy.load(input_binary+'.fluxes.npy')
 
