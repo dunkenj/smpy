@@ -87,9 +87,9 @@ input_head,input_tail = os.path.split(input_binary)
 files = glob(params.filt_dir+params.filt_names) #Array of filter paths
 files.sort()
 
-if params.zspacing = 'linear':
+if params.zspacing == 'linear':
     z = numpy.arange(params.zmin,params.zmax,params.zstep)
-elif params.zspacing = 'log':
+elif params.zspacing == 'log':
     z = numpy.logspace(params.zmin,params.zmax,params.n_zsteps)
     z = numpy.insert(z,[0],[0.])
 z1= z+1

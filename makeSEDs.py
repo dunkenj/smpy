@@ -150,6 +150,12 @@ elif params.dust_model == "calzetti":
         for ti in range(0,len(ta)):
             ATT[tvi,:,ti] *= numpy.power(10,-0.4*tv)
             
+#def Pei(wave):
+#    ai = [185., 27., 0.005, 0.01, 0.12, 0.03]
+#    lambda_i = [0.042, 0.08, 0.22, 9.7, 18., 25.]
+
+
+    
 """
 def Calzetti(wave):
     k = numpy.zeros_like(wave)
@@ -371,8 +377,8 @@ PRr = numpy.empty([max(tgi)+1])
 URr = numpy.empty([max(tgi)+1])
 Tr = numpy.empty([max(tgi)+1])
 for mi in range(len(params.metallicities)):
-    SSP = params.metallicities[mi]
-    if SSP < 0:
+    SSP = abs(params.metallicities[mi])-1
+    if params.metallicities[mi] < 0:
         add_nebular = True
     else:
         add_nebular = False
@@ -380,7 +386,7 @@ for mi in range(len(params.metallicities)):
         quietprint("Metallicity "+str(mi+1)+":")
     #print ".ised file: "+files[abs(SSP)]
     if mi != 0:
-        data = read_ised2(files[abs(SSP)])[0]
+        data = read_ised2(files[SSP])[0]
         sed = data[4]
         strm = data[5]
         rmtm = data[6]
