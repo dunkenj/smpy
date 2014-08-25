@@ -1,0 +1,8 @@
+mkSSPs.py:424: RuntimeWarning: divide by zero encountered in log10
+  tbins = numpy.logspace(0,numpy.log10(max(tp)),1000)
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/numpy/core/function_base.py:88: RuntimeWarning: invalid value encountered in multiply
+  y = _nx.arange(0, num) * step + start
+mkSSPs.py:493: RuntimeWarning: divide by zero encountered in double_scalars
+  SFR[ai] /= STR[ai]
+mkSSPs.py:550: RuntimeWarning: invalid value encountered in double_scalars
+  SFR[ai] /= STR[ai]
