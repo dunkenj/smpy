@@ -206,9 +206,9 @@ class ised(object):
             rmtm.fromfile(f,tmp[F_i])
             self.rmtm = numpy.array(rmtm)
 
-class SSP:
+class CSP:
     def __init__(self,age=None,sfh=None,dust=None,metal_ind=None,fesc=None,sfh_law='exp'):
-        self.files = glob(ised_input+'*.ised')
+        self.files = glob('../ssp/bc03/chab/lr/'+'*.ised')
         self.files.sort()
         self.iseds = []
         self.ta_arr = []
