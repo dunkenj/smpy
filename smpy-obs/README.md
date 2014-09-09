@@ -1,4 +1,4 @@
-surf-solar
+SMpy Observe
 ==========
 
 Python object based SSP tool
