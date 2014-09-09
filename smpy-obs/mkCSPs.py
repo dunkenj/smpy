@@ -9,8 +9,9 @@ from scipy.optimize import leastsq, fsolve
 
 #from sm_functions import read_ised,read_ised2,calc_lyman,calc_beta
 from astropy import units as U
-from astropy import cosmology as C
-cosmo = C.FlatLambdaCDM(H0=70,Om0=0.3)
+from astropy import constants as C
+from astropy import cosmology as cos
+cosmo = cos.FlatLambdaCDM(H0=70,Om0=0.3)
 
 import sm_params as params
 reload(params)
@@ -737,7 +738,7 @@ class CSP:
         return '\n'.join(output)
     
     def __add__(self,other):
-        if isinstance(other,SSP):
+        if isinstance(other,CSP):
             new = copy.deepcopy(self)
             new.SED += other.SED
             new.SFR += other.SFR
@@ -750,7 +751,23 @@ class CSP:
                 new.Nly = numpy.log10(10**self.Nly + 10**other.Nly )
             new.beta = new.calc_beta(new.wave,new.SED)
         return new
-    
+
+    def __iadd__(self,other):
+        if isinstance(other,CSP):
+            new = copy.deepcopy(self)
+            new.SED += other.SED
+            new.SFR += other.SFR
+            new.Ms += other.Ms
+            if new.Nly == 0:
+                new.Nly = other.Nly
+            if other.Nly == 0:
+                new.Nly = new.Nly
+            if (new.Nly > 0.) and (other.Nly > 0.):
+                new.Nly = numpy.log10(10**self.Nly + 10**other.Nly )
+            new.beta = new.calc_beta(new.wave,new.SED)
+        return new
+
+
     def __mul__(self,other):
         new = copy.deepcopy(self)
         new.SED *= other
@@ -760,6 +777,42 @@ class CSP:
             new.Nly = 0.
         else:
             new.Nly += numpy.log10(other)
+            new.Nly = numpy.maximum(new.Nly,0)
+        return new
+
+    def __imul__(self,other):
+        new = copy.deepcopy(self)
+        new.SED *= other
+        new.SFR *= other
+        new.Ms *= other
+        if other == 0.:
+            new.Nly = 0.
+        else:
+            new.Nly += numpy.log10(other)
+            new.Nly = numpy.maximum(new.Nly,0)
+        return new
+
+    def __div__(self,other):
+        new = copy.deepcopy(self)
+        new.SED /= other
+        new.SFR /= other
+        new.Ms /= other
+        if other == 0.:
+            new.Nly = 0.
+        else:
+            new.Nly -= numpy.log10(other)
+            new.Nly = numpy.maximum(new.Nly,0)
+        return new
+
+    def __idiv__(self,other):
+        new = copy.deepcopy(self)
+        new.SED /= other
+        new.SFR /= other
+        new.Ms /= other
+        if other == 0.:
+            new.Nly = 0.
+        else:
+            new.Nly -= numpy.log10(other)
             new.Nly = numpy.maximum(new.Nly,0)
         return new
         
@@ -779,7 +832,11 @@ class CSP:
 class Filter(object):
     def __init__(self):
         self.wave = []
+        self.freq = []
         self.response = []
+
+        self.lambda_c = []
+        self.nu_c = []
         
 class FileFilter(Filter):
     def __init__(self,filepath):
@@ -787,8 +844,16 @@ class FileFilter(Filter):
         
         try:
             data = numpy.loadtxt(self.path)
-            self.wave = data[:,0]
+            self.wave = data[:,0] * U.angstrom
             self.response = data[:,1]
+            
+            self.freq = (C.c/self.wave).to(U.Hz)
+            
+            self.lambda_c = (simps(self.wave*self.response,self.wave) / 
+                             simps(self.response,self.wave))
+
+            self.nu_c = (simps(self.freq*self.response,self.freq) / 
+                         simps(self.response,self.freq))
         
         except:
             print 'Ohhhhh dear.'
@@ -796,19 +861,26 @@ class FileFilter(Filter):
         
 class TophatFilter(Filter):
     def __init__(self, centre, width, steps = 200):
-        self.centre = centre
-        self.width = width
+        self.centre = centre * U.angstrom
+        self.width = width * U.angstrom
         self.steps = steps
 
-        upper, lower = centre+width, centre-width
-        resp_upper, resp_lower = centre+(width*0.5), centre-(width*0.5)
+        upper, lower = self.centre+self.width, self.centre-self.width
+        resp_upper, resp_lower = self.centre+(self.width*0.5), self.centre-(self.width*0.5)
 
         self.wave = numpy.linspace(lower,upper,steps)
-        self.response = numpy.zeros_like(self.wave)
+        self.response = numpy.zeros_like(self.wave.value)
 
         tophat = (self.wave >= resp_lower)*(self.wave < resp_upper)
-
         self.response[tophat] = 1
+
+        self.freq = (C.c/self.wave).to(U.Hz)
+        
+        self.lambda_c = (simps(self.wave*self.response,self.wave) / 
+                         simps(self.response,self.wave))
+
+        self.nu_c = (simps(self.freq*self.response,self.freq) / 
+                     simps(self.response,self.freq))
 
 class LoadEAZYFilters(object):
     def __init__(self,path):
@@ -816,6 +888,7 @@ class LoadEAZYFilters(object):
         
         self.filters = []
         self.filternames = []
+        self.central_wlengths = []
         
         with open(self.path) as file:
             for f in xrange(1000):
@@ -834,11 +907,26 @@ class LoadEAZYFilters(object):
                     wavelength.append(w)
                     response.append(r)
                 
+                wavelength *= U.angstrom
+                freq = (C.c/wavelength).to(U.Hz)
+        
+                lambda_c = (simps(wavelength*response,wavelength) / 
+                            simps(response,wavelength))
+
+                nu_c = (simps(freq*response,freq) / 
+                        simps(response,freq))
+                
                 new_filter = Filter()
-                new_filter.wave = numpy.array(wavelength)
+                new_filter.wave = numpy.array(wavelength) * U.angstrom
                 new_filter.response = numpy.array(response)
+                new_filter.freq = numpy.array(freq) * U.Hz
+                new_filter.lambda_c = lambda_c
+                new_filter.nu_c = nu_c
                 self.filters.append(new_filter)
                 self.filternames.append(name)
+                self.central_wlengths.append(lambda_c)
+                
+        self.central_wlengths *= U.angstrom
   
 class FilterSet:
     def __init__(self,path=None):
@@ -897,12 +985,14 @@ class Observe:
         else:            
             self.fluxes = []
             self.AB = []
+            self.wl = []
             
             for filt in self.F.filters:
                 #print filt.wave[0]
                 flux, mag = self.calcFlux(filt)
                 self.fluxes.append(flux)
                 self.AB.append(mag)
+                self.wl.append(filt.lambda_c)
             self.fluxes *= (1e-6*U.Jy)
             self.AB *= (U.mag)
     
@@ -921,7 +1011,7 @@ class Observe:
         return numpy.exp(-1*teff_total)
         
     def calcFlux(self,filt):
-        wf = filt.wave
+        wf = filt.wave.value
         tp = filt.response
         z1 = self.z+1
 
