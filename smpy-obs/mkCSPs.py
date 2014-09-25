@@ -209,7 +209,7 @@ class ised(object):
 
 class CSP:
     def __init__(self,age=None,sfh=None,dust=None,metal_ind=None,fesc=None,sfh_law='exp'):
-        self.files = glob('../ssp/bc03/chab/lr/'+'*.ised')
+        self.files = glob('../ssp/bc03/salpeter/lr/'+'*.ised')
         self.files.sort()
         self.iseds = []
         self.ta_arr = []
@@ -246,12 +246,33 @@ class CSP:
                 
             else:
                 self.build(age,sfh,dust,metal_ind,fesc,sfh_law)
+    
+    def _sfh_exp(self,t,tau):
+        sfh = numpy.exp(-1*t/tau)/abs(tau)
+        return sfh
+
+    def _sfh_pow(self,t,alpha):
+        sfh = numpy.power(t/1.e9,alpha)
+        return sfh
+        
+    def _sfh_del(self,t,tau):
+        sfh = t/(tau**2)*numpy.exp(-t/tau)
+        return sfh
+        
+    def _sfh_tru(self,t,tstop):
+        sfh = numpy.ones_like(t)
+        sfh[t > tstop*numpy.max(t)] = 0.
+    
+        sfh /= numpy.trapz(sfh,t)
+        return sfh
 
     def build(self,age,sfh,dust,metal,fesc=1.,sfh_law='exp'):
         self.tg = age*1.e9
         if sfh_law == 'exp':
             self.tau = sfh*1.e9
-        elif sfh_law == 'pow':
+        elif sfh_law == 'del':
+            self.tau = sfh*1.e9
+        else:
             self.tau = sfh
         self.tauv = dust
         self.mi = int(abs(metal))
@@ -492,63 +513,69 @@ class CSP:
                 #print SFR[ai,ti,mi]
                 #self.SN = float(snn)    
                 SFR[ai] /= STR[ai]
-                
+            
             elif self.sfh_law == 'pow':
-                sr = numpy.power(tp/1.e9,self.tau)
-                self.tp=tp
-                norma = 1
-                self.sr = sr
-                if len(sr) > 1:
-                    norma = simps(numpy.power(tbins/1.e9,self.tau),tbins)
-                    sr /= norma
-                self.norma = norma
-                #print sr[0]
+                sfr = self._sfh_pow
+            elif self.sfh_law == 'del':
+                sfr = self._sfh_del
+            elif self.sfh_law == 'tru':
+                sfr = self._sfh_tru
+                
+            sr = sfr(tp,self.tau)
+            self.tp=tp
+            norma = 1
+            self.sr = sr
+            if len(sr) > 1:
+                norma = simps(sfr(tbins,self.tau),tbins)
+                sr /= norma
+            self.norma = norma
+            #print sr[0]
 
-                w = sr*DT[ai]/2
-                w1 = numpy.array(w[:ai+1])
-                W[0,ai] = w1
+            w = sr*DT[ai]/2
+            w1 = numpy.array(w[:ai+1])
+            W[0,ai] = w1
 
-                strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
-                rm = numpy.array(numpy.dot(w1,rmtm[:ai+1]))
+            strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
+            rm = numpy.array(numpy.dot(w1,rmtm[:ai+1]))
 
-                l = len(A[ai])
-                if l>0:
+            l = len(A[ai])
+            if l>0:
 
-                    w2 = w[ai+1:ai+l+1]
-                    wa = w2*A[ai]
-                    wb = w2-wa
+                w2 = w[ai+1:ai+l+1]
+                wa = w2*A[ai]
+                wb = w2-wa
 
-                    W[1,ai] = wa
-                    W[2,ai] = wb
-                    strr += (numpy.dot(wb,strm[j]) + numpy.dot(wa,strm[j+1]))
-                    rm += (numpy.dot(wb,rmtm[j]) + numpy.dot(wa,rmtm[j+1]))
+                W[1,ai] = wa
+                W[2,ai] = wb
+                strr += (numpy.dot(wb,strm[j]) + numpy.dot(wa,strm[j+1]))
+                rm += (numpy.dot(wb,rmtm[j]) + numpy.dot(wa,rmtm[j+1]))
 
 
-                if strr > 1: strr= 1
+            if strr > 1: strr= 1
 
-                if self.tau > 0.:
-                    ugas = numpy.power(self.ta[ai]/1.e9,self.tau)
-                elif self.tau < 0.:
-                    ugas = numpy.power(self.ta[ai],self.tau)/numpy.power(max(self.ta),self.tau)
-                    #ugas = 1.
-                #Processed gas = gas formed into stars - mass in stars - remnants
-                prgas[ai] = 1 - ugas - strr -rm
-                if prgas[ai] < 0.: prgas[ai] = 0
+            if self.tau > 0.:
+                ugas = sfr(self.ta,self.tau)[ai]
+            elif self.tau < 0.:
+                ugas = sfr(self.ta,self.tau)[ai]/sfr(max(self.ta),self.tau)
+                #ugas = 1.
+            #Processed gas = gas formed into stars - mass in stars - remnants
+            prgas[ai] = 1 - ugas - strr -rm
+            if prgas[ai] < 0.: prgas[ai] = 0
 
-                #print prgas[ai]
-                URr[ai] = ugas
-                PRr[ai] = prgas[ai]
-                RMr[ai] = rm
-                Tr[ai] = simps(numpy.power(numpy.sort(tp)/1.e9,self.tau),numpy.sort(tp))
+            #print prgas[ai]
+            URr[ai] = ugas
+            PRr[ai] = prgas[ai]
+            RMr[ai] = rm
+            Tr[ai] = simps(sfr(numpy.sort(tp)/1.e9,self.tau),numpy.sort(tp))
 
-                STR[ai] = strr
-                if self.tau > 0:
-                    SFR[ai] = (1 + epsilon*prgas[ai])*numpy.power(self.ta[ai]/1.e9,self.tau)/norma
-                elif self.tau < 0:
-                    SFR[ai] = numpy.power(self.ta[ai]/1.e9,self.tau)/norma
-                #print SFR[ai,ti,mi]
-                #self.SN = float(snn)    
-                SFR[ai] /= STR[ai]                
+            STR[ai] = strr
+            if self.tau > 0:
+                SFR[ai] = (1 + epsilon*prgas[ai])*sfr(self.ta,self.tau)[ai]/norma
+            elif self.tau < 0:
+                SFR[ai] = sfr(self.ta[ai],self.tau)/norma
+            #print SFR[ai,ti,mi]
+            #self.SN = float(snn)    
+            SFR[ai] /= STR[ai]                
 
         """
         SECTION 3
@@ -827,6 +854,19 @@ class CSP:
             new.Nly += numpy.log10(other)
             new.Nly = numpy.maximum(new.Nly,0)
         return new
+    
+    def addEmissionLine(self,wavelength,EqW):
+        wbin = numpy.argmin(numpy.abs(self.wave-wavelength))
+        print wbin
+        binwidth = numpy.mean(numpy.diff(self.wave)[wbin-1:wbin+1])
+        print binwidth
+        continuum = numpy.mean(self.SED[wbin:wbin+1])
+        print continuum
+        lineluminosity = continuum * EqW
+        print lineluminosity, lineluminosity/binwidth
+        
+        self.SED[wbin] += lineluminosity/binwidth
+
 
         
 class Filter(object):
