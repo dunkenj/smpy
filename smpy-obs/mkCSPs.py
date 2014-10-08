@@ -1,7 +1,7 @@
 import numpy
 import array
 import copy
-import re,os,sys, copy
+import re,os,sys,copy
 from glob import glob
 from scipy.interpolate import griddata
 from scipy.integrate import simps,quad
@@ -13,27 +13,9 @@ from astropy import constants as C
 from astropy import cosmology as cos
 cosmo = cos.FlatLambdaCDM(H0=70,Om0=0.3)
 
-import sm_params as params
-reload(params)
-quiet = False
-
-if quiet:
-    print "Shhhh"
-
-if quiet:
-    quietprint = lambda *a: None
-else:
-    def quietprint(*args):
-        for arg in args:
-            print arg,
-        print
-
 f = open("error.log", "w")
 original_stderr = sys.stderr
 sys.stderr = f
-
-output = params.ssp_output
-ised_input = params.ssp_input
 
 
 class ised(object):
@@ -208,8 +190,12 @@ class ised(object):
             self.rmtm = numpy.array(rmtm)
 
 class CSP:
-    def __init__(self,age=None,sfh=None,dust=None,metal_ind=None,fesc=None,sfh_law='exp'):
-        self.files = glob('../ssp/bc03/salpeter/lr/'+'*.ised')
+    def __init__(self,SSPpath = '../ssp/bc03/salpeter/lr/',
+                 age=None,sfh=None,dust=None,metal_ind=None,fesc=None,
+                 dustmodel = 'calzetti',
+                 sfh_law='exp',neb_cont=True,neb_met=True):
+        self.SSPpath = SSPpath
+        self.files = glob(self.SSPpath + '*.ised')
         self.files.sort()
         self.iseds = []
         self.ta_arr = []
@@ -234,7 +220,7 @@ class CSP:
 
         #Find closest match for each tg value in ta - set tg to these values
         
-        nebular = numpy.loadtxt(params.neb_file,skiprows=1)
+        nebular = numpy.loadtxt('nebular_emission.dat',skiprows=1)
         self.neb_cont = nebular[:,1]
         self.neb_hlines = nebular[:,2]
         self.neb_metal = nebular[:,3:]
@@ -242,10 +228,11 @@ class CSP:
         
         if None not in (age,sfh,dust,metal_ind):
             if fesc == None:
-                self.build(age,sfh,dust,metal_ind)
+                self.build(age,sfh,dust,metal_ind,sfh_law=sfh_law,
+                           neb_cont=neb_cont,neb_met=neb_met)
                 
             else:
-                self.build(age,sfh,dust,metal_ind,fesc,sfh_law)
+                self.build(age,sfh,dust,metal_ind,fesc,sfh_law,neb_cont,neb_met)
     
     def _sfh_exp(self,t,tau):
         sfh = numpy.exp(-1*t/tau)/abs(tau)
@@ -266,7 +253,12 @@ class CSP:
         sfh /= numpy.trapz(sfh,t)
         return sfh
 
-    def build(self,age,sfh,dust,metal,fesc=1.,sfh_law='exp'):
+    def build(self,age,sfh,dust,metal,fesc=1.,sfh_law='exp',dustmodel = 'calzetti',
+              neb_cont=True,neb_met=True):
+        """
+        
+        
+        """
         self.tg = age*1.e9
         if sfh_law == 'exp':
             self.tau = sfh*1.e9
@@ -278,9 +270,12 @@ class CSP:
         self.mi = int(abs(metal))
         self.fesc = fesc
         self.sfh_law = sfh_law
+        self.inc_cont= neb_cont
+        self.inc_met = neb_met
+        self.dust_model = dustmodel
         
-        mu = params.mu
-        epsilon = params.epsilon
+        mu = 0.3
+        epsilon = 0.
         
         self.ta = self.ta_arr[self.mi]
         self.wave = self.wave_arr[self.mi]
@@ -312,14 +307,14 @@ class CSP:
         elif SSP_Z > 0.004: neb_z = 2
         #print neb_z
 
-        if params.dust_model == "charlot":
+        if self.dust_model == "charlot":
             ATT = numpy.empty([len(self.wave),len(self.ta)])
             tv = (self.tauv*numpy.ones(len(self.ta)))
             tv[self.ta>1e7] = mu*self.tauv
             lam = numpy.array((5500/self.wave)**0.7)
             ATT[:,:] = (numpy.exp(-1*numpy.outer(lam,tv)))
 
-        elif params.dust_model == "calzetti":
+        elif self.dust_model == "calzetti":
             ATT = numpy.ones([len(self.wave),len(self.ta)])
 
             k = numpy.zeros_like(self.wave)
@@ -513,69 +508,69 @@ class CSP:
                 #print SFR[ai,ti,mi]
                 #self.SN = float(snn)    
                 SFR[ai] /= STR[ai]
-            
-            elif self.sfh_law == 'pow':
-                sfr = self._sfh_pow
-            elif self.sfh_law == 'del':
-                sfr = self._sfh_del
-            elif self.sfh_law == 'tru':
-                sfr = self._sfh_tru
+            else:
+                if self.sfh_law == 'pow':
+                    sfr = self._sfh_pow
+                elif self.sfh_law == 'del':
+                    sfr = self._sfh_del
+                elif self.sfh_law == 'tru':
+                    sfr = self._sfh_tru
                 
-            sr = sfr(tp,self.tau)
-            self.tp=tp
-            norma = 1
-            self.sr = sr
-            if len(sr) > 1:
-                norma = simps(sfr(tbins,self.tau),tbins)
-                sr /= norma
-            self.norma = norma
-            #print sr[0]
+                sr = sfr(tp,self.tau)
+                self.tp=tp
+                norma = 1
+                self.sr = sr
+                if len(sr) > 1:
+                    norma = simps(sfr(tbins,self.tau),tbins)
+                    sr /= norma
+                self.norma = norma
+                #print sr[0]
 
-            w = sr*DT[ai]/2
-            w1 = numpy.array(w[:ai+1])
-            W[0,ai] = w1
+                w = sr*DT[ai]/2
+                w1 = numpy.array(w[:ai+1])
+                W[0,ai] = w1
 
-            strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
-            rm = numpy.array(numpy.dot(w1,rmtm[:ai+1]))
+                strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
+                rm = numpy.array(numpy.dot(w1,rmtm[:ai+1]))
 
-            l = len(A[ai])
-            if l>0:
+                l = len(A[ai])
+                if l>0:
 
-                w2 = w[ai+1:ai+l+1]
-                wa = w2*A[ai]
-                wb = w2-wa
+                    w2 = w[ai+1:ai+l+1]
+                    wa = w2*A[ai]
+                    wb = w2-wa
 
-                W[1,ai] = wa
-                W[2,ai] = wb
-                strr += (numpy.dot(wb,strm[j]) + numpy.dot(wa,strm[j+1]))
-                rm += (numpy.dot(wb,rmtm[j]) + numpy.dot(wa,rmtm[j+1]))
+                    W[1,ai] = wa
+                    W[2,ai] = wb
+                    strr += (numpy.dot(wb,strm[j]) + numpy.dot(wa,strm[j+1]))
+                    rm += (numpy.dot(wb,rmtm[j]) + numpy.dot(wa,rmtm[j+1]))
 
 
-            if strr > 1: strr= 1
+                if strr > 1: strr= 1
 
-            if self.tau > 0.:
-                ugas = sfr(self.ta,self.tau)[ai]
-            elif self.tau < 0.:
-                ugas = sfr(self.ta,self.tau)[ai]/sfr(max(self.ta),self.tau)
-                #ugas = 1.
-            #Processed gas = gas formed into stars - mass in stars - remnants
-            prgas[ai] = 1 - ugas - strr -rm
-            if prgas[ai] < 0.: prgas[ai] = 0
+                if self.tau > 0.:
+                    ugas = sfr(self.ta,self.tau)[ai]
+                elif self.tau < 0.:
+                    ugas = sfr(self.ta,self.tau)[ai]/sfr(max(self.ta),self.tau)
+                    #ugas = 1.
+                #Processed gas = gas formed into stars - mass in stars - remnants
+                prgas[ai] = 1 - ugas - strr -rm
+                if prgas[ai] < 0.: prgas[ai] = 0
 
-            #print prgas[ai]
-            URr[ai] = ugas
-            PRr[ai] = prgas[ai]
-            RMr[ai] = rm
-            Tr[ai] = simps(sfr(numpy.sort(tp)/1.e9,self.tau),numpy.sort(tp))
+                #print prgas[ai]
+                URr[ai] = ugas
+                PRr[ai] = prgas[ai]
+                RMr[ai] = rm
+                Tr[ai] = simps(sfr(numpy.sort(tp)/1.e9,self.tau),numpy.sort(tp))
 
-            STR[ai] = strr
-            if self.tau > 0:
-                SFR[ai] = (1 + epsilon*prgas[ai])*sfr(self.ta,self.tau)[ai]/norma
-            elif self.tau < 0:
-                SFR[ai] = sfr(self.ta[ai],self.tau)/norma
-            #print SFR[ai,ti,mi]
-            #self.SN = float(snn)    
-            SFR[ai] /= STR[ai]                
+                STR[ai] = strr
+                if self.tau > 0:
+                    SFR[ai] = (1 + epsilon*prgas[ai])*sfr(self.ta,self.tau)[ai]/norma
+                elif self.tau < 0:
+                    SFR[ai] = sfr(self.ta[ai],self.tau)/norma
+                #print SFR[ai,ti,mi]
+                #self.SN = float(snn)    
+                SFR[ai] /= STR[ai]                
 
         """
         SECTION 3
@@ -611,7 +606,7 @@ class CSP:
         else:
             Nlyman = 0.
 
-        total = self.neb_cont + self.neb_hlines + self.neb_metal[:,neb_z]
+        total = (self.neb_cont*self.inc_cont) + self.neb_hlines + (self.neb_metal[:,neb_z]*self.inc_met)
         total *= 2.997925e18/(self.wave**2) #Convert to Flambda
         total *= (Nly*(1-self.fesc))
 
@@ -864,7 +859,7 @@ class CSP:
         print continuum
         lineluminosity = continuum * EqW
         print lineluminosity, lineluminosity/binwidth
-        
+        self.Lalpha = lineluminosity
         self.SED[wbin] += lineluminosity/binwidth
 
 
@@ -995,25 +990,26 @@ class FilterSet:
                 self.filters.append(EAZYset.filters[x])
 
 class Observe:
-    def __init__(self,SED,Filters,redshift,force_age = True):
+    def __init__(self,SED,Filters,redshift,force_age = True,madau=True):
         self.SED = SED
         self.F = Filters
         self.z = redshift
         self.wave = self.SED.wave
         
         self.lyman_abs = numpy.ones(len(self.wave))
-        ly_cont_w = numpy.array([(self.wave<=912.)][0])
-        ly_b_w = numpy.array([(self.wave > 912.) & (self.wave <= 1026.)][0])
-        ly_a_w = numpy.array([(self.wave > 1026.) & (self.wave <= 1216.)][0])
+        if madau:
+            ly_cont_w = numpy.array([(self.wave<=912.)][0])
+            ly_b_w = numpy.array([(self.wave > 912.) & (self.wave <= 1026.)][0])
+            ly_a_w = numpy.array([(self.wave > 1026.) & (self.wave <= 1216.)][0])
         
-        dec_a = (1/(120*(1+self.z)))*quad(self.dec_a_func,
-                1050*(1+self.z),1170*(1+self.z))[0]
-        dec_b= (1/(95*(1+self.z)))*quad(self.dec_b_func,
-                920*(1+self.z),1015*(1+self.z))[0]
+            dec_a = (1/(120*(1+self.z)))*quad(self.dec_a_func,
+                    1050*(1+self.z),1170*(1+self.z))[0]
+            dec_b= (1/(95*(1+self.z)))*quad(self.dec_b_func,
+                    920*(1+self.z),1015*(1+self.z))[0]
         
-        self.lyman_abs[ly_cont_w] = 0.
-        self.lyman_abs[ly_b_w] = dec_b
-        self.lyman_abs[ly_a_w] = dec_a
+            self.lyman_abs[ly_cont_w] = 0.
+            self.lyman_abs[ly_b_w] = dec_b
+            self.lyman_abs[ly_a_w] = dec_a
         
         if self.z > 0:
             self.dm = cosmo.distmod(self.z).value
