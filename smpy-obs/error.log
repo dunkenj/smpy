@@ -1,10 +1,26 @@
-mkCSPs.py:441: RuntimeWarning: divide by zero encountered in log10
+mkCSPs.py:440: RuntimeWarning: divide by zero encountered in log10
   tbins = numpy.logspace(0,numpy.log10(max(tp)),1000)
 /usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/numpy/core/function_base.py:88: RuntimeWarning: invalid value encountered in multiply
   y = _nx.arange(0, num) * step + start
-mkCSPs.py:573: RuntimeWarning: invalid value encountered in double_scalars
+mkCSPs.py:509: RuntimeWarning: divide by zero encountered in double_scalars
   SFR[ai] /= STR[ai]
-mkCSPs.py:1107: RuntimeWarning: divide by zero encountered in log10
+mkCSPs.py:572: RuntimeWarning: invalid value encountered in double_scalars
+  SFR[ai] /= STR[ai]
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scipy/integrate/quadrature.py:308: RuntimeWarning: divide by zero encountered in true_divide
+  h0divh1 = h0 / h1
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scipy/integrate/quadrature.py:308: RuntimeWarning: invalid value encountered in true_divide
+  h0divh1 = h0 / h1
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scipy/integrate/quadrature.py:310: RuntimeWarning: divide by zero encountered in true_divide
+  y[slice1]*hsum*hsum/hprod +
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scipy/integrate/quadrature.py:310: RuntimeWarning: invalid value encountered in true_divide
+  y[slice1]*hsum*hsum/hprod +
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scipy/integrate/quadrature.py:310: RuntimeWarning: invalid value encountered in add
+  y[slice1]*hsum*hsum/hprod +
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scipy/integrate/quadrature.py:311: RuntimeWarning: invalid value encountered in add
+  y[slice2]*(2-h0divh1)),axis)
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scipy/integrate/quadrature.py:311: RuntimeWarning: invalid value encountered in multiply
+  y[slice2]*(2-h0divh1)),axis)
+/usr/local/Cellar/python/2.7.5/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scipy/integrate/quadrature.py:310: RuntimeWarning: invalid value encountered in multiply
+  y[slice1]*hsum*hsum/hprod +
+mkCSPs.py:1106: RuntimeWarning: divide by zero encountered in log10
   Mag = AB0 - 2.5*numpy.log10(F_mean) - 48.6
-mkCSPs.py:510: RuntimeWarning: divide by zero encountered in double_scalars
-  SFR[ai] /= STR[ai]

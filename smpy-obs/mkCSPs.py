@@ -192,8 +192,7 @@ class ised(object):
 class CSP:
     def __init__(self,SSPpath = '../ssp/bc03/salpeter/lr/',
                  age=None,sfh=None,dust=None,metal_ind=None,fesc=None,
-                 dustmodel = 'calzetti',
-                 sfh_law='exp',neb_cont=True,neb_met=True):
+                 sfh_law='exp',dustmodel = 'calzetti',neb_cont=True,neb_met=True):
         self.SSPpath = SSPpath
         self.files = glob(self.SSPpath + '*.ised')
         self.files.sort()
@@ -228,11 +227,11 @@ class CSP:
         
         if None not in (age,sfh,dust,metal_ind):
             if fesc == None:
-                self.build(age,sfh,dust,metal_ind,sfh_law=sfh_law,
+                self.build(age,sfh,dust,metal_ind,sfh_law=sfh_law,dustmodel=dustmodel,
                            neb_cont=neb_cont,neb_met=neb_met)
                 
             else:
-                self.build(age,sfh,dust,metal_ind,fesc,sfh_law,neb_cont,neb_met)
+                self.build(age,sfh,dust,metal_ind,fesc,sfh_law,dustmodel,neb_cont,neb_met)
     
     def _sfh_exp(self,t,tau):
         sfh = numpy.exp(-1*t/tau)/abs(tau)
