@@ -251,6 +251,16 @@ class CSP:
     
         sfh /= numpy.trapz(sfh,t)
         return sfh
+    
+    def dust_func(self,lam,ai,bi,ni,li):
+        """
+        Functional form for SMC, LMC and MW extinction curves of
+        Pei et al. 1992
+        """
+        lam = numpy.array(lam) / 1e4 
+        ki = numpy.power((lam / li),ni) + numpy.power((li / lam),ni) + bi
+        eta_i = ai / ki
+        return eta_i
 
     def build(self,age,sfh,dust,metal,fesc=1.,sfh_law='exp',dustmodel = 'calzetti',
               neb_cont=True,neb_met=True):
@@ -330,6 +340,66 @@ class CSP:
             for ti in range(0,len(self.ta)):
                 ATT[:,ti] *= numpy.power(10,-0.4*tv)
                 
+        elif self.dust_model == "smc":
+            ai = [185., 27., 0.005, 0.01, 0.012, 0.03]
+            bi = [90., 5.5, -1.95, -1.95, -1.8, 0.]
+            ni = [2., 4., 2., 2., 2., 2.]
+            li = [0.042, 0.08, 0.22, 9.7, 18., 25.]
+            
+            eta = numpy.zeros_like(self.wave)
+            for i in xrange(len(ai)):
+                eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
+            
+            Rv = 2.93
+            Ab = self.tauv * (1 + (1/Rv))
+            
+            print numpy.exp(self.tauv*eta)
+            ATT = numpy.ones([len(self.wave),len(self.ta)])
+            for ti in range(0,len(self.ta)):
+                ATT[:,ti] *= numpy.power(10,-0.4*(Ab*eta))
+                #Offset added to renormalise from B to V band
+                #ATT[:,ti] *= numpy.exp(-1*self.tauv*eta)
+        
+        elif self.dust_model == "lmc":
+            ai = [175., 19., 0.023, 0.005, 0.006, 0.02]
+            bi = [90., 4.0, -1.95, -1.95, -1.8, 0.]
+            ni = [2., 4.5, 2., 2., 2., 2.]
+            li = [0.046, 0.08, 0.22, 9.7, 18., 25.]
+            
+            eta = numpy.zeros_like(self.wave)
+            for i in xrange(len(ai)):
+                eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
+
+            Rv = 3.16
+            Ab = self.tauv * (1 + (1/Rv))
+            
+            ATT = numpy.ones([len(self.wave),len(self.ta)])
+            for ti in range(0,len(self.ta)):
+                ATT[:,ti] *= numpy.power(10,-0.4*(Ab*eta))
+                #Offset added to renormalise from B to V band
+                #ATT[:,ti] *= numpy.exp(-1*self.tauv*eta)
+                 
+        elif self.dust_model == "mw":
+            ai = [165., 14., 0.045, 0.002, 0.002, 0.012]
+            bi = [90., 4., -1.95, -1.95, -1.8, 0.]
+            ni = [2., 6.5, 2., 2., 2., 2.]
+            li = [0.047, 0.08, 0.22, 9.7, 18., 25.]
+            
+            eta = numpy.zeros_like(self.wave)
+            for i in xrange(len(ai)):
+                eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
+            
+            Rv = 3.08
+            Ab = self.tauv * (1 + (1/Rv))
+
+            ATT = numpy.ones([len(self.wave),len(self.ta)])
+            for ti in range(0,len(self.ta)):
+                ATT[:,ti] *= numpy.power(10,-0.4*(Ab*eta))
+                #Offset added to renormalise from B to V band
+                #ATT[:,ti] *= numpy.exp(-1*self.tauv*eta)
+                 
+        
+
         
         """
         SECTION 1
