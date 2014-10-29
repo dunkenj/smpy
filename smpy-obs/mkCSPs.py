@@ -1062,44 +1062,51 @@ class Observe:
     def __init__(self,SED,Filters,redshift,force_age = True,madau=True):
         self.SED = SED
         self.F = Filters
-        self.z = redshift
+        self.redshifts = numpy.array(redshift,ndmin=1)
         self.wave = self.SED.wave
+
+        self.fluxes = []
+        self.AB = []
+
+        for z in self.redshifts:
+            self.lyman_abs = numpy.ones(len(self.wave))
+            if madau:
+                ly_cont_w = numpy.array([(self.wave<=912.)][0])
+                ly_b_w = numpy.array([(self.wave > 912.) & (self.wave <= 1026.)][0])
+                ly_a_w = numpy.array([(self.wave > 1026.) & (self.wave <= 1216.)][0])
         
-        self.lyman_abs = numpy.ones(len(self.wave))
-        if madau:
-            ly_cont_w = numpy.array([(self.wave<=912.)][0])
-            ly_b_w = numpy.array([(self.wave > 912.) & (self.wave <= 1026.)][0])
-            ly_a_w = numpy.array([(self.wave > 1026.) & (self.wave <= 1216.)][0])
+                dec_a = (1/(120*(1+z)))*quad(self.dec_a_func,
+                        1050*(1+z),1170*(1+z))[0]
+                dec_b= (1/(95*(1+z)))*quad(self.dec_b_func,
+                        920*(1+z),1015*(1+z))[0]
         
-            dec_a = (1/(120*(1+self.z)))*quad(self.dec_a_func,
-                    1050*(1+self.z),1170*(1+self.z))[0]
-            dec_b= (1/(95*(1+self.z)))*quad(self.dec_b_func,
-                    920*(1+self.z),1015*(1+self.z))[0]
+                self.lyman_abs[ly_cont_w] = 0.
+                self.lyman_abs[ly_b_w] = dec_b
+                self.lyman_abs[ly_a_w] = dec_a
         
-            self.lyman_abs[ly_cont_w] = 0.
-            self.lyman_abs[ly_b_w] = dec_b
-            self.lyman_abs[ly_a_w] = dec_a
+            if z > 0:
+                self.dm = cosmo.distmod(z).value
+            else:
+                self.dm = 0.
         
-        if self.z > 0:
-            self.dm = cosmo.distmod(self.z).value
-        else:
-            self.dm = 0.
-        
-        if (self.SED.tg/1e9 > cosmo.age(self.z).value) and force_age:
-            print 'SSP age older than universe...stopping.'
-        else:            
-            self.fluxes = []
-            self.AB = []
-            self.wl = []
+            if (self.SED.tg/1e9 > cosmo.age(z).value) and force_age:
+                print 'SSP age older than universe...stopping.'
+            else:            
+                tfluxes = []
+                tAB = []
+                twl = []
             
-            for filt in self.F.filters:
-                #print filt.wave[0]
-                flux, mag = self.calcFlux(filt)
-                self.fluxes.append(flux)
-                self.AB.append(mag)
-                self.wl.append(filt.lambda_c)
-            self.fluxes *= (1e-6*U.Jy)
-            self.AB *= (U.mag)
+                for filt in self.F.filters:
+                    #print filt.wave[0]
+                    flux, mag = self.calcFlux(filt,z)
+                    tfluxes.append(flux)
+                    tAB.append(mag)
+                    twl.append(filt.lambda_c)
+                self.fluxes.append(tfluxes)
+                self.AB.append(tAB)
+        self.wl = twl
+        self.fluxes *= (1e-6*U.Jy)
+        self.AB *= (U.mag)
     
     def dec_a_func(self,wave_obs):
         return numpy.exp(-1*0.0036*(numpy.power(wave_obs/1216.,3.46)))
@@ -1115,10 +1122,10 @@ class Observe:
 
         return numpy.exp(-1*teff_total)
         
-    def calcFlux(self,filt):
+    def calcFlux(self,filt,z):
         wf = filt.wave.value
         tp = filt.response
-        z1 = self.z+1
+        z1 = z+1
 
         if len(wf) > 1000: #Re-sample large filters for performance
             wfx = numpy.linspace(wf[0],wf[-1],1000)
@@ -1179,6 +1186,7 @@ class Observe:
         Flux = 10**((23.9 - Mag)/2.5) #uJy
         
         return Flux , Mag
+
 
      
 #must define cosmo before calling an Observe
