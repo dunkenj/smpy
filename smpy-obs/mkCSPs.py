@@ -692,7 +692,6 @@ class CSP:
         else:
             Nlyman_final = 0.
 
-
         beta = self.calc_beta(self.wave,y[0])
         #print ai,ai1
         #print STR[ai1,ti,mi]
@@ -716,79 +715,49 @@ class CSP:
 
         Returns UV slope index and the error on that fit
         """
-        new_wave = numpy.arange(1200,2650)
-        new_SED = griddata(wave,SED,new_wave)
-        wave = new_wave
-        SED = new_SED
+        #new_wave = numpy.arange(1200,2650)
+        #new_SED = griddata(wave,SED,new_wave)
+        #wave = new_wave
+        #SED = new_SED
 
-        window_lower = numpy.array([1268.,1309.,1342.,1407.,1562.,1677.,1760.,1866.,1930.])#,2400.])
-        window_upper = numpy.array([1284.,1316.,1371.,1515.,1583.,1740.,1833.,1890.,1950.])#,2580.])
+        #window_lower = numpy.array([1268.,1309.,1342.,1407.,1562.,1677.,1760.,1866.,1930.,2400.])
+        #window_upper = numpy.array([1284.,1316.,1371.,1515.,1583.,1740.,1833.,1890.,1950.,2580.])
 
-        window_mean = (window_lower+window_upper)/2 #midpoint for power-law fitting
+        #window_lower = numpy.array([1407,1562,1677.,1760.,1866.,1930.,2400.])
+        #window_upper = numpy.array([1515,1583,1740.,1833.,1890.,1950.,2580.])
+
+        window_lower = numpy.array([1600,2400])
+        window_upper = numpy.array([1950,2600])
+        
+        ww = numpy.zeros_like(wave,dtype=bool)
+        for w in numpy.arange(len(window_lower)):
+            ww[(wave >= window_lower[w])*(wave < window_upper[w])] = True
+
+        #window_mean = (window_lower+window_upper)/2 #midpoint for power-law fitting
 
         fluxes = numpy.zeros_like(window_lower)
 
-        for window in range(len(window_lower)):
-            wf = numpy.arange(window_lower[window]-5,window_upper[window]+5)
-            tp = numpy.zeros(len(wf))
-            tp[(wf>=window_lower[window]) & (wf<window_upper[window])] = 1.0
+        #for w, window_lower in enumerate(window_lower):
+        #    wf = numpy.where((wave > window_lower) & (wave <= window_upper[w]))
+        #    fluxes[w] = numpy.mean(SED[wf])
 
-            #Find SED wavelength entries within filter range
-            wff = numpy.array([wf[0] < wave[i] < wf[-1] for i in range(len(wave))])
-            wft = wave[wff]
-
-            #Interpolate to find throughput values at new wavelength points
-            tpt = griddata(wf,tp,wft)
-
-            #Join arrays and sort w.r.t to wf
-            wf = numpy.concatenate((wf,wft))
-            tp = numpy.concatenate((tp,tpt))
-
-            order = numpy.argsort(wf)
-            wf = wf[order]
-            tp = tp[order]
-        
-            dwf = numpy.diff(wf)
-            nwf = len(wf)
-
-            tpwf = tp/wf
-        
-            f_mean2 = numpy.dot(dwf,(tpwf[:nwf-1]+tpwf[1:])/2)
-            tpwf = tp*wf
-
-            WR = 0.
-
-            for i in range(nwf):
-
-                #Interpolation indices
-                j = numpy.where(wave<wf[i])[0][-1]
-
-                a = (wf[i] - wave[j])/(wave[j+1]-wave[j])
-                tpa = tpwf[i]*((1-a)*(SED[j]) + a*SED[j+1])
-
-                if i != 0:
-                    WR += dwf[i-1]*(tpb+tpa)
-
-                tpb = tpa
-
-            fluxes[window] = WR/2/f_mean2/2.997925e18
-
-        fluxes *= 2.997925e18/(window_mean**2)
+        #fluxes *= 2.997925e18/(window_mean**2)
         fluxerr = numpy.sqrt(fluxes)
 
-        logx = numpy.log10(window_mean/1e10)
-        logy = numpy.log10(fluxes)
-        logyerr = fluxerr/fluxes
+        logx = numpy.log10(wave[ww])
+        logy = numpy.log10(SED[ww])
+        logyerr = 1.#fluxerr/fluxes
     
-        fitfunc = lambda p, x: p[0] + p[1]*x
+        fitfunc = lambda p, x: p[0] + (x*p[1])
         errfunc = lambda p, x, y, err: (y - fitfunc(p,x))/err
     
-        pinit = [numpy.max(fluxes), -2.0]
+        pinit = [numpy.max(SED[ww]), -2.0]
         out = leastsq(errfunc, pinit, args=(logx,logy,logyerr))
+        #out = leastsq(errfunc, pinit, args=(log,fluxes,fluxerr))
 
         pfinal = out[0]
         covar = out[1]
-    
+        #print pfinal
         index = pfinal[1]
         #indexerr = numpy.sqrt(covar[0])
     
@@ -921,13 +890,13 @@ class CSP:
     
     def addEmissionLine(self,wavelength,EqW):
         wbin = numpy.argmin(numpy.abs(self.wave-wavelength))
-        print wbin
+        #print wbin
         binwidth = numpy.mean(numpy.diff(self.wave)[wbin-1:wbin+1])
-        print binwidth
+        #print binwidth
         continuum = numpy.mean(self.SED[wbin:wbin+1])
-        print continuum
+        #print continuum
         lineluminosity = continuum * EqW
-        print lineluminosity, lineluminosity/binwidth
+        #print lineluminosity, lineluminosity/binwidth
         self.Lalpha = lineluminosity
         self.SED[wbin] += lineluminosity/binwidth
 
@@ -1067,7 +1036,7 @@ class Observe:
 
         self.fluxes = []
         self.AB = []
-
+        self.wl = []
         for z in self.redshifts:
             self.lyman_abs = numpy.ones(len(self.wave))
             if madau:
@@ -1104,7 +1073,9 @@ class Observe:
                     twl.append(filt.lambda_c)
                 self.fluxes.append(tfluxes)
                 self.AB.append(tAB)
-        self.wl = twl
+                self.wl = twl
+                
+        self.wl *= U.angstrom
         self.fluxes *= (1e-6*U.Jy)
         self.AB *= (U.mag)
     
