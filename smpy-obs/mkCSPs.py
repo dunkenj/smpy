@@ -318,28 +318,55 @@ class CSP:
 
         if self.dust_model == "charlot":
             ATT = numpy.empty([len(self.wave),len(self.ta)])
-            tv = (self.tauv*numpy.ones(len(self.ta)))
+            tv = ((self.tauv/1.0857)*numpy.ones(len(self.ta)))
             tv[self.ta>1e7] = mu*self.tauv
             lam = numpy.array((5500/self.wave)**0.7)
             ATT[:,:] = (numpy.exp(-1*numpy.outer(lam,tv)))
 
         elif self.dust_model == "calzetti":
             ATT = numpy.ones([len(self.wave),len(self.ta)])
-
             k = numpy.zeros_like(self.wave)
+
+            w0 = [self.wave <= 1200]
             w1 = [self.wave < 6300]
             w2 = [self.wave >= 6300]
             w_u = self.wave/1e4
 
+            x1 = numpy.argmin(numpy.abs(self.wave-1200))
+            x2 = numpy.argmin(numpy.abs(self.wave-1250))
+    
             k[w2] = 2.659*(-1.857 + 1.040/w_u[w2])
             k[w1] = 2.659*(-2.156 + (1.509/w_u[w1]) - (0.198/w_u[w1]**2) + (0.011/w_u[w1]**3))
-            k += 4.05
+            k[w0] = k[x1] + ((self.wave[w0]-1200.)  * (k[x1]-k[x2]) / (self.wave[x1]-self.wave[x2]))
 
+            k += 4.05
+            k[k < 0.] = 0.
+
+            tv = self.tauv*k/4.05
+            for ti in range(0,len(self.ta)):
+                ATT[:,ti] *= numpy.power(10,-0.4*tv)
+
+        elif self.dust_model == "calzetti2":
+            ATT = numpy.ones([len(self.wave),len(self.ta)])
+            k = numpy.zeros_like(self.wave)
+
+            w0 = [self.wave <= 1000]
+            w1 = [(self.wave > 1000)*(self.wave < 6300)]
+            w2 = [self.wave >= 6300]
+            w_u = self.wave/1e4
+    
+            k[w2] = 2.659*(-1.857 + 1.040/w_u[w2])
+            k[w1] = 2.659*(-2.156 + (1.509/w_u[w1]) - (0.198/w_u[w1]**2) + (0.011/w_u[w1]**3))
+    
+            p1 = self.dust_func(self.wave,27,4,5.5,0.08) + self.dust_func(self.wave,185,90,2,0.042)
+    
+            k[w0] = p1[w0] / (p1[w1][0]/k[w1][0])
+            k += 4.05
             k[k < 0.] = 0.
             tv = self.tauv*k/4.05
             for ti in range(0,len(self.ta)):
                 ATT[:,ti] *= numpy.power(10,-0.4*tv)
-                
+
         elif self.dust_model == "smc":
             ai = [185., 27., 0.005, 0.01, 0.012, 0.03]
             bi = [90., 5.5, -1.95, -1.95, -1.8, 0.]
@@ -912,24 +939,40 @@ class Filter(object):
         self.nu_c = []
         
 class FileFilter(Filter):
-    def __init__(self,filepath):
+    def __init__(self,filepath,minbins=200):
         self.path = filepath
         
-        try:
-            data = numpy.loadtxt(self.path)
-            self.wave = data[:,0] * U.angstrom
-            self.response = data[:,1]
-            
-            self.freq = (C.c/self.wave).to(U.Hz)
-            
-            self.lambda_c = (simps(self.wave*self.response,self.wave) / 
-                             simps(self.response,self.wave))
+#        try:
+        data = numpy.loadtxt(self.path)
+        wf = data[:,0]
+        tp = data[:,1]
+        if len(data[:,0]) < minbins: #Re-sample large filters for performance
+            wfx = numpy.linspace(wf[0],wf[-1],minbins)
+            tpx = griddata(wf,tp,wfx)
 
-            self.nu_c = (simps(self.freq*self.response,self.freq) / 
-                         simps(self.response,self.freq))
+            wf = wfx
+            tp = tpx
+            
+        self.wave = wf * U.angstrom
+        self.response = tp
         
-        except:
-            print 'Ohhhhh dear.'
+        self.freq = (C.c/self.wave).to(U.Hz)
+        
+        nmax = numpy.argmax(self.response)
+        halfmax_low = self.wave[:nmax][numpy.argmin(numpy.abs(self.response[nmax] - 2*self.response[:nmax]))]
+        halfmax_hi = self.wave[nmax:][numpy.argmin(numpy.abs(self.response[nmax] - 2*self.response[nmax:]))]
+        print self.wave[nmax],halfmax_low, halfmax_hi
+        self.fwhm = halfmax_hi-halfmax_low
+        
+        self.lambda_c = (simps(self.wave*self.response,self.wave) / 
+                         simps(self.response,self.wave))
+
+        self.nu_c = (simps(self.freq*self.response,self.freq) / 
+                     simps(self.response,self.freq))
+        
+        
+#        except:
+#            print 'Ohhhhh dear.'
         
         
 class TophatFilter(Filter):
@@ -995,11 +1038,19 @@ class LoadEAZYFilters(object):
                 new_filter.freq = numpy.array(freq) * U.Hz
                 new_filter.lambda_c = lambda_c
                 new_filter.nu_c = nu_c
+                nmax = numpy.argmax(new_filter.response)
+                halfmax_low = new_filter.wave[:nmax][numpy.argmin(numpy.abs(new_filter.response[nmax] - 2*new_filter.response[:nmax]))]
+                halfmax_hi = new_filter.wave[nmax:][numpy.argmin(numpy.abs(new_filter.response[nmax] - 2*new_filter.response[nmax:]))]
+                #print new_filter.wave[nmax],halfmax_low, halfmax_hi
+                new_filter.fwhm = halfmax_hi-halfmax_low                
+                
                 self.filters.append(new_filter)
                 self.filternames.append(name)
                 self.central_wlengths.append(lambda_c)
                 
+                
         self.central_wlengths *= U.angstrom
+  
   
 class FilterSet:
     def __init__(self,path=None):
@@ -1037,6 +1088,7 @@ class Observe:
         self.fluxes = []
         self.AB = []
         self.wl = []
+        self.fwhm = []
         for z in self.redshifts:
             self.lyman_abs = numpy.ones(len(self.wave))
             if madau:
@@ -1049,7 +1101,7 @@ class Observe:
                 dec_b= (1/(95*(1+z)))*quad(self.dec_b_func,
                         920*(1+z),1015*(1+z))[0]
         
-                self.lyman_abs[ly_cont_w] = 0.
+                self.lyman_abs[ly_cont_w] *= 0.1
                 self.lyman_abs[ly_b_w] = dec_b
                 self.lyman_abs[ly_a_w] = dec_a
         
@@ -1064,6 +1116,7 @@ class Observe:
                 tfluxes = []
                 tAB = []
                 twl = []
+                tfwhm = []
             
                 for filt in self.F.filters:
                     #print filt.wave[0]
@@ -1071,13 +1124,16 @@ class Observe:
                     tfluxes.append(flux)
                     tAB.append(mag)
                     twl.append(filt.lambda_c)
+                    tfwhm.append(filt.fwhm.value)
                 self.fluxes.append(tfluxes)
                 self.AB.append(tAB)
                 self.wl = twl
-                
+                self.fwhm = tfwhm
+        
         self.wl *= U.angstrom
-        self.fluxes *= (1e-6*U.Jy)
-        self.AB *= (U.mag)
+        self.fwhm *= U.angstrom
+        self.fluxes = (numpy.squeeze(self.AB) * 1e-6*U.Jy)
+        self.AB = (numpy.squeeze(self.AB) * U.mag)
     
     def dec_a_func(self,wave_obs):
         return numpy.exp(-1*0.0036*(numpy.power(wave_obs/1216.,3.46)))
