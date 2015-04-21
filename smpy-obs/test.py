@@ -37,13 +37,16 @@ Fi = d.FilterSet('../smpy-fit/GOODS-S_18_FilterCurves/Filter*.txt')
 
 Fi2 = C.FilterSet('../smpy-fit/GOODS-S_18_FilterCurves/Filter03*.txt')
 
+Obs = d.Observe(gal,Fi,0.,v=1)
+print Obs.AB
 Obs = d.Observe(gal,Fi,0.,v=2)
+print Obs.AB
+
 #Obs2 = C.Observe(gal2,Fi,0.)
 
 #print Obs.fluxes
 #print Obs.AB
 
-print Obs.AB
 #print Obs2.AB
 
 #Obs = d.Observe(gal,Fi,[0,1,2,3,4],v=2)

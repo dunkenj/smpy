@@ -3,11 +3,12 @@ SSP Paramaters
 make.py
 
 """
-ssp_input = 'ssp/bc03/chab/lr/'               # Input SSP folder
-ssp_output = '../MassData/temp_fitting.npz' # Output filename
+ssp_input = '../ssp/bc03/chab/lr/'               # Input SSP folder
+ssp_output = 'temp_fitting.npz' # Output filename
 
 # Star formation timescales (Gyr)
-tau = [-10.,-5.,-2.5,-1.0,-0.5,-0.25,0.05,0.25,0.5,1.0,2.5,5.,10.,1000]
+#tau = [-10.,-5.,-2.5,-1.0,-0.5,-0.25,0.05,0.25,0.5,1.0,2.5,5.,10.,1000]
+tau = [10.]
 
 #Model ages (Gyr)
 tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
@@ -15,7 +16,8 @@ tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
       2.,2.5,3.,4.,5.,6.5,8.,10.,13.5]                
 
 # Dust Total Attenuation Values
-tauv = [0.,0.1,0.2,0.3,0.4,0.6,0.8,1.0,1.5,2.,3.,4.]
+#tauv = [0.,0.1,0.2,0.3,0.4,0.6,0.8,1.0,1.5,2.,3.,4.]
+tauv = [0.]
 
 dust_model = 'calzetti'                # 'charlot' - Charlot & Fall or 'calzetti' - Caltzetti 2000
 mu = 0.3                              # Fraction of tauv from ISM
@@ -35,10 +37,10 @@ process.py
 
 """
 
-synmag_output = '/data/stellarmasses/synmags/200912/temp_fitting_neb.npz'
+synmag_output = '/temp_fitting_neb.npz'
 
 # Filter Directory and Naming Convention - Assumes Ordered Numerically
-filt_dir = '/data/candels/catalogs/Filters/GOODS-S_18_FilterCurves/'
+filt_dir = 'GOODS-S_18_FilterCurves/'
 filt_names = 'Filter*.txt'
 
 

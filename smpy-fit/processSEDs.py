@@ -1,13 +1,19 @@
 """
 Say stuff
 """
-import numpy, array, time, os, sys, re
+import numpy as np
+import array, time, os, sys, re
 from scipy.interpolate import griddata
 from scipy.integrate import quad
 from sm_functions import tl,t0,dm,dist,dec_a_func,dec_b_func
 from glob import glob
 import sm_params as p
 
+from astropy import units as u
+from astropy import constants as c
+from astropy import cosmology as cos
+
+cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
 """
 Command line arguments and parameter import section
@@ -75,10 +81,57 @@ else:
 		print
 
 f = open("error.log", "w")
-original_stderr = sys.stderr
-sys.stderr = f
+#original_stderr = sys.stderr
+#sys.stderr = f
  
 start_time = time.clock()
+
+
+def tau_madau(wave, z):
+    """ Lyman limit system absorption following Madau 1995
+    
+    This version is in part based on my previous python implementation
+    and the simpler version shown here
+    https://github.com/spacetelescope/pysynphot/issues/77
+    
+    This version has been extended to include the additional
+    higher order lines calculated in EAZY. 
+    
+    Parameters:
+        wave (array): Array with astropy.units of length
+        z (float): redshift at which the source is being observed
+        
+    Returns:
+        LyL_absorption (array): Throughput along the line of sight
+            for wavelengths in wave from Lyman-alpha forest and 
+            Lyman-limit systems
+    
+    """
+
+    lymanlim = 912. * u.AA
+
+    lyn_w = np.array([1216, 1026., 972.8, 950., 938.1,
+                      931.0, 926.5, 923.4, 921.2,
+                      919.6, 918.4, 917.5, 916.7,
+                      916.1, 915.6, 915.2]) * u.AA
+    lyn_c = np.array([3.6e-3, 1.7e-3, 1.2e-3, 9.3e-4, 8.2e-4,
+                      7.5e-4, 7.1e-4, 6.8e-4, 6.6e-4,
+                      6.4e-4, 6.3e-4, 6.2e-4, 6.1e-4,
+                      6.0e-4, 6.0e-4, 6.0e-4])
+    tau = np.zeros(len(wave))
+
+    for i in range(len(lyn_w)):
+        tau = np.where(wave <= lyn_w[i] * (1 + z), tau + lyn_c[i] * (wave / lyn_w[i]) ** 3.46, tau)
+
+    wly = wave / lymanlim
+    wly3 = wly ** 3
+    pe_abs = (0.25 * wly3 * ((1 + z) ** 0.46 - wly ** 0.46) +
+              9.4 * wly ** 1.5 * ((1 + z) ** 0.18 - wly ** 0.18) -
+              0.7 * wly3 * (wly ** (-1.32) - (1 + z) ** (-1.32)) -
+              0.023 * ((1 + z) ** 1.68 - wly ** 1.68))
+    tau = np.where(wave <= lymanlim * (1 + z), tau + pe_abs, tau)
+    lyl_absorption = np.where(tau > 700., 0., np.exp(-tau))
+    return np.clip(lyl_absorption, 0, 1)
 
 input_binary = params.ssp_output
 output_binary = params.synmag_output
@@ -88,31 +141,31 @@ files = glob(params.filt_dir+params.filt_names) #Array of filter paths
 files.sort()
 
 if params.zspacing == 'linear':
-    z = numpy.arange(params.zmin,params.zmax,params.zstep)
+    z = np.arange(params.zmin,params.zmax,params.zstep)
 elif params.zspacing == 'log':
-    z = numpy.logspace(params.zmin,params.zmax,params.n_zsteps)
-    z = numpy.insert(z,[0],[0.])
+    z = np.logspace(params.zmin,params.zmax,params.n_zsteps)
+    z = np.insert(z,[0],[0.])
 z1= z+1
 
 quietprint('{0:s} {1:.1f} {2:s} {3:.1f} {4:s} {5} {6:s} {7}'.format('Redshifts range from',params.zmin,'to',params.zmax,'in',len(z),'steps','\n')) 
 
 quietprint('{0:s} {1:s}{2:s}'.format('Loading input SEDs from -',input_tail,':'))
 
-with numpy.load(input_binary) as data:
+with np.load(input_binary) as data:
     quietprint('{0:30s}'.format('Parameters')),
     parameters = data['parameters'][0]
     quietprint('Done')
 
     quietprint('{0:30s}'.format('Wavelength Array')),
-    wave = parameters[0]
+    wave = parameters[0] * u.AA
     quietprint('Done')
 
     quietprint('{0:30s}'.format('Age Array')),
-    tg = parameters[1]
+    tg = parameters[1] * u.yr
     quietprint('Done')
 
     quietprint('{0:30s}'.format('SEDs')),
-    SED = data['SED']
+    SED = data['SED'] * u.solLum / u.AA
     quietprint('Done')
 
     quietprint('{0:30s}'.format('Stellar Masses')),
@@ -125,10 +178,9 @@ with numpy.load(input_binary) as data:
 
 
 S = SED.shape
-F_mean = numpy.zeros((len(files),len(z),S[1],S[2],S[3],S[4]))
-F_mean_UV = numpy.zeros((len(z),S[1],S[2],S[3],S[4]))
+Flux = np.zeros((len(files),len(z),S[1],S[2],S[3],S[4])) * (u.erg / u.cm ** 2 / u.s / u.Hz)
+Flux_UV = np.zeros((len(z),S[1],S[2],S[3],S[4])) * (u.erg / u.cm ** 2 / u.s / u.Hz)
 
-print S
 """
 SECTION 1 
 Calculate cosmological distance modulus 'dm' and the age of the universe
@@ -138,37 +190,27 @@ only
 quietprint("Setting up redshift dependent arrays:")
 
 #dl = [dm(z[i]) for i in range(len(z))]
-#dl = numpy.array(dl)
-age = [tl(z[i]) for i in range(len(z))]
-age = (t0()-numpy.array(age))*1e9
+#dl = np.array(dl)
+age = cosmo.age(z).to(u.yr)
 quietprint('{0:30s}'.format('Ages')),
 
-dmo = [dist(z[i]) for i in range(len(z))]
-dmo = numpy.array(dmo)
+dl = cosmo.luminosity_distance(z).cgs
+dl[0] = 10*c.pc.cgs
+
+dmo = cosmo.distmod(z)
 dmo[0] = 0.
+
 quietprint('{0:30s}'.format('Distance Moduli')),
 
-ai = numpy.zeros(len(z))
-dec_a = numpy.zeros(len(z))
-dec_b = numpy.zeros(len(z))
-
-lyman_abs = numpy.ones((len(wave),len(z)))
-ly_cont_w = numpy.array([(wave<=912.)][0])
-ly_b_w = numpy.array([(wave > 912.) & (wave <= 1026.)][0])
-ly_a_w = numpy.array([(wave > 1026.) & (wave <= 1216.)][0])
-
+ai = np.zeros(len(z))
+lyman_abs = np.ones((len(wave),len(z)))
 if params.madau:
     for zi in range(len(z)):
-        ai[zi] = numpy.array(numpy.where(tg<age[zi]))[0][-1]
-        dec_a[zi] = (1/(120*(1+z[zi])))*quad(dec_a_func,1050*(1+z[zi]),1170*(1+z[zi]))[0]
-        dec_b[zi]= (1/(95*(1+z[zi])))*quad(dec_b_func,920*(1+z[zi]),1015*(1+z[zi]))[0]
-        
-        lyman_abs[ly_cont_w,zi] = 0.
-        lyman_abs[ly_b_w,zi] = dec_b[zi]
-        lyman_abs[ly_a_w,zi] = dec_a[zi]
+        ai[zi] = np.array(np.where(tg<age[zi]))[0][-1]
+        lyman_abs[:,zi] = tau_madau(wave, z[zi])
 else:
     for zi in range(len(z)):
-        ai[zi] = numpy.array(numpy.where(tg<age[zi]))[0][-1]
+        ai[zi] = np.array(np.where(tg<age[zi]))[0][-1]
 quietprint('{0:30s}'.format('Madau Absorption Decrements')),
 
 
@@ -187,67 +229,85 @@ for filt in range(len(files)):
     sys.stdout.flush()
 
     start_filtinterp = time.clock()
-    wf = numpy.loadtxt(files[filt], usecols=[0])
-    tp = numpy.loadtxt(files[filt], usecols=[1])
+    wf = np.loadtxt(files[filt], usecols=[0]) * u.AA
+    tp = np.loadtxt(files[filt], usecols=[1])
     print('{0:<15d}').format(len(wf)),
-    if len(wf) > 1000: #Re-sample large filters for performance
-        wfx = numpy.linspace(wf[0],wf[-1],1000)
+    if len(wf) > 1000: # Re-sample large filters for performance
+        wfx = np.linspace(wf[0],wf[-1],1000)
         tpx = griddata(wf,tp,wfx)
 
         wf = wfx
         tp = tpx
-        
 
-    #Find SED wavelength entries within filter range
-    wff = numpy.array([wf[0] < wave[i] < wf[-1] for i in range(len(wave))])
+
+    # Find SED wavelength entries within filter range
+    wff = np.array([wf[0] < wave[i] < wf[-1]
+                    for i in range(len(wave))])
     wft = wave[wff]
-    
-    #Interpolate to find throughput values at new wavelength points
-    tpt = griddata(wf,tp,wft)
-    
-    #Join arrays and sort w.r.t to wf
-    wf = numpy.concatenate((wf,wft))
-    tp = numpy.concatenate((tp,tpt))
-    
-    order = numpy.argsort(wf)
+
+    # Interpolate to find throughput values at new wavelength points
+    tpt = griddata(wf, tp, wft)
+
+    # Join arrays and sort w.r.t to wf
+    # Also replace units stripped by concatenate
+    wf = np.array(np.concatenate((wf, wft))) * u.AA
+    tp = np.concatenate((tp, tpt))
+
+    order = np.argsort(wf)
     wf = wf[order]
     tp = tp[order]
-
-    dwf = numpy.diff(wf)
-    nwf = len(wf)
-
-    tpwf = tp/wf
-    f_mean2 = numpy.dot(dwf,(tpwf[:nwf-1]+tpwf[1:])/2)
-    tpwf = tp*wf #Reassign tpwf as product
-
+       
     print '{0:<15.2f}'.format(time.clock()-start_filtinterp),
     sys.stdout.flush()
 
     start_conv = time.clock()
     for zi in range(len(z)):
-        wf1 = wf/z1[zi]
+        # Interpolate redshifted SED and LyAbs at new wavelength points
+        sed = griddata(wave * (1 + z[zi]), SED[:,:,:ai[zi]+1,:], wf) * SED.unit
+        lyabs = griddata(wave * (1 + z[zi]), lyman_abs[:,zi], wf)
 
-        WR = 0.
-
-        for i in range(nwf):
-
-            #Interpolation indices
-            j = numpy.where(wave<wf1[i])[0][-1]
-            #print j
-
-            a = (wf1[i] - wave[j])/(wave[j+1]-wave[j])
-            tpa = tpwf[i]*((1-a)*(SED[j,:ai[zi]+1,:]*lyman_abs[j,zi]) + a*SED[j+1,:ai[zi]+1,:]*lyman_abs[j+1,zi])
-            
-            if i != 0:
-                WR += dwf[i-1]*(tpb+tpa)
-
-            tpb = tpa
+        """
+        Old Method:
     
-        F_mean[filt,zi,:ai[zi]+1,:] = WR/2/z1[zi]/f_mean2/2.997925e18
+        WR = (np.trapz(sed * lyabs * tp * wf, wf) /c.c.to(u.AA/u.s)).value
+        F_mean = WR/f_mean2.value/z1#/c.c.to(u.AA / u.s)
+    
+        #Convert fluxes to AB magnitudes
+        Mag = -2.5*np.log10( F_mean * c.L_sun.cgs.value/ (4* np.pi* (c.pc.cgs.value*10)**2) ) - 48.6
+        Mag += self.dm
+    
+        # Coded as this in BC03
+        #
+        # AB0 = -2.5*np.log10( c.L_sun.cgs.value/ (4* np.pi* (10 * c.pc.cgs.value)**2) )
+        # Mag = AB0 - 2.5*np.log10(F_mean) - 48.6
+            
+        Flux = 10**((23.9 - Mag)/2.5) * u.uJy #uJy
+        #print Flux/Flux2.to(u.mJy)
+        print Flux, self.tmp.to(u.uJy)
+    
+        """
 
+        # Calculate f_nu mean
+        # Integrate SED through filter, as per BC03 Fortran
+        # As: f_nu=int(dnu Fnu Rnu/h*nu)/int(dnu Rnu/h*nu)
+        # ie: f_nu=int(dlm Flm Rlm lm / c)/int(dlm Rlm/lm)
+
+        top = np.trapz(sed * (lyabs * tp * wf)[:,None,None,None,None] / c.c.to(u.AA / u.s), 
+                       wf[:,None, None,None,None], axis=0)
+        bottom = np.trapz(tp / wf, wf)
+
+        area = (4 * np.pi * (dl[zi] ** 2))
+
+        F_mean = top / bottom / (1 + z[zi]) / area
+
+        # Set flux to appropriate units and calculate AB magnitude
+        Flux[filt,zi,:,:ai[zi]+1,:] = F_mean.to(u.erg / u.cm ** 2 / u.s / u.Hz)
 
     print '{0:<20.2f}'.format((time.clock()-start_conv)/len(z))
     
+
+ABmag = -2.5 * np.log10(Flux.to(u.Jy) / (3631 * u.Jy))
+
 
 """
 Compute rest-frame UV (1500A) flux
@@ -257,70 +317,88 @@ compute_MUV = True
 if compute_MUV:
     print('{0}{1}').format('\n','Calculating Rest-Frame UV (1500AA) Fluxes: '),
     start_filtinterp = time.clock()
-    wf = numpy.arange(1445,1555)
-    tp = numpy.zeros(len(wf))
+    wf = np.arange(1445,1555)
+    tp = np.zeros(len(wf))
     tp[(wf>=1450) & (wf<1551)] = 1.0
 
-    #Find SED wavelength entries within filter range
-    wff = numpy.array([wf[0] < wave[i] < wf[-1] for i in range(len(wave))])
+    # Find SED wavelength entries within filter range
+    wff = np.array([wf[0] < wave[i] < wf[-1]
+                    for i in range(len(wave))])
     wft = wave[wff]
 
-    #Interpolate to find throughput values at new wavelength points
-    tpt = griddata(wf,tp,wft)
+    # Interpolate to find throughput values at new wavelength points
+    tpt = griddata(wf, tp, wft)
 
-    #Join arrays and sort w.r.t to wf
-    wf = numpy.concatenate((wf,wft))
-    tp = numpy.concatenate((tp,tpt))
+    # Join arrays and sort w.r.t to wf
+    # Also replace units stripped by concatenate
+    wf = np.array(np.concatenate((wf, wft))) * u.AA
+    tp = np.concatenate((tp, tpt))
 
-    order = numpy.argsort(wf)
+    order = np.argsort(wf)
     wf = wf[order]
     tp = tp[order]
-
-    dwf = numpy.diff(wf)
-    nwf = len(wf)
-
-    tpwf = tp/wf
-    f_mean2 = numpy.dot(dwf,(tpwf[:nwf-1]+tpwf[1:])/2)
-    tpwf = tp*wf #Reassign tpwf as product
+       
+    print '{0:<15.2f}'.format(time.clock()-start_filtinterp),
+    sys.stdout.flush()
 
     start_conv = time.clock()
     for zi in range(len(z)):
-        wf1 = wf/z1[zi]
+        # Interpolate redshifted SED and LyAbs at new wavelength points
+        sed = griddata(wave * (1 + z[zi]), SED[:,:,:ai[zi]+1,:], wf) * SED.unit
+        lyabs = griddata(wave * (1 + z[zi]), lyman_abs[:,zi], wf)
 
-        WR = 0.
+        """
+        Old Method:
+    
+        WR = (np.trapz(sed * lyabs * tp * wf, wf) /c.c.to(u.AA/u.s)).value
+        F_mean = WR/f_mean2.value/z1#/c.c.to(u.AA / u.s)
+    
+        #Convert fluxes to AB magnitudes
+        Mag = -2.5*np.log10( F_mean * c.L_sun.cgs.value/ (4* np.pi* (c.pc.cgs.value*10)**2) ) - 48.6
+        Mag += self.dm
+    
+        # Coded as this in BC03
+        #
+        # AB0 = -2.5*np.log10( c.L_sun.cgs.value/ (4* np.pi* (10 * c.pc.cgs.value)**2) )
+        # Mag = AB0 - 2.5*np.log10(F_mean) - 48.6
+            
+        Flux = 10**((23.9 - Mag)/2.5) * u.uJy #uJy
+        #print Flux/Flux2.to(u.mJy)
+        print Flux, self.tmp.to(u.uJy)
+    
+        """
 
-        for i in range(nwf):
+        # Calculate f_nu mean
+        # Integrate SED through filter, as per BC03 Fortran
+        # As: f_nu=int(dnu Fnu Rnu/h*nu)/int(dnu Rnu/h*nu)
+        # ie: f_nu=int(dlm Flm Rlm lm / c)/int(dlm Rlm/lm)
 
-            #Interpolation indices
-            j = numpy.where(wave<wf1[i])[0][-1]
+        top = np.trapz(sed * (lyabs * tp * wf)[:,None,None,None,None] / c.c.to(u.AA / u.s), 
+                       wf[:,None, None,None,None], axis=0)
+        bottom = np.trapz(tp / wf, wf)
 
-            a = (wf1[i] - wave[j])/(wave[j+1]-wave[j])
-            tpa = tpwf[i]*((1-a)*(SED[j,:ai[zi]+1,:]*lyman_abs[j,zi]) + a*SED[j+1,:ai[zi]+1,:]*lyman_abs[j+1,zi])
+        area = (4 * np.pi * (dl[zi] ** 2))
 
-            if i != 0:
-                WR += dwf[i-1]*(tpb+tpa)
+        F_mean = top / bottom / (1 + z[zi]) / area
 
-            tpb = tpa
+        # Set flux to appropriate units and calculate AB magnitude
+        Flux_UV[filt,zi,:,:ai[zi]+1,:] = F_mean.to(u.erg / u.cm ** 2 / u.s / u.Hz)
 
-
-        #print WR
-
-        F_mean_UV[zi,:ai[zi]+1,:] = WR/2/z1[zi]/f_mean2/2.997925e18
-
+    print '{0:<20.2f}'.format((time.clock()-start_conv)/len(z))
     print('Done')
 
 print('{0}').format('Converting Flux arrays to AB Magnitudes: '),
-AB0 = 5*numpy.log10(1.7684e8*1e-5)
+AB0 = 5*np.log10(1.7684e8*1e-5)
 # dl = 10pc in Mpc
 # this factor is sqrt(4*pi*(3.0856e24)^2 Lsun)
 
 #Convert fluxes to AB magnitudes
-Mags = numpy.empty(F_mean.shape)
-Mags = AB0 - 2.5*numpy.log10(F_mean) - 48.6
+Mags = np.empty(F_mean.shape)
+Mags = AB0 - 2.5*np.log10(F_mean) - 48.6
 
 
-MUV = numpy.empty(F_mean_UV.shape)
-MUV = AB0 - 2.5*numpy.log10(F_mean_UV) - 48.6
+MUV = np.empty(F_mean_UV.shape)
+MUV = AB0 - 2.5*np.log10(F_mean_UV) - 48.6
 
 #Store mass-to-light ratio for selected filter
 
@@ -334,9 +412,9 @@ SECTION 3
 
 S = Mags.shape
 
-for r in range(S[1]):
-    Mags[:,r,:,:,:,:] += dmo[r]
-    MUV[r,:,:,:,:] += dmo[r]
+#for r in range(S[1]):
+#    Mags[:,r,:,:,:,:] += dmo[r]
+#    MUV[r,:,:,:,:] += dmo[r]
 
 Fluxes = 10**((23.9 - Mags)/2.5) #uJy 
 UV_Fluxes = 10**((23.9 - MUV)/2.5) #uJy 
@@ -349,9 +427,9 @@ if os.path.isfile(output_binary+'.mags'+'.npy'):
 if os.path.isfile(output_binary+'.fluxes'+'.npy'):
     os.remove(output_binary+'.fluxes'+'.npy')
 
-numpy.savez(output_binary+'.main',parameters=parameters,z=z,filters=files,SFR=SFR,Mshape=S,MUV=MUV,UV_flux=UV_Fluxes)
-numpy.save(output_binary+'.mags',Mags)
-numpy.save(output_binary+'.fluxes',Fluxes)
+np.savez(output_binary+'.main',parameters=parameters,z=z,filters=files,SFR=SFR,Mshape=S,MUV=MUV,UV_flux=UV_Fluxes)
+np.save(output_binary+'.mags',Mags)
+np.save(output_binary+'.fluxes',Fluxes)
 print('Done')
 
 print('{0}{1}{2}{3:s} {4:.1f}').format('\n','All finished!','\n','Time elapsed:',(time.clock()-start_time))
