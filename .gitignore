@@ -1,24 +1,12 @@
-
-smpy-obs/.ipynb_checkpoints/Dust Extinction Curves-checkpoint.ipynb
-
-smpy-obs/Dust Extinction Curves.ipynb
-
 smpy-obs/error.log
-
-smpy-obs/Untitled1.ipynb
-
-smpy-obs/error.log
-
-smpy-obs/error.log
-
-smpy-obs/error.log
-
-smpy-obs/Subaru dropouts.ipynb
-
-smpy-obs/Far-UV Effects on Broadband Fluxes.ipynb
-
-smpy-obs/DustShape.pdf
-
-smpy-obs/.ipynb_checkpoints/Untitled2-checkpoint.ipynb
-
+smpy-fits/error.log
 *.ipynb
+*.npz
+*.npy
+*.pdf
+*.txt
+*.png
+smpy-obs/Dust Extinction Curves.py
+smpy-obs/DustExtinctionCurves.py
+smpy-obs/test.py
+smpy-obs/filters/*
