@@ -1063,7 +1063,7 @@ class Observe:
 
         # Interpolate redshifted SED and LyAbs at new wavelength points
         sed = griddata(self.wave * (1 + z), self.SED.SED, wf) * self.SED.SED.unit
-        lyabs = griddata(self.wave * (1 + z), self.lyman_abs, wf)
+        lyabs = griddata(self.wave , self.lyman_abs, wf)
 
         """
         Old Method:
@@ -1133,7 +1133,7 @@ class Observe:
         wf = wf[order]
         tp = tp[order]
         sed = griddata(self.wave * (1 + z), self.SED.SED.value, wf)
-        lyabs = griddata(self.wave * (1 + z), self.lyman_abs, wf)
+        lyabs = griddata(self.wave, self.lyman_abs, wf)
         dwf = np.diff(wf)
         nwf = len(wf)
 
