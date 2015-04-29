@@ -264,7 +264,7 @@ for filt in range(len(files)):
         for zi in range(len(z)):
             # Interpolate redshifted SED and LyAbs at new wavelength points
             sed = griddata(wave * (1 + z[zi]), SED[:,:ai[zi]+1,:,:], wf) * SED.unit
-            lyabs = griddata(wave * (1 + z[zi]), lyman_abs[:,zi], wf)
+            lyabs = griddata(wave, lyman_abs[:,zi], wf)
 
             # Calculate f_nu mean
             # Integrate SED through filter, as per BC03 Fortran
@@ -324,7 +324,7 @@ if compute_MUV:
         for zi in range(len(z)):
             # Interpolate redshifted SED and LyAbs at new wavelength points
             sed = griddata(wave * (1 + z[zi]), SED[:,:ai[zi]+1,:,:], wf) * SED.unit
-            lyabs = griddata(wave * (1 + z[zi]), lyman_abs[:,zi], wf)
+            lyabs = griddata(wave, lyman_abs[:,zi], wf)
 
             """
             Old Method:
@@ -384,7 +384,7 @@ if os.path.isfile(output_binary+'.mags'+'.npy'):
 if os.path.isfile(output_binary+'.fluxes'+'.npy'):
     os.remove(output_binary+'.fluxes'+'.npy')
 
-np.savez(output_binary+'.main',parameters=parameters,z=z,filters=files,SFR=SFR,Mshape=Flux.shape,MUV=MUV.value,UV_flux=Flux_UV.value)
+np.savez(output_binary+'.main',parameters=parameters,z=z,filters=files,SFR=SFR,Mshape=Flux.shape,MUV=MUV.value,UV_flux=Flux_UV.to(u.uJy).value)
 np.save(output_binary+'.mags',Mags.value)
 np.save(output_binary+'.fluxes',Flux.to(u.uJy).value)
 print('Done')

@@ -614,33 +614,13 @@ if __name__ == '__main__':
             output_binary.close()
             print('Done')
 
-        """
-        print('{0:<20s}'.format('Taus')),
-        with open(tau_file.name) as tau_binary:
-            tau_likelihood = array.array('d')
-            tau_likelihood.fromfile(tau_binary,len(ID)*(n_tau + 1))
-            tau_likelihood = numpy.reshape(tau_likelihood,(len(ID),(n_tau + 1)))
-            tau_likelihood = tau_likelihood[numpy.argsort(tau_likelihood[:,0]),1:]
-    
-            output_binary = open(params.output_name+".sfh.prob","wb")
-            tau_params = array.array('i',[len(ID),len(params.tau)])
-            tau_params.tofile(output_binary)
-        
-            taus = numpy.array(params.tau)
-            taus.tofile(output_binary)
-        
-            for gal in range(len(ID)):
-                tau_likelihood[gal,:].tofile(output_binary)
-        
-            output_binary.close()
-            print('Done')
-    
-        """
+
     os.remove(mass_file.name)
     os.remove(muv_file.name)
     os.remove(beta_file.name)
     os.remove(tau_file.name)
     os.remove(temp_file.name)
+
     print
     print "Total time taken: "+str(time.time()-start)
     
