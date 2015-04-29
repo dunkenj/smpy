@@ -101,8 +101,8 @@ for file in files:
     quietprint(file)
 quietprint('')
 
-tau = numpy.array(params.tau)*1e9
-tg = numpy.array(params.tg)*1e9
+tau = numpy.array(params.tau)*to(u.yr)
+tg = numpy.array(params.tg).to(u.yr)
 tauv = numpy.array(params.tauv)
 mu = params.mu
 epsilon = params.epsilon
@@ -117,7 +117,7 @@ if params.add_nebular:
 # for section 1. It is assumed that 'ta' and 'wave' are the same
 # for all files.
 
-data = read_ised2(files[abs(params.metallicities[0])])[0]
+data = read_ised2(files[abs(params.metallicities[0])-1])[0]
 
 ta, metal, iw, wave, sed, strm, rmtm = data
 
@@ -392,12 +392,12 @@ for mi in range(len(params.metallicities)):
 
         quietprint("Metallicity "+str(mi+1)+":")
     #print ".ised file: "+files[abs(SSP)]
-    if mi != 0:
-        data = read_ised2(files[SSP])[0]
-        sed = data[4]
-        strm = data[5]
-        rmtm = data[6]
-        metal[mi]=str((data[1]))[12:-3].strip()
+ 
+    data = read_ised2(files[SSP])[0]
+    sed = data[4]
+    strm = data[5]
+    rmtm = data[6]
+    metal[mi]=str((data[1]))[12:-3].strip()
     quietprint(metal[mi] + "\nInclude nebular emission: " + str(add_nebular))
 
     SSP_Z = float(re.split("Z=?",metal[mi])[1])
@@ -585,13 +585,16 @@ for i in range(len(tgi)):
 temp_file.close()
 """
 
-parameters = [[wave,tg,tauv,tau,metal,mu,epsilon],
-              ['Wavelength (angstroms)','tg:model age array',
-               'tauv, attenuation optical depth','SSP name',
-               'ISM attenuation fraction','Gas recycling parameter']]
+parameters = dict(wavelengths = wave,
+                  tg = tg,
+                  Av = tauv,
+                  SFH = tau,
+                  SSPs = metal,
+                  ISM_attenuation_fraction = mu,
+                  Gas_recycling_parameter = epsilon)
 
 numpy.savez(params.ssp_output,parameters=parameters,SED=SED,STR=STR,SFR=SFR,Nlyman=Nlyman,Nlyman_final = Nlyman_final, beta=beta)
-
+numpy.save(params.ssp_output+'.par',parameters)
 print('Done')
 
 

@@ -244,15 +244,16 @@ class BC(SSP):
             metallicities[i] = float(re.split("Z=?", metal)[1])
 
         self.metallicities = metallicities / 0.02  # Normalise to solar metallicity
-        self.ages = np.array(self.ta_arr[0])[1:] * u.yr
+        self.ages = np.array(self.ta_arr[0]) * u.yr
+        self.ages[0] = (10 * u.yr) # Make non-zero but insignificant
 
         self.wave_arr = np.array(self.wave_arr) * u.AA
 
         # Reshape to match later analysis and strip t=0 columns
-        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, 1:]
+        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :]
         self.sed_arr *= u.Lsun / u.AA
-        self.strm_arr = np.array(self.strm_arr)[:, 1:]
-        self.rmtm_arr = np.array(self.rmtm_arr)[:, 1:]
+        self.strm_arr = np.array(self.strm_arr)[:, :]
+        self.rmtm_arr = np.array(self.rmtm_arr)[:, :]
         self.iseds = np.array(self.iseds)
 
 
@@ -337,7 +338,7 @@ class CSP:
 
     def build(self, age, sfh, dust, metal, fesc=1.,
               sfh_law='exp', dust_model='calzetti',
-              neb_cont=True, neb_met=True):
+              neb_cont=True, neb_met=True, timesteps = 500):
         """ Docs
 
         """
@@ -398,7 +399,8 @@ class CSP:
         self.neb_sed_arr *= (self.Nly_arr[:, :, None] * (1 - self.fesc))
 
         # SSP Interpolation Section
-        self.ta_sfh = np.logspace(np.log10(self.ages / u.yr).min(), np.log10(self.tg / u.yr), 500) * u.yr
+        self.ta_sfh = np.logspace(np.log10(self.ages / u.yr).min(), 
+                                  np.log10(self.tg / u.yr), timesteps) * u.yr
         self.me_sfh = np.ones(len(self.ta_sfh)) * self.mi
 
         # Calculate Barycentric coordinates for all ages/metallicities in SFH.
@@ -415,30 +417,30 @@ class CSP:
         Y = points - tri_grid.transform[ss, 2]
 
         b = np.einsum('ijk,ik->ij', X, Y)
-        self.barycentric_coords = np.c_[b, 1 - b.sum(axis=1)]
+        self.bc = np.c_[b, 1 - b.sum(axis=1)]
         self.simplices = tri_grid.simplices[ss]
 
         # Interpolate SED, stellar mass fraction and remnant fractions
-        # for SFH age grid using calculated Barycentric coordinates.
+        # for SFH age grid using calculated Barycentric coordinates (bc).
 
         self.sed_sfh = ((self.sed_arr + self.neb_sed_arr).reshape(len(self.metallicities) *
                                                                   len(self.ages), self.iw)[self.simplices] *
-                        self.barycentric_coords[:, :, None]).sum(1)
+                        self.bc[:, :, None]).sum(1)
 
         self.neb_sed_sfh = np.array(self.neb_sed_arr.reshape(len(self.metallicities) *
                                                              len(self.ages), self.iw)[self.simplices]
-                                    * self.barycentric_coords[:, :, None]).sum(1)
+                                    * self.bc[:, :, None]).sum(1)
 
         self.strm_sfh = np.array(self.strm_arr.reshape(len(self.metallicities) *
                                                        len(self.ages))[self.simplices]
-                                 * self.barycentric_coords).sum(1)
+                                 * self.bc).sum(1)
 
         self.rmtm_sfh = np.array(self.rmtm_arr.reshape(len(self.metallicities) *
                                                        len(self.ages))[self.simplices]
-                                 * self.barycentric_coords).sum(1)
+                                 * self.bc).sum(1)
         self.Nly_sfh = np.array(self.Nly_arr.reshape(len(self.metallicities) *
                                                      len(self.ages))[self.simplices]
-                                * self.barycentric_coords).sum(1)
+                                * self.bc).sum(1)
 
         # Dust Section
         if self.dust_model == "charlot":
@@ -681,15 +683,6 @@ class CSP:
 
         nlyman = const * np.trapz(f, w)
         return nlyman
-
-    def __str__(self):
-        params = ['Age', 'SFH Tau', 'Dust Tau', 'SFR', 'Stellar Mass', 'Beta']
-        values = [self.tg / 1e9, self.tau / 1e9, self.tauv, self.SFR, self.Ms, self.beta]
-        units = ['Gyr', 'Gyr', 'Av', 'Ms/yr', 'Msol', '']
-        output = ['{:>14s}'.format(params[i]) + ': ' + '{:<.3g}'.format(values[i]) + ' ' + units[i] for i in
-                  range(len(params))]
-
-        return '\n'.join(output)
 
     def __add__(self, other):
         new = None

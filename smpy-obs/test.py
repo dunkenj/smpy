@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import astropy.units as u
 import astropy.constants as c
-
+reload(d)
 path = '/Users/ken/Documents/PhD/code/bc03/models/Padova1994/chabrier/bc2003_lr_BaSeL_m'
 
 bcflux = np.loadtxt('/Users/ken/Documents/PhD/code/bc03/test3_lr_BaSeL_ssp.136')
@@ -60,11 +60,11 @@ lbc = len(bcflux[:,0])
 #Ax.loglog(bcflux[:,0],bcflux[:,1])
 #Ax.loglog(gal.wave[:lbc],gal.SED[:lbc])
 
-Ax.semilogx(bcflux[:,0], (bcflux[:,1] / gal.SED.value[:lbc]))
-Ax.semilogx(bcflux[:,0], (bcflux[:,1] / gal2.SED[:lbc]))
-Ax.semilogx(gal.wave[:lbc], (gal2.SED[:lbc] / gal.SED.value[:lbc]),'--')
+Ax.semilogx(bcflux[:,0], (bcflux[:,1] - gal.SED.value[:lbc]) / bcflux[:,1])
+Ax.semilogx(bcflux[:,0], (bcflux[:,1] - gal2.SED[:lbc]) / bcflux[:,1])
+Ax.semilogx(gal.wave[:lbc], (gal2.SED[:lbc] - gal.SED.value[:lbc]) / bcflux[:,1],'--')
 #Ax.set_ylim([-0.3,0.3])
-Ax.set_xlim([100,10000])
+Ax.set_xlim([100,50000])
 
 Fig2, Ax = plt.subplots(1)
 
