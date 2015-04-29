@@ -4,8 +4,10 @@ import os, sys
 import re
 import time
 import multiprocessing
-import atpy
+#import atpy
 import logging
+from astropy.table import Table, Column
+from astropy import units as u
 
 from sm_functions import dist
 
@@ -330,9 +332,9 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
 
 
 def getObservations(inputpath):
-    input_data = atpy.Table(inputpath,type=params.input_format)
+    input_data = Table.read(inputpath,format=params.input_format)
 
-    column_names = input_data.columns.keys
+    column_names = input_data.columns.keys()
 
     ID = input_data[params.ID_col]
     zobs = input_data[params.z_col]
@@ -393,12 +395,16 @@ if __name__ == '__main__':
     input_binary = params.synmag_output
 
     print "Loading synthetic mags and mass array:"
+    parameters = numpy.load(params.ssp_output+'.par.npy').item()
+    tg = parameters['tg']
+    tv = parameters['Av']
+    tau = parameters['SFH']
+    SSP = parameters['SSPs']
+
     with numpy.load(input_binary+'.main.npz') as synmags:
-        parameters = synmags['parameters']
         Mshape = synmags['Mshape']
         z = synmags['z']
-        tg, tv, tau, SSP =  parameters[1:5]
-
+        
         nfilts = Mshape[0]
         n_tg = Mshape[2]
         n_tauv = Mshape[3]
@@ -426,14 +432,14 @@ if __name__ == '__main__':
     SECTION 1C
     Setting up output table
     """
-    if os.path.isfile(params.output_name+"temp_output.txt"):
-        os.remove(params.output_name+"temp_output.txt")
-    temp_file = open(params.output_name+"temp_output.txt","w")
+    if os.path.isfile(params.output_name+".temp_output.txt"):
+        os.remove(params.output_name+".temp_output.txt")
+    temp_file = open(params.output_name+".temp_output.txt","w")
     
-    mass_file = open(params.output_name+"temp_masses.prob", "wb")
-    muv_file = open(params.output_name+"temp_muv.prob", "wb")
-    beta_file = open(params.output_name+"temp_betas.prob", "wb")
-    tau_file = open(params.output_name+"temp_taus.prob","wb")
+    mass_file = open(params.output_name+".temp_masses.prob", "wb")
+    muv_file = open(params.output_name+".temp_muv.prob", "wb")
+    beta_file = open(params.output_name+".temp_betas.prob", "wb")
+    tau_file = open(params.output_name+".temp_taus.prob","wb")
     
 
     """
@@ -504,7 +510,7 @@ if __name__ == '__main__':
     mass_file.close()
     muv_file.close()
     beta_file.close()
-    #tau_file.close()
+    tau_file.close()
     #print results
     print "Fitting time taken: "+str(time.time()-loop_start)
     print
@@ -517,30 +523,31 @@ if __name__ == '__main__':
     while temp_file.closed == False:
         pause(0.1)
 
-    data = numpy.loadtxt(params.output_name+"temp_output.txt")
+    data = numpy.loadtxt(params.output_name+".temp_output.txt")
     try:
         rows, cols = data.shape
     except:
         cols = len(data)
 
-    output = atpy.Table(name='Results')
+    output = Table(meta=parameters)
 
     names = ['N','ID','z','Bestfit_Mass','Bestfit_chi2','Age','Dust_Tau','SFH_Tau','SSP_Number','TotCol_rest', 'M1500','temp_index','SFR','nfilts','Beta','z_model']
-    units = [None,None,None,'log(Ms)',None,'Gyr',None,'Gyr',None, 'AB_mags', 'AB_mags',None,'Ms/yr',None,None,None]
+    units = [None,None,None, u.Msun ,None, u.Gyr, None, u.Gyr, None, u.mag, u.mag,None,u.Msun/u.yr,None,None,None]
     types = ['i4','i4','f4','f4','f4','f4','f4','f4','i4', 'f4', 'f4','f4','f4','i4','f4','f4']
     if params.include_rest:
         for name in filter_names:
             names.append(name[:-len(params.flux_col_end)]+'_rest')
-            units.append('AB_mags')
+            units.append(u.mag)
             types.append('f4')
         
     for col in range(cols):
-        output.add_column(names[col], data[:,col], unit=units[col], dtype=types[col])
+        column = Column( data[:,col], name = names[col], unit=units[col], dtype=types[col])
+        output.add_column(column)
 
     output.sort('ID')
     if os.path.isfile(params.output_name):
         os.remove(params.output_name)
-    output.write(params.output_name,type=params.table_format)
+    output.write(params.output_name,format=params.table_format)
     print('Catalog saved')
     
     if params.calc_pdf:
@@ -632,8 +639,8 @@ if __name__ == '__main__':
     os.remove(mass_file.name)
     os.remove(muv_file.name)
     os.remove(beta_file.name)
-    #os.remove(tau_file.name)
-
+    os.remove(tau_file.name)
+    os.remove(temp_file.name)
     print
     print "Total time taken: "+str(time.time()-start)
     

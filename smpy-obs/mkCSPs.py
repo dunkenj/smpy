@@ -437,10 +437,10 @@ class CSP:
         with the data corresponding to the original age array first, and the 
         interpolated data second.
         """
-        TP = {}
-        A = {}
-        J = {}
-        DT = {}
+        self.TP = {}
+        self.A = {}
+        self.J = {}
+        self.DT = {}
 
         for ai in range(tgi+1):
             #Calculate taux2: the reverse age array; remove those values which
@@ -456,7 +456,7 @@ class CSP:
             [T1,T2] = numpy.meshgrid(taux1,taux2)
             [i,j] = numpy.where(T1-T2==0)
             taux2 = numpy.delete(taux2, i)
-            TP[ai] = self.ta[ai]-numpy.concatenate((taux1,taux2),axis=0)
+            self.TP[ai] = self.ta[ai]-numpy.concatenate((taux1,taux2),axis=0)
             l = len(taux2)
 
             #If taux2 has entries, calculate the interpolation parameters a and J.
@@ -466,17 +466,18 @@ class CSP:
             #resulting array.
 
             if l == 0:
-                J[ai] = numpy.array([])
-                A[ai] = numpy.array([])
+                self.J[ai] = numpy.array([])
+                self.A[ai] = numpy.array([])
             if l>0:
                 [T1,T2] = numpy.meshgrid(self.ta,taux2)
                 T = T1-T2
                 T[numpy.where(T<=0)] = 0
                 T[numpy.where(T!=0)] = 1
                 T = numpy.diff(T,1,1)
-                (i,J[ai]) = T.nonzero()
+                (i,self.J[ai]) = T.nonzero()
 
-                A[ai] = numpy.log10(taux2/self.ta[J[ai]])/numpy.log10(self.ta[J[ai]+1]/self.ta[J[ai]])
+                self.A[ai] = (numpy.log10(taux2/self.ta[self.J[ai]]) / 
+                              numpy.log10(self.ta[self.J[ai]+1]/self.ta[self.J[ai]]))
 
             #Calculate age difference array: the taux arrays are joined and
             #sorted, the differences calculated, then rearranged back to the order
@@ -490,7 +491,7 @@ class CSP:
 
             d = numpy.diff(taux)
             dt = numpy.append(d,0) + numpy.append(0,d)
-            DT[ai] = numpy.copy(dt[order])
+            self.DT[ai] = numpy.copy(dt[order])
 
 
         SED = numpy.empty([len(self.wave)])
@@ -521,8 +522,8 @@ class CSP:
         prgas = numpy.zeros(tgi+1)
 
         for ai in xrange(tgi+1):
-            j = J[ai]   #Interpolation indices
-            tp = TP[ai] #Integration timescale
+            j = self.J[ai]   #Interpolation indices
+            tp = self.TP[ai] #Integration timescale
 
             pgas = numpy.zeros_like(tp)
             if ai ==0:
@@ -559,18 +560,18 @@ class CSP:
                     #print sr[0]
                     self.norma = norma
 
-                w = sr*DT[ai]/2
+                w = sr*self.DT[ai]/2
                 w1 = numpy.array(w[:ai+1])
                 W[0,ai] = w1
 
                 strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
                 rm = numpy.array(numpy.dot(w1,rmtm[:ai+1]))
 
-                l = len(A[ai])
+                l = len(self.A[ai])
                 if l>0:
 
                     w2 = w[ai+1:ai+l+1]
-                    wa = w2*A[ai]
+                    wa = w2*self.A[ai]
                     wb = w2-wa
 
                     W[1,ai] = wa
@@ -622,18 +623,18 @@ class CSP:
                 self.norma = norma
                 #print sr[0]
 
-                w = sr*DT[ai]/2
+                w = sr*self.DT[ai]/2
                 w1 = numpy.array(w[:ai+1])
                 W[0,ai] = w1
 
                 strr = numpy.array(numpy.dot(w1,strm[:ai+1]))
                 rm = numpy.array(numpy.dot(w1,rmtm[:ai+1]))
 
-                l = len(A[ai])
+                l = len(self.A[ai])
                 if l>0:
 
                     w2 = w[ai+1:ai+l+1]
-                    wa = w2*A[ai]
+                    wa = w2*self.A[ai]
                     wb = w2-wa
 
                     W[1,ai] = wa
@@ -680,7 +681,7 @@ class CSP:
         ai = tgi
         y = numpy.zeros([1,self.iw])
         y_nodust = numpy.zeros([1,self.iw])
-        j = J[ai]
+        j = self.J[ai]
 
 
         w1 = W[0,ai]
@@ -696,7 +697,8 @@ class CSP:
             y_nodust += (wb[i]*sed[:,j[i]] + wa[i]*sed[:,j[i]+1])
 
 
-        Nly = self.calc_lyman(self.wave,y_nodust[0])
+        Nly = self.calc_lyman(self.wave,numpy.nan_to_num(y_nodust[0]))
+        #print Nly
         if Nly > 0.:
             Nlyman = numpy.log10(Nly)
         else:
@@ -708,7 +710,8 @@ class CSP:
 
         y += total
     
-        Nly = self.calc_lyman(self.wave,y[0])
+        Nly = self.calc_lyman(self.wave,numpy.nan_to_num(y[0] / STR[ai]))
+        #print Nly
         self.fesc_tot = (self.fesc*Nly) / 10**Nlyman
         if Nly > 0.:
             Nlyman_final = numpy.log10(Nly) + 33. + numpy.log10(3.826)
@@ -729,7 +732,7 @@ class CSP:
         SFR = SFR[tgi]
         
         self.SED = SED
-        self.SFR = SFR
+        self.SFR = SFR / STR
         self.STR = STR
         self.beta = beta
         self.Nly = Nlyman_final
@@ -1121,6 +1124,7 @@ class Observe:
                 for filt in self.F.filters:
                     #print filt.wave[0]
                     flux, mag = self.calcFlux(filt,z)
+
                     tfluxes.append(flux)
                     tAB.append(mag)
                     twl.append(filt.lambda_c)

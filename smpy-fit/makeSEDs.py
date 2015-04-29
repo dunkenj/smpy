@@ -8,11 +8,21 @@ Data is read from the Bruzual & Charlot S.S.params. files for each metallicity i
 
 import numpy
 import array
-import re,os,sys
+import re
+import os
+import sys
 from glob import glob
 from scipy.interpolate import griddata
 from scipy.integrate import simps
 from sm_functions import read_ised,read_ised2,calc_lyman,calc_beta
+
+
+from astropy import units as u
+from astropy import constants as c
+from astropy import cosmology as cos
+
+cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
+
 
 version = sys.version_info[1]
 if version == 7:
@@ -91,8 +101,8 @@ for file in files:
     quietprint(file)
 quietprint('')
 
-tau = numpy.array(params.tau)*1e9
-tg = numpy.array(params.tg)*1e9
+tau = numpy.array(params.tau)*to(u.yr)
+tg = numpy.array(params.tg).to(u.yr)
 tauv = numpy.array(params.tauv)
 mu = params.mu
 epsilon = params.epsilon
@@ -107,7 +117,7 @@ if params.add_nebular:
 # for section 1. It is assumed that 'ta' and 'wave' are the same
 # for all files.
 
-data = read_ised2(files[abs(params.metallicities[0])])[0]
+data = read_ised2(files[abs(params.metallicities[0])-1])[0]
 
 ta, metal, iw, wave, sed, strm, rmtm = data
 
@@ -122,12 +132,9 @@ tg = ta[tgi]
 
 if params.dust_model == "charlot":
     ATT = numpy.empty([len(tauv),len(wave),len(ta)])
-    ATT_mufrac = numpy.ones([len(tauv),len(wave),len(ta)])
     for tvi in range(0,len(tauv)):
         tv = (tauv[tvi]*numpy.ones(len(ta)))
         tv[ta>1e7] = mu*tauv[tvi]
-        ATT_mufrac[tvi,:,[ta>1e7]]*=mu
-        ATT_mufrac = numpy.exp(-1*ATT_mufrac)
         lam = numpy.array((5500/wave)**0.7)
         ATT[tvi,:,:] = (numpy.exp(-1*numpy.outer(lam,tv)))
 
@@ -385,12 +392,12 @@ for mi in range(len(params.metallicities)):
 
         quietprint("Metallicity "+str(mi+1)+":")
     #print ".ised file: "+files[abs(SSP)]
-    if mi != 0:
-        data = read_ised2(files[SSP])[0]
-        sed = data[4]
-        strm = data[5]
-        rmtm = data[6]
-        metal[mi]=str((data[1]))[12:-3].strip()
+ 
+    data = read_ised2(files[SSP])[0]
+    sed = data[4]
+    strm = data[5]
+    rmtm = data[6]
+    metal[mi]=str((data[1]))[12:-3].strip()
     quietprint(metal[mi] + "\nInclude nebular emission: " + str(add_nebular))
 
     SSP_Z = float(re.split("Z=?",metal[mi])[1])
@@ -502,7 +509,6 @@ for mi in range(len(params.metallicities)):
 
     for tvi in range(len(tauv)):
         sed1 = sed*ATT[tvi] #dust-attenuated SED
-        mufrac = ATT_mufrac[tvi]
         for ti in range(len(tau)):
             for ai1 in range(len(tgi)):
                 ai = tgi[ai1]
@@ -519,12 +525,10 @@ for mi in range(len(params.metallicities)):
                 for i in range(ai):
                     y += (w1[i]*sed1[:,i])
                     y_nodust += (w1[i]*sed[:,i])
-                    cf += (w1[i]*mufrac[:,i])/w1[i]
 
                 for i in range(len(wb)):
                     y += (wb[i]*sed1[:,j[i]] + wa[i]*sed1[:,j[i]+1])
                     y_nodust += (wb[i]*sed[:,j[i]] + wa[i]*sed[:,j[i]+1])
-                    cf += (((wb[i]*mufrac[:,j[i]])/wb[i]) + ((wa[i]*mufrac[:,j[i]+1])/wa[i]))
 
 
                 Nly = calc_lyman(wave,y_nodust[0])
@@ -552,8 +556,6 @@ for mi in range(len(params.metallicities)):
                 #print STR[ai1,ti,mi]
                 SED[:,ai1,tvi,ti,mi] = y/STR[ai,ti,mi] #normalised to 1 solar mass
                 norm[ai1,tvi,ti,mi] = simps(numpy.exp(-1*numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000)/tau[ti]),numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000))
-
-                MF[:,ai1,tvi,ti,mi] = cf
 
 """
 Section 4
@@ -583,13 +585,16 @@ for i in range(len(tgi)):
 temp_file.close()
 """
 
-parameters = [[wave,tg,tauv,tau,metal,mu,epsilon],
-              ['Wavelength (angstroms)','tg:model age array',
-               'tauv, attenuation optical depth','SSP name',
-               'ISM attenuation fraction','Gas recycling parameter']]
+parameters = dict(wavelengths = wave,
+                  tg = tg,
+                  Av = tauv,
+                  SFH = tau,
+                  SSPs = metal,
+                  ISM_attenuation_fraction = mu,
+                  Gas_recycling_parameter = epsilon)
 
 numpy.savez(params.ssp_output,parameters=parameters,SED=SED,STR=STR,SFR=SFR,Nlyman=Nlyman,Nlyman_final = Nlyman_final, beta=beta)
-
+numpy.save(params.ssp_output+'.par',parameters)
 print('Done')
 
 
