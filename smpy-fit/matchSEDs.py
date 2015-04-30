@@ -95,6 +95,17 @@ def galaxyFit(inputQueue, printQueue, printlock):
         fo[fo <= 0.] = 0.       # Set negative fluxes to zero
         #print fo
         I = numpy.where(ferr > 0.)[0] # Find bands with no observation
+        
+        if len(I) == 0:
+            if params.include_rest:
+                M_scaled = numpy.ones(len(fo)) * -99.
+                restframe_output = ' '.join(M_scaled.astype('str'))
+                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99, -99, -99,-99,len(I),-99,z[j],restframe_output,'\n')
+            else:
+                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99,-99, -99,-99,len(I),-99,'\n')
+            printQueue.put(output_string)
+            continue
+            
         fo = fo[I]                    # and exclude from fit
         ferr = ferr[I]
         fm = f[I,j,:]
@@ -116,12 +127,13 @@ def galaxyFit(inputQueue, printQueue, printlock):
             chisq += (((scale*fm[i,:]-fo[i])**2)/(ferr[i])**2)
 
         chimin,minind = numpy.nanmin(chisq), numpy.nanargmin(chisq)
-        if numpy.isinf(chimin) or numpy.isnan(minind) or len(fo) == 0:
-            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} \
-            {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],
-                                                                 -99,-99,-99,-99,-99,-99,
-                                                                 -99, -99, -99, -99,-99,-99,-99,
-                                                                 len(I),-99,'\n')
+        if numpy.isinf(chimin) or numpy.isnan(minind):
+            if params.include_rest:
+                M_scaled = numpy.ones(len(fo)) * -99.
+                restframe_output = ' '.join(M_scaled.astype('str'))
+                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99, -99, -99,-99,len(I),-99,z[j],restframe_output,'\n')
+            else:
+                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99,-99, -99,-99,len(I),-99,'\n')
             printQueue.put(output_string)
             continue
 

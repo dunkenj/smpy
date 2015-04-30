@@ -16,8 +16,7 @@ tg = [0.005,0.0100,0.0158,0.0251,0.0398,0.0631,0.1000,0.1585,
       2.,2.5,3.,4.,5.,6.5,8.,10.,13.5]                
 
 # Dust Total Attenuation Values
-#tauv = [0.,0.1,0.2,0.3,0.4,0.6,0.8,1.0,1.5,2.,3.,4.]
-tauv = [0.]
+tauv = [0.,0.1,0.2,0.3,0.4,0.6,0.8,1.0,1.5,2.,3.,4.]
 
 dust_model = 'calzetti'                # 'charlot' - Charlot & Fall or 'calzetti' - Caltzetti 2000
 mu = 0.3                              # Fraction of tauv from ISM

@@ -20,7 +20,7 @@ from sm_functions import read_ised,read_ised2,calc_lyman,calc_beta
 from astropy import units as u
 from astropy import constants as c
 from astropy import cosmology as cos
-
+from astropy.utils.console import ProgressBar
 cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
 
@@ -101,8 +101,8 @@ for file in files:
     quietprint(file)
 quietprint('')
 
-tau = numpy.array(params.tau)*to(u.yr)
-tg = numpy.array(params.tg).to(u.yr)
+tau = numpy.array(params.tau)*1e9
+tg = numpy.array(params.tg)*1e9
 tauv = numpy.array(params.tauv)
 mu = params.mu
 epsilon = params.epsilon
@@ -414,7 +414,6 @@ for mi in range(len(params.metallicities)):
 
     """
 
-
     for ti in range(len(tau)):
         prgas = numpy.zeros(max(tgi)+1)
 
@@ -506,56 +505,57 @@ for mi in range(len(params.metallicities)):
     sum of the S.S.params. spectral energy distribution 'sed1' to obtain the
     model S.E.D. 'y'. Add each record to the SED array.
     """
-
-    for tvi in range(len(tauv)):
-        sed1 = sed*ATT[tvi] #dust-attenuated SED
-        for ti in range(len(tau)):
-            for ai1 in range(len(tgi)):
-                ai = tgi[ai1]
-                cf = numpy.zeros([1,iw])
-                y = numpy.zeros([1,iw])
-                y_nodust = numpy.zeros([1,iw])
-                j = J[ai]
-
-
-                w1 = W[0,ai,ti]
-                wa = W[1,ai,ti]
-                wb = W[2,ai,ti]
-
-                for i in range(ai):
-                    y += (w1[i]*sed1[:,i])
-                    y_nodust += (w1[i]*sed[:,i])
-
-                for i in range(len(wb)):
-                    y += (wb[i]*sed1[:,j[i]] + wa[i]*sed1[:,j[i]+1])
-                    y_nodust += (wb[i]*sed[:,j[i]] + wa[i]*sed[:,j[i]+1])
+    with ProgressBar(len(tauv)*len(tgi)*len(tau)) as bar:
+        for tvi in range(len(tauv)):
+            sed1 = sed*ATT[tvi] #dust-attenuated SED
+            for ti in range(len(tau)):
+                for ai1 in range(len(tgi)):
+                    ai = tgi[ai1]
+                    cf = numpy.zeros([1,iw])
+                    y = numpy.zeros([1,iw])
+                    y_nodust = numpy.zeros([1,iw])
+                    j = J[ai]
 
 
-                Nly = calc_lyman(wave,y_nodust[0])
-                if Nly > 0.:
-                    Nlyman[ai1,tvi,ti,mi] = numpy.log10(Nly)
-                else:
-                    Nlyman[ai1,tvi,ti,mi] = 0.
+                    w1 = W[0,ai,ti]
+                    wa = W[1,ai,ti]
+                    wb = W[2,ai,ti]
 
-                if add_nebular:
-                    total = neb_cont + neb_hlines + neb_metal[:,neb_z]
-                    total *= 2.997925e18/(wave**2) #Convert to Flambda
-                    total *= (Nly*(1-params.fesc))
+                    for i in range(ai):
+                        y += (w1[i]*sed1[:,i])
+                        y_nodust += (w1[i]*sed[:,i])
 
-                    y += total
+                    for i in range(len(wb)):
+                        y += (wb[i]*sed1[:,j[i]] + wa[i]*sed1[:,j[i]+1])
+                        y_nodust += (wb[i]*sed[:,j[i]] + wa[i]*sed[:,j[i]+1])
+
+
+                    Nly = calc_lyman(wave,y_nodust[0])
+                    if Nly > 0.:
+                        Nlyman[ai1,tvi,ti,mi] = numpy.log10(Nly)
+                    else:
+                        Nlyman[ai1,tvi,ti,mi] = 0.
+
+                    if add_nebular:
+                        total = neb_cont + neb_hlines + neb_metal[:,neb_z]
+                        total *= 2.997925e18/(wave**2) #Convert to Flambda
+                        total *= (Nly*(1-params.fesc))
+
+                        y += total
                     
-                Nly = calc_lyman(wave,y[0])
-                if Nly > 0.:
-                    Nlyman_final[ai1,tvi,ti,mi] = numpy.log10(Nly) + 33. + numpy.log10(3.826)
-                else:
-                    Nlyman_final[ai1,tvi,ti,mi] = 0.
+                    Nly = calc_lyman(wave,y[0])
+                    if Nly > 0.:
+                        Nlyman_final[ai1,tvi,ti,mi] = numpy.log10(Nly) + 33. + numpy.log10(3.826)
+                    else:
+                        Nlyman_final[ai1,tvi,ti,mi] = 0.
 
 
-                beta[ai1,tvi,ti,mi] = calc_beta(wave,y[0])
-                #print ai,ai1
-                #print STR[ai1,ti,mi]
-                SED[:,ai1,tvi,ti,mi] = y/STR[ai,ti,mi] #normalised to 1 solar mass
-                norm[ai1,tvi,ti,mi] = simps(numpy.exp(-1*numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000)/tau[ti]),numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000))
+                    beta[ai1,tvi,ti,mi] = calc_beta(wave,y[0])
+                    #print ai,ai1
+                    #print STR[ai1,ti,mi]
+                    SED[:,ai1,tvi,ti,mi] = y/STR[ai,ti,mi] #normalised to 1 solar mass
+                    norm[ai1,tvi,ti,mi] = simps(numpy.exp(-1*numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000)/tau[ti]),numpy.logspace(0,numpy.log10(ta[tgi[ai1]]),10000))
+                    bar.update()
 
 """
 Section 4

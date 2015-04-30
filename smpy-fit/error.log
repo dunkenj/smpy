@@ -1,0 +1,4 @@
+processSEDs.py:370: RuntimeWarning: divide by zero encountered in log10
+  Mags = -2.5 * np.log10(Flux.to(u.Jy) / (3631 * u.Jy))
+processSEDs.py:371: RuntimeWarning: divide by zero encountered in log10
+  MUV = -2.5 * np.log10(Flux_UV.to(u.Jy) / (3631 * u.Jy))
