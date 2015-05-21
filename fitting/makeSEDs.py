@@ -28,10 +28,10 @@ version = sys.version_info[1]
 if version == 7:
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p","--params", type=str, default="sm_params",
-                                            help = "Parameter file, default = sm_params")
-    parser.add_argument("-q", "--quiet", help = "Suppress extra outputs",
-                                            action = "store_true")
+    parser.add_argument("-p", "--params", type=str, default="sm_params",
+                        help="Parameter file, default = sm_params")
+    parser.add_argument("-q", "--quiet", help="Suppress extra outputs",
+                        action="store_true")
     args = parser.parse_args()
     quiet = args.quiet
 
@@ -42,9 +42,9 @@ if version == 7:
     import importlib
     try:
         params = importlib.import_module(params_root)
-        print 'Loaded '+args.params+' as params'
+        print('Loaded '+args.params+' as params')
     except:
-        print 'Failed to load "'+args.params+'" as params, loading default instead'
+        print('Failed to load "'+args.params+'" as params, loading default instead')
         import sm_params as params
 
 if version == 6:
@@ -58,7 +58,7 @@ if version == 6:
     args, dump = parser.parse_args()
     quiet = args.quiet
 
-    params_root = re.split(".py",args.params)[0]
+    params_root = re.split('.py',args.params)[0]
     if os.path.isfile(params_root+".pyc"):
         os.remove(params_root+".pyc")
     import imp

@@ -12,249 +12,16 @@ from scipy.spatial import Delaunay
 from astropy import units as u
 from astropy import constants as c
 from astropy import cosmology as cos
+from astropy.utils.console import ProgressBar
+
+from ssp import Ised, SSP, BC
+from dust import Charlot, Calzetti, Calzetti2, MW, LMC, SMC
 
 cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
 f = open("error.log", "w")
 original_stderr = sys.stderr
 sys.stderr = f
-
-
-class Ised(object):
-    def __init__(self, path):
-        self.file = path
-
-        self.read_ised(self.file)
-
-    def read_ised(self, filename):
-        """
-        This function reads data from Bruzual & Charlot binary format
-        SSP files and returns the necessary data in an array The input files
-        should be '.ised' files, either 2003 or 2007.
-    
-        'ks' in the binary files is slightly different between 03/07 files
-        so the read length and index should be set appropriately, therefore 
-        the function tries '03 format first and retries with the '07 format
-        if the returned number of ages isn't as expected (e.g. 221 ages)
-
-        :type filename: string
-        """
-
-        with open(filename, 'rb') as file:
-            check = array.array('i')
-            check.fromfile(file, 2)
-
-        if check[1] == 221:
-            ksl, ksi = 2, 1
-            F_l, F_i = 3, 2
-        else:
-            ksl, ksi = 3, 2
-            F_l, F_i = 5, 4
-
-        with open(filename, 'rb') as file:
-            ks = array.array('i')
-            ks.fromfile(file, ksl)
-
-            ta = array.array('f')
-            ta.fromfile(file, ks[ksi])
-            self.ta = np.array(ta)
-
-            tmp = array.array('i')
-            tmp.fromfile(file, 3)
-            self.ml, self.mul, iseg = tmp
-
-            if iseg > 0:
-                tmp = array.array('f')
-                tmp.fromfile(file, iseg * 6)
-
-            tmp = array.array('f')
-            tmp.fromfile(file, 5)
-            self.totm, self.totn, self.avs, self.jo, self.tauo = tmp
-
-            self.ids = array.array('c')
-            self.ids.fromfile(file, 80)
-
-            tmp = array.array('f')
-            tmp.fromfile(file, 4)
-            self.tcut = tmp[0]
-            self.ttt = tmp[1:]
-
-            ids = array.array('c')
-            ids.fromfile(file, 80)
-
-            self.ids = array.array('c')
-            self.ids.fromfile(file, 80)
-
-            self.igw = array.array('i')
-            self.igw.fromfile(file, 1)
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.iw = array.array('i')
-            self.iw.fromfile(file, 1)
-
-            wave = array.array('f')
-            wave.fromfile(file, self.iw[0])
-            self.wave = np.array(wave)
-
-            # SED Section
-            self.F = array.array('i')
-            self.F.fromfile(file, F_l)
-            self.iw = self.F[F_i]  # Number of wavelength elements
-
-            self.sed = np.zeros((self.iw, ks[ksi]), dtype=np.float32)
-            G = array.array('f')
-            G.fromfile(file, self.iw)
-            self.sed[:, 0] = G
-            ik = array.array('i')
-            ik.fromfile(file, 1)
-
-            self.h = np.empty((ik[0], ks[ksi]), 'f')
-            H = array.array('f')
-            H.fromfile(file, ik[0])
-            self.h[:, 0] = H
-
-            for i in range(1, ks[ksi]):  # Fill rest of array with SEDs
-                F = array.array('i')
-                F.fromfile(file, F_l)
-                iw = F[F_i]
-
-                G = array.array('f')
-                G.fromfile(file, iw)
-                self.sed[:, i] = G
-                ik = array.array('i')
-                ik.fromfile(file, 1)
-
-                H = array.array('f')
-                H.fromfile(file, ik[0])
-                self.h[:, i] = H
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.bflx = array.array('f')
-            self.bflx.fromfile(file, tmp[F_i])
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            strm = array.array('f')
-            strm.fromfile(file, tmp[F_i])
-            self.strm = np.array(strm)
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.evf = array.array('f')
-            self.evf.fromfile(file, tmp[F_i])
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.evf = array.array('f')
-            self.evf.fromfile(file, tmp[F_i])
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.snr = array.array('f')
-            self.snr.fromfile(file, tmp[F_i])
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.pnr = array.array('f')
-            self.pnr.fromfile(file, tmp[F_i])
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.sn = array.array('f')
-            self.sn.fromfile(file, tmp[F_i])
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.bh = array.array('f')
-            self.bh.fromfile(file, tmp[F_i])
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            self.wd = array.array('f')
-            self.wd.fromfile(file, tmp[F_i])
-
-            tmp = array.array('i')
-            tmp.fromfile(file, F_l)
-
-            rmtm = array.array('f')
-            rmtm.fromfile(file, tmp[F_i])
-            self.rmtm = np.array(rmtm)
-
-
-class SSP(object):
-    """ Base class for SSP objects
-    """
-
-    def __init__(self, path=None):
-        self.SSPpath = path
-
-
-class BC(SSP):
-    """ Bruzual & Charlot 2003/07 SSP Models
-    
-    """
-
-    def __init__(self, path='../ssp/bc03/salpeter/lr/'):
-        """
-
-
-        :type path: string
-        :param path:
-        :return:
-        """
-
-        self.SSPpath = path
-        self.files = glob(self.SSPpath + '*.ised')
-        self.files.sort()
-        self.iseds = []
-        self.ta_arr = []
-        self.metal_arr = []
-        self.iw_arr = []
-        self.wave_arr = []
-        self.sed_arr = []
-        self.strm_arr = []
-        self.rmtm_arr = []
-        # Set up
-        metallicities = np.zeros(len(self.files))
-
-        for i, file in enumerate(self.files):
-            ised_binary = Ised(file)
-
-            self.ta_arr.append(ised_binary.ta)
-            self.metal_arr.append(ised_binary.ids)
-            self.iw_arr.append(ised_binary.iw)
-            self.wave_arr.append(ised_binary.wave)
-            self.sed_arr.append(ised_binary.sed)
-            self.strm_arr.append(ised_binary.strm)
-            self.rmtm_arr.append(ised_binary.rmtm)
-            self.iseds.append(ised_binary)
-            metal = str(ised_binary.ids)[12:-3].strip()
-            metallicities[i] = float(re.split("Z=?", metal)[1])
-
-        self.metallicities = metallicities / 0.02  # Normalise to solar metallicity
-        self.ages = np.array(self.ta_arr[0]) * u.yr
-        self.ages[0] = (10 * u.yr) # Make non-zero but insignificant
-
-        self.wave_arr = np.array(self.wave_arr) * u.AA
-
-        # Reshape to match later analysis and strip t=0 columns
-        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :]
-        self.sed_arr *= u.Lsun / u.AA
-        self.strm_arr = np.array(self.strm_arr)[:, :]
-        self.rmtm_arr = np.array(self.rmtm_arr)[:, :]
-        self.iseds = np.array(self.iseds)
 
 
 class CSP:
@@ -264,7 +31,7 @@ class CSP:
 
     def __init__(self, ssp,
                  age=None, sfh=None, dust=None, metal_ind=None, f_esc=None,
-                 sfh_law='exp', dust_model='calzetti', neb_cont=True, neb_met=True):
+                 sfh_law='exp', dust_model=Calzetti, neb_cont=True, neb_met=True):
         """
         :type ssp: SSP object
         :type age:
@@ -287,7 +54,7 @@ class CSP:
 
         # Find closest match for each tg value in ta - set tg to these values
 
-        nebular = np.loadtxt('nebular_emission.dat', skiprows=1)
+        nebular = np.loadtxt('data/nebular_emission.dat', skiprows=1)
         self.neb_cont = nebular[:, 1]
         self.neb_hlines = nebular[:, 2]
         self.neb_metal = nebular[:, 3:]
@@ -324,44 +91,57 @@ class CSP:
         sfh /= np.trapz(sfh, t)
         return sfh
 
-    @staticmethod
-    def dust_func(lam, ai, bi, ni, li):
-        """
-        Functional form for SMC, LMC and MW extinction curves of
-        Pei et al. 1992
-
-        """
-        lam = np.array(lam) / 1e4
-        ki = np.power((lam / li), ni) + np.power((li / lam), ni) + bi
-        eta_i = ai / ki
-        return eta_i
-
+    #@profile
     def build(self, age, sfh, dust, metal, fesc=1.,
-              sfh_law='exp', dust_model='calzetti',
-              neb_cont=True, neb_met=True, timesteps = 500):
+              sfh_law='exp', dust_model=Calzetti,
+              neb_cont=True, neb_met=True, timesteps = 400, verbose=False):
         """ Docs
 
         """
+        self.tau = u.Quantity(sfh, ndmin=1)
+        self.tg = u.Quantity(age, ndmin=1).to(u.yr)
 
-        self.tg = age.to(u.yr)
-        if sfh_law == 'exp':
-            self.tau = sfh.to(u.yr)
-        elif sfh_law == 'del':
-            self.tau = sfh.to(u.yr)
-        else:
-            self.tau = sfh
-
-        self.tauv = dust
-        self.mi = metal
-        self.fesc = fesc
+        self.tauv = np.array(dust, ndmin=1)
+        self.mi = np.array(metal, ndmin=1)
+        self.fesc = np.array(fesc, ndmin=1)
         self.sfh_law = sfh_law
         self.inc_cont = neb_cont
         self.inc_met = neb_met
-        self.dust_model = dust_model
+        self.getAttenuation = dust_model
 
         mu = 0.3
 
         self.ta = self.ages
+        
+        outshape = [len(self.mi), len(self.tg), 
+                    len(self.tau), len(self.tauv), 
+                    len(self.fesc), len(self.wave)]
+        self.SED = np.zeros(outshape) * self.sed_arr.unit
+        self.STR = np.zeros(self.SED.shape[: -1])
+        self.SFR = np.zeros(self.SED.shape[: -1]) * u.solMass / u.yr
+
+        # Set up grid for NDinterpolation
+        ti, mi = np.meshgrid(np.log10(self.ages / u.yr), np.log10(self.metallicities))
+        self.grid = zip(mi.flatten(), ti.flatten())
+
+        tri_grid = Delaunay(self.grid)
+
+        # Make cube of interpolated age and SFHs.
+        # Uses array slicing and vectorisation to minimise
+        # loops where possible.
+        sfh_grid_shape = (len(self.mi), len(self.tg), 
+                          timesteps)
+
+        self.ta_sfh = np.ones(sfh_grid_shape) * u.yr
+        self.me_sfh = np.ones(sfh_grid_shape)
+                
+        for met_idx, metal in enumerate(self.mi):
+            self.me_sfh[met_idx] *= metal
+
+        for age_idx, age in enumerate(self.tg):
+            ta_range = np.logspace(np.log10(self.ages / u.yr).min(), 
+                                   np.log10(age / u.yr), timesteps)
+            self.ta_sfh[:, age_idx] *= ta_range[None, :]
 
         # Set up nebular emission arrays -- WILL CHANGE
         if len(self.neb_wave) != len(self.wave):
@@ -395,21 +175,14 @@ class CSP:
                                               self.neb_hlines +
                                               (self.neb_metal[:, 2] * self.inc_met))
 
-        self.neb_sed_arr *= c.c.to(u.AA / u.s) / (self.wave ** 2)  # Convert to Flambda
-        self.neb_sed_arr *= (self.Nly_arr[:, :, None] * (1 - self.fesc))
-
-        # SSP Interpolation Section
-        self.ta_sfh = np.logspace(np.log10(self.ages / u.yr).min(), 
-                                  np.log10(self.tg / u.yr), timesteps) * u.yr
-        self.me_sfh = np.ones(len(self.ta_sfh)) * self.mi
+        self.neb_sed_arr *= (c.c.to(u.AA / u.s) / (self.wave ** 2)).value  # Convert to Flambda
+        self.neb_sed_arr =  self.neb_sed_arr * self.sed_arr.unit / self.Nly_arr.unit
 
         # Calculate Barycentric coordinates for all ages/metallicities in SFH.
-        points = np.array(zip(np.log10(self.me_sfh), np.log10(self.ta_sfh / u.yr)))
+        points = np.array(zip(np.log10(self.me_sfh.flatten()), np.log10(self.ta_sfh.flatten() / u.yr)))
 
-        ti, mi = np.meshgrid(np.log10(self.ages / u.yr), np.log10(self.metallicities))
-        self.grid = zip(mi.flatten(), ti.flatten())
-
-        tri_grid = Delaunay(self.grid)
+        if verbose:
+            print 'Interpolating SEDs at SFH timesteps'
         ss = tri_grid.find_simplex(points)
 
         X = tri_grid.transform[ss, :2]
@@ -423,124 +196,32 @@ class CSP:
         # Interpolate SED, stellar mass fraction and remnant fractions
         # for SFH age grid using calculated Barycentric coordinates (bc).
 
-        self.sed_sfh = ((self.sed_arr + self.neb_sed_arr).reshape(len(self.metallicities) *
-                                                                  len(self.ages), self.iw)[self.simplices] *
-                        self.bc[:, :, None]).sum(1)
-
-        self.neb_sed_sfh = np.array(self.neb_sed_arr.reshape(len(self.metallicities) *
-                                                             len(self.ages), self.iw)[self.simplices]
-                                    * self.bc[:, :, None]).sum(1)
-
+        self.sed_sfh = (self.sed_arr.reshape(len(self.metallicities) *
+                                             len(self.ages), self.iw)[self.simplices] *
+                                             self.bc[:, :, None]).sum(1)
+        self.sed_sfh = self.sed_sfh.reshape(np.append(sfh_grid_shape, self.iw))
+        
+        self.neb_sed_sfh = (self.neb_sed_arr.reshape(len(self.metallicities) *
+                                                     len(self.ages), self.iw)[self.simplices]
+                                                     * self.bc[:, :, None]).sum(1)
+        self.neb_sed_sfh = self.neb_sed_sfh.reshape(np.append(sfh_grid_shape, self.iw))
+        
         self.strm_sfh = np.array(self.strm_arr.reshape(len(self.metallicities) *
                                                        len(self.ages))[self.simplices]
-                                 * self.bc).sum(1)
+                                                        * self.bc).sum(1)
+        self.strm_sfh = self.strm_sfh.reshape(sfh_grid_shape)
 
         self.rmtm_sfh = np.array(self.rmtm_arr.reshape(len(self.metallicities) *
                                                        len(self.ages))[self.simplices]
-                                 * self.bc).sum(1)
-        self.Nly_sfh = np.array(self.Nly_arr.reshape(len(self.metallicities) *
-                                                     len(self.ages))[self.simplices]
-                                * self.bc).sum(1)
-
-        # Dust Section
-        if self.dust_model == "charlot":
-            self.Att = np.zeros((len(self.ta_sfh), len(self.wave)))
-            tv = ((self.tauv / 1.0857) * np.ones(len(self.ta_sfh)))
-            tv[self.ta_sfh > 1e7 * u.yr] = mu * self.tauv
-            lam = np.array((5500 * u.AA / self.wave) ** 0.7)
-            self.Att[:, :] = (np.exp(-1 * np.outer(tv, lam)))
-
-        elif self.dust_model == "calzetti":
-            self.Att = np.ones([len(self.ta_sfh), len(self.wave)])
-            k = np.zeros_like(self.wave.value)
-
-            w0 = [self.wave <= 1200 * u.AA]
-            w1 = [self.wave < 6300 * u.AA]
-            w2 = [self.wave >= 6300 * u.AA]
-            w_u = self.wave.to(u.um).value
-
-            x1 = np.argmin(np.abs(self.wave - 1200 * u.AA))
-            x2 = np.argmin(np.abs(self.wave - 1250 * u.AA))
-
-            k[w2] = 2.659 * (-1.857 + 1.040 / w_u[w2])
-            k[w1] = 2.659 * (-2.156 + (1.509 / w_u[w1]) - (0.198 / w_u[w1] ** 2) + (0.011 / w_u[w1] ** 3))
-            k[w0] = k[x1] + ((self.wave[w0] - 1200. * u.AA) * (k[x1] - k[x2]) / (self.wave[x1] - self.wave[x2]))
-
-            k += 4.05
-            k[k < 0.] = 0.
-
-            tv = self.tauv * k / 4.05
-            self.Att *= np.power(10, -0.4 * tv)
-
-
-        elif self.dust_model == "calzetti2":
-            self.Att = np.ones([len(self.ta_sfh), len(self.wave)])
-            k = np.zeros_like(self.wave.value)
-
-            w0 = [self.wave <= 1000 * u.AA]
-            w1 = [(self.wave > 1000 * u.AA) * (self.wave < 6300 * u.AA)]
-            w2 = [self.wave >= 6300 * u.AA]
-            w_u = self.wave.to(u.um).value
-
-            k[w2] = 2.659 * (-1.857 + 1.040 / w_u[w2])
-            k[w1] = 2.659 * (-2.156 + (1.509 / w_u[w1]) - (0.198 / w_u[w1] ** 2) + (0.011 / w_u[w1] ** 3))
-
-            p1 = self.dust_func(self.wave, 27, 4, 5.5, 0.08) + self.dust_func(self.wave, 185, 90, 2, 0.042)
-
-            k[w0] = p1[w0] / (p1[w1][0] / k[w1][0])
-            k += 4.05
-            k[k < 0.] = 0.
-            tv = self.tauv * k / 4.05
-            self.Att *= np.power(10, -0.4 * tv)
-
-        elif self.dust_model == "smc":
-            ai = [185., 27., 0.005, 0.01, 0.012, 0.03]
-            bi = [90., 5.5, -1.95, -1.95, -1.8, 0.]
-            ni = [2., 4., 2., 2., 2., 2.]
-            li = [0.042, 0.08, 0.22, 9.7, 18., 25.]
-
-            eta = np.zeros_like(self.wave)
-            for i in xrange(len(ai)):
-                eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
-
-            Rv = 2.93
-            Ab = self.tauv * (1 + (1 / Rv))
-            self.Att = np.ones([len(self.ta_sfh), len(self.wave)])
-            self.Att *= np.power(10, -0.4 * Ab * eta)
-
-        elif self.dust_model == "lmc":
-            ai = [175., 19., 0.023, 0.005, 0.006, 0.02]
-            bi = [90., 4.0, -1.95, -1.95, -1.8, 0.]
-            ni = [2., 4.5, 2., 2., 2., 2.]
-            li = [0.046, 0.08, 0.22, 9.7, 18., 25.]
-
-            eta = np.zeros_like(self.wave)
-            for i in xrange(len(ai)):
-                eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
-
-            Rv = 3.16
-            Ab = self.tauv * (1 + (1 / Rv))
-
-            self.Att = np.ones([len(self.ta_sfh), len(self.wave)])
-            self.Att *= np.power(10, -0.4 * Ab * eta)
-            # Offset added to renormalise from B to V band.
-
-        elif self.dust_model == "mw":
-            ai = [165., 14., 0.045, 0.002, 0.002, 0.012]
-            bi = [90., 4., -1.95, -1.95, -1.8, 0.]
-            ni = [2., 6.5, 2., 2., 2., 2.]
-            li = [0.047, 0.08, 0.22, 9.7, 18., 25.]
-
-            eta = np.zeros_like(self.wave)
-            for i in xrange(len(ai)):
-                eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
-
-            Rv = 3.08
-            Ab = self.tauv * (1 + (1 / Rv))
-
-            self.Att = np.ones([len(self.ta_sfh), len(self.wave)])
-            self.Att *= np.power(10, -0.4 * Ab * eta)
-            # Offset added to renormalise from B to V band.
+                                                        * self.bc).sum(1)
+        self.rmtm_sfh = self.rmtm_sfh.reshape(sfh_grid_shape)
+        
+        self.Nly_sfh = (self.Nly_arr.reshape(len(self.metallicities) *
+                                            len(self.ages))[self.simplices]
+                                            * self.bc).sum(1)
+                                                     
+        self.Nly_sfh = self.Nly_sfh.reshape(sfh_grid_shape) #* 
+                        #(1 - self.fesc[None, None, :, None]))
 
         # Star-formation history
         if self.sfh_law == 'exp':
@@ -552,30 +233,52 @@ class CSP:
         elif self.sfh_law == 'tru':
             self.sfr_func = self._sfh_tru
 
-        sfr_hist = self.sfr_func(self.ta_sfh, self.tau)
-        # Enforce integrated SFR = 1 Msol.
-        norm = np.trapz(sfr_hist, self.ta_sfh)
+        if verbose:
+            bar = ProgressBar(np.product(self.SED.shape[2:-1]))
+            
+        for idT, tau in enumerate(self.tau):
+            self.sfh_weights = np.ones(sfh_grid_shape)
 
-        sfr_hist /= norm
+            self.sfr_hist = self.sfr_func(self.ta_sfh, tau)
+            # Enforce integrated SFR = 1 Msol.
+            self.norm = np.trapz(self.sfr_hist, self.ta_sfh, axis=-1)[:, :, None]
 
-        sfh_weights = self.sfr_func(self.tg - self.ta_sfh, self.tau) / norm
+            self.sfr_hist /= self.norm
+            self.weights = self.sfr_func(self.tg[None, :, None] - self.ta_sfh, 
+                                         tau) / self.norm
+            self.sfh_weights *= self.weights
 
-        self.SED = simps(sfh_weights[:, None] * self.sed_sfh * self.Att,
-                         self.ta_sfh, axis=0) * self.sed_sfh.unit
-        self.STR = simps(sfh_weights * self.strm_sfh, self.ta_sfh)
 
-        self.SED = self.SED / self.STR
-        self.SFR = sfr_hist[-1] / self.STR
+                # Offset added to renormalise from B to V band.
+            for idA, Av in enumerate(self.tauv):
+                for idf, fesc in enumerate(self.fesc):
+                    self.Att = self.getAttenuation(self.ta_sfh, self.wave, Av)
+                    combined_sed = self.sed_sfh
+                
+                    # Absorbed LyC photons
+                    combined_sed[:, :, :, self.wave <= 912 * u.AA] *= (1-fesc)
+                    # Resulting nebular emission
+                    combined_sed += ((1 - fesc) * self.Nly_sfh[:, :, :, None] * self.neb_sed_sfh)
+                    combined_sed *= self.Att # Dust attenuated combined SED
+                
+                    # Integrate over star-formation history
+                    self.SED[:, :, idT, idA, idf, :] = np.trapz(self.sfh_weights[:, :, :, None] * combined_sed,
+                                                              self.ta_sfh[:, :, :, None].value,
+                                                              axis=-2)
+                    self.STR[:, :, idT, idA, idf] = np.trapz(self.sfh_weights * self.strm_sfh, self.ta_sfh)
 
-        self.Nly = self.calc_lyman_f(self.wave, self.SED)
+                    self.SFR[:, :, idT, idA, idf] = self.sfr_hist[:, :, -1] * u.solMass
+                    if verbose:
+                        bar.update()
 
-        if self.Nly > 0:
-            self.Nly = np.log10(self.Nly.cgs * self.fesc * u.s)
-        else:
-            self.Nly = 0
+        self.SFR /= self.STR
+        self.SED = self.SED / self.STR[:, :, :, :, :, None]
+
+        self.Nly = self.calc_lyman_f(self.wave, self.SED).cgs
+
 
         # self.beta = self.calc_beta(self.wave,self.SED)
-        self.Ms = 1 * u.Msun
+        self.Ms = np.ones_like(self.SFR) * u.Msun
 
     def calc_beta(self, wave, sed):
         """
@@ -651,37 +354,36 @@ class CSP:
                     (w[i] - wave[i - 1]) * (seds[:, :, i] - seds[:, :, i - 1]) / (wave[i] - wave[i - 1])))
                 # f[:,:,i] = f[:,:,i]
 
-        nlyman = const * np.trapz(f, w, axis=2)
+        nlyman = const * np.trapz(f, w, axis=-1)
         # print np.log10(N_lyman)
         return nlyman
-
+        
     @staticmethod
-    def calc_lyman_f(x, s):
-        """
-
-        :param s:
-        :type x: np.array
-        """
+    def calc_lyman_f(wave, seds):
         wly = 912. * u.AA
         const = (1e-8 / (u.AA / u.cm)) / c.h.cgs / c.c.cgs
 
-        n = int(sum([x < wly][0]))
-        f = np.zeros(n + 1) * s.unit * u.AA
+        n = int(sum([wave < wly][0]))
+        S = np.array(seds.shape)
+        S[-1] = n+1
+        f = np.zeros(S) * seds.unit * u.AA
         w = np.zeros(n + 1) * u.AA
 
         for i in range(n + 1):
-            if x[i] < wly:
-                w[i] = x[i]
-                f[i] = w[i] * s[i]
-            elif x[i] == wly:
-                w[i] = x[i]
-                f[i] = w[i] * s[i]
-            elif x[i] > wly:
+            if wave[i] < wly:
+                w[i] = wave[i]
+                f[:, :, :, :, :, i] = w[i] * seds[:, :, :, :, :, i]
+            elif wave[i] == wly:
+                w[i] = wave[i]
+                f[:, :, :, :, :, i] = w[i] * seds[:, :, :, :, :, i]
+            elif wave[i] > wly:
                 w[i] = wly
-                f[i] = w[i] * (s[i - 1] + ((w[i] - x[i - 1]) * (s[i] - s[i - 1]) / (x[i] - x[i - 1])))
-                # f[i] = w[i]*f[i]
+                f[:, :, :, :, :, i] = w[i] * (seds[:, :, :, :, :, i - 1] + (
+                    (w[i] - wave[i - 1]) * (seds[:, :, :, :, :, i] - seds[:, :, :, :, :, i - 1]) / (wave[i] - wave[i - 1])))
+                # f[:,:,i] = f[:,:,i]
 
-        nlyman = const * np.trapz(f, w)
+        nlyman = const * np.trapz(f, w, axis=-1)
+        # print np.log10(N_lyman)
         return nlyman
 
     def __add__(self, other):
@@ -952,10 +654,9 @@ class Observe:
     """
 
     def __init__(self, SED, Filters, redshift, v=1, force_age=True, madau=True, units=u.uJy):
-        self.SED = SED
         self.F = Filters
         self.redshifts = np.array(redshift, ndmin=1)
-        self.wave = self.SED.wave
+        self.wave = SED.wave
 
         self.fluxes = np.zeros((len(self.redshifts), len(self.F.filters))) * units
         self.AB = np.zeros((len(self.redshifts), len(self.F.filters))) * u.mag
@@ -979,9 +680,9 @@ class Observe:
                 for j, filter in enumerate(self.F.filters):
                     flux, mag = 0, 0
                     if v == 1:
-                        flux, mag = self.calcflux(filter, z, self.dl[i], units)
+                        flux, mag = self.calcflux(SED, filter, z, self.dl[i], units)
                     elif v == 2:
-                        flux, mag = self.calcFlux2(filter, z, self.dm[i], units)
+                        flux, mag = self.calcFlux2(SED, filter, z, self.dm[i], units)
 
                     self.wl[j] = filter.lambda_c
                     self.fwhm[j] = filter.fwhm
@@ -1040,13 +741,12 @@ class Observe:
         lyl_absorption = np.where(tau > 700., 0., np.exp(-tau))
         return lyl_absorption
 
-    def calcflux(self, filt, z, dl, units):
+    def calcflux(self, SED, filt, z, dl, units):
         wf = filt.wave
         tp = filt.response
 
         # Find SED wavelength entries within filter range
-        wff = np.array([wf[0] < self.wave[i] < wf[-1]
-                        for i in range(len(self.wave))])
+        wff = np.logical_and(wf[0] < self.wave, self.wave < wf[-1])
         wft = self.wave[wff]
 
         # Interpolate to find throughput values at new wavelength points
@@ -1062,7 +762,7 @@ class Observe:
         tp = tp[order]
 
         # Interpolate redshifted SED and LyAbs at new wavelength points
-        sed = griddata(self.wave * (1 + z), self.SED.SED, wf) * self.SED.SED.unit
+        sed = griddata(self.wave * (1 + z), SED.SED, wf) * SED.SED.unit
         lyabs = griddata(self.wave , self.lyman_abs, wf)
 
         """
@@ -1091,7 +791,7 @@ class Observe:
         # As: f_nu=int(dnu Fnu Rnu/h*nu)/int(dnu Rnu/h*nu)
         # ie: f_nu=int(dlm Flm Rlm lm / c)/int(dlm Rlm/lm)
 
-        top = np.trapz(sed * lyabs * tp * wf / c.c.to(u.AA / u.s), wf)
+        top = np.trapz(sed * lyabs[:,None,None,None,None]* tp * wf / c.c.to(u.AA / u.s), wf)
         bottom = np.trapz(tp / wf, wf)
 
         area = (4 * np.pi * (dl ** 2))
