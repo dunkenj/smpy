@@ -1,0 +1,2 @@
+/Users/ken/Documents/PhD/code/smpy/smpy.py:790: RuntimeWarning: divide by zero encountered in log10
+  wfx = np.linspace(wf[0], wf[-1], 1000)

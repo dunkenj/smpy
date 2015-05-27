@@ -5,7 +5,6 @@ import re
 import sys
 from glob import glob
 from scipy.interpolate import griddata
-from scipy.integrate import simps
 from scipy.optimize import leastsq
 from scipy.spatial import Delaunay
 
@@ -16,6 +15,7 @@ from astropy.utils.console import ProgressBar
 
 from ssp import Ised, SSP, BC
 from dust import Charlot, Calzetti, Calzetti2, MW, LMC, SMC
+from sfh import exponential
 
 cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
@@ -31,7 +31,7 @@ class CSP:
 
     def __init__(self, ssp,
                  age=None, sfh=None, dust=None, metal_ind=None, f_esc=None,
-                 sfh_law='exp', dust_model=Calzetti, neb_cont=True, neb_met=True):
+                 sfh_law=exponential, dust_model=Calzetti, neb_cont=True, neb_met=True):
         """
         :type ssp: SSP object
         :type age:
@@ -68,32 +68,10 @@ class CSP:
             else:
                 self.build(age, sfh, dust, metal_ind, f_esc, sfh_law, dust_model, neb_cont, neb_met)
 
-    @staticmethod
-    def _sfh_exp(t, tau):
-        sfh = np.exp(-1 * t / tau) / abs(tau)
-        return sfh
-
-    @staticmethod
-    def _sfh_pow(t, alpha):
-        sfh = np.power(t, alpha)
-        return sfh
-
-    @staticmethod
-    def _sfh_del(t, tau):
-        sfh = t / (tau ** 2) * np.exp(-t / tau)
-        return sfh
-
-    @staticmethod
-    def _sfh_tru(t, tstop):
-        sfh = np.ones_like(t)
-        sfh[t > tstop * np.max(t)] = 0.
-
-        sfh /= np.trapz(sfh, t)
-        return sfh
 
     #@profile
     def build(self, age, sfh, dust, metal, fesc=1.,
-              sfh_law='exp', dust_model=Calzetti,
+              sfh_law=exponential, dust_model=Calzetti,
               neb_cont=True, neb_met=True, timesteps = 400, verbose=False):
         """ Docs
 
@@ -108,7 +86,8 @@ class CSP:
         self.inc_cont = neb_cont
         self.inc_met = neb_met
         self.getAttenuation = dust_model
-
+        self.sfr_func = sfh_law
+        
         mu = 0.3
 
         self.ta = self.ages
@@ -224,28 +203,25 @@ class CSP:
                         #(1 - self.fesc[None, None, :, None]))
 
         # Star-formation history
-        if self.sfh_law == 'exp':
-            self.sfr_func = self._sfh_exp
-        elif self.sfh_law == 'pow':
-            self.sfr_func = self._sfh_pow
-        elif self.sfh_law == 'del':
-            self.sfr_func = self._sfh_del
-        elif self.sfh_law == 'tru':
-            self.sfr_func = self._sfh_tru
 
         if verbose:
             bar = ProgressBar(np.product(self.SED.shape[2:-1]))
             
-        for idT, tau in enumerate(self.tau):
+        for idT, t in enumerate(self.tau):
+            if type(t) == tuple:
+                tau = t
+            else:
+                tau = tuple([t])
+
             self.sfh_weights = np.ones(sfh_grid_shape)
 
-            self.sfr_hist = self.sfr_func(self.ta_sfh, tau)
+            self.sfr_hist = self.sfr_func(self.ta_sfh, *tau)
             # Enforce integrated SFR = 1 Msol.
             self.norm = np.trapz(self.sfr_hist, self.ta_sfh, axis=-1)[:, :, None]
 
             self.sfr_hist /= self.norm
             self.weights = self.sfr_func(self.tg[None, :, None] - self.ta_sfh, 
-                                         tau) / self.norm
+                                         *tau) / self.norm
             self.sfh_weights *= self.weights
 
 
@@ -530,11 +506,11 @@ class FileFilter(Filter):
 
         self.fwhm = halfmax_hi - halfmax_low
 
-        self.lambda_c = (simps(self.wave * self.response, self.wave) /
-                         simps(self.response, self.wave)) * u.angstrom
+        self.lambda_c = (np.trapz(self.wave * self.response, self.wave) /
+                         np.trapz(self.response, self.wave)) * u.angstrom
 
-        self.nu_c = (simps(self.freq * self.response, self.freq) /
-                     simps(self.response, self.freq)) * u.Hz
+        self.nu_c = (np.trapz(self.freq * self.response, self.freq) /
+                     np.trapz(self.response, self.freq)) * u.Hz
 
 
 class TophatFilter(Filter):
@@ -544,8 +520,8 @@ class TophatFilter(Filter):
         :type steps: int
         """
         super(TophatFilter, self).__init__()
-        self.centre = centre * u.angstrom
-        self.width = width * u.angstrom
+        self.centre = centre.to(u.angstrom)
+        self.width = width.to(u.angstrom)
         self.steps = steps
 
         upper, lower = self.centre + self.width, self.centre - self.width
@@ -559,11 +535,11 @@ class TophatFilter(Filter):
 
         self.freq = (c.c / self.wave).to(u.Hz)
 
-        self.lambda_c = (simps(self.wave * self.response, self.wave) /
-                         simps(self.response, self.wave))
+        self.lambda_c = (np.trapz(self.wave * self.response, self.wave) /
+                         np.trapz(self.response, self.wave))
 
-        self.nu_c = (simps(self.freq * self.response, self.freq) /
-                     simps(self.response, self.freq))
+        self.nu_c = (np.trapz(self.freq * self.response, self.freq) /
+                     np.trapz(self.response, self.freq))
         self.fwhm = self.width
 
 
@@ -594,11 +570,11 @@ class LoadEAZYFilters(object):
                 wavelength *= u.angstrom
                 freq = (c.c / wavelength).to(u.Hz)
 
-                lambda_c = (simps(wavelength * response, wavelength) /
-                            simps(response, wavelength))
+                lambda_c = (np.trapz(wavelength * response, wavelength) /
+                            np.trapz(response, wavelength))
 
-                nu_c = (simps(freq * response, freq) /
-                        simps(response, freq))
+                nu_c = (np.trapz(freq * response, freq) /
+                        np.trapz(response, freq))
 
                 new_filter = Filter()
                 new_filter.wave = np.array(wavelength) * u.angstrom
@@ -649,50 +625,54 @@ class FilterSet:
 
 
 class Observe:
-    """
-    
+    """ Mock photometry class
     """
 
-    def __init__(self, SED, Filters, redshift, v=1, force_age=True, madau=True, units=u.uJy):
+    def __init__(self, SED, Filters, redshift, v=1, force_age=True, madau=True, units=u.uJy, verbose=False):
+        """
+
+        :type self: object
+        """
         self.F = Filters
         self.redshifts = np.array(redshift, ndmin=1)
         self.wave = SED.wave
 
-        self.fluxes = np.zeros((len(self.redshifts), len(self.F.filters))) * units
-        self.AB = np.zeros((len(self.redshifts), len(self.F.filters))) * u.mag
+        self.fluxes = np.zeros(np.append([len(self.redshifts), 
+                                          len(self.F.filters)], SED.SED.shape[:-1])) * units
+        self.AB = np.zeros_like(self.fluxes.value) * u.mag
         self.wl = np.zeros(len(self.F.filters)) * u.AA
         self.fwhm = np.zeros(len(self.F.filters)) * u.AA
 
         self.dl = cosmo.luminosity_distance(self.redshifts).cgs
         self.dl[self.redshifts == 0] = 10 * c.pc
 
-        self.dm = cosmo.distmod(self.redshifts).value
-        self.dm[self.redshifts == 0] = 0.
+        if verbose:
+            bar = ProgressBar(len(self.redshifts))
 
         for i, z in enumerate(self.redshifts):
             self.lyman_abs = np.ones(len(self.wave))
             if madau:
                 self.lyman_abs = np.clip(self.tau_madau(self.wave, z), 0., 1.)
 
-            if (self.SED.tg.to(u.Gyr) > cosmo.age(z)) and force_age:
-                print 'SSP age older than universe...stopping.'
-            else:
-                for j, filter in enumerate(self.F.filters):
-                    flux, mag = 0, 0
-                    if v == 1:
-                        flux, mag = self.calcflux(SED, filter, z, self.dl[i], units)
-                    elif v == 2:
-                        flux, mag = self.calcFlux2(SED, filter, z, self.dm[i], units)
+            for j, filter in enumerate(self.F.filters):
+                flux = self.calcflux(SED, filter, z, self.dl[i], units)
 
-                    self.wl[j] = filter.lambda_c
-                    self.fwhm[j] = filter.fwhm
-                    self.fluxes[i, j] = flux
-                    self.AB[i, j] = mag * u.mag
-
+                self.wl[j] = filter.lambda_c
+                self.fwhm[j] = filter.fwhm
+                self.fluxes[i, j] = flux
+            
+                if not force_age:
+                    agecut = (SED.tg.to(u.Gyr) > cosmo.age(z))
+                    self.fluxes[i, j, :, agecut] = 0.    
+            
+            if verbose:
+                assert isinstance(bar, object)
+                bar.update()
+        
+        self.AB = (-2.5 * np.log10(self.fluxes.to(u.Jy) / (3631 * u.Jy))) * u.mag
+        
         self.wl *= u.angstrom
         self.fwhm *= u.angstrom
-        self.fluxes = np.squeeze(self.fluxes)  # * units
-        self.AB = np.squeeze(self.AB)  # * u.mag
 
     @staticmethod
     def tau_madau(wave, z):
@@ -742,132 +722,47 @@ class Observe:
         return lyl_absorption
 
     def calcflux(self, SED, filt, z, dl, units):
-        wf = filt.wave
-        tp = filt.response
+        """ Convolve synthetic SEDs with a given filter
 
+            Arguments:
+                SED (np.array): Grid of synthetic spectra
+                filt (Filter object):
+                z (float): Redshift at which models are being observed
+                dl (astropy.quantity): luminosity distance
+                     corresponding to redshift(z) in given cosmology.
+                units (astropy.units) : Desired output flux units (in spectral flux density)
+
+            Returns:
+                Flux (astropy.quantity): with units as given by 'units'
+                       (spectral flux density)
+        """
         # Find SED wavelength entries within filter range
-        wff = np.logical_and(wf[0] < self.wave, self.wave < wf[-1])
+        wff = np.logical_and(filt.wave[0] < self.wave, self.wave < filt.wave[-1])
         wft = self.wave[wff]
 
         # Interpolate to find throughput values at new wavelength points
-        tpt = griddata(wf, tp, wft)
+        tpt = griddata(filt.wave, filt.response, wft)
 
         # Join arrays and sort w.r.t to wf
         # Also replace units stripped by concatenate
-        wf = np.array(np.concatenate((wf, wft))) * u.AA
-        tp = np.concatenate((tp, tpt))
+        wf = np.array(np.concatenate((filt.wave, wft))) * u.AA
+        tp = np.concatenate((filt.response, tpt))
 
         order = np.argsort(wf)
         wf = wf[order]
         tp = tp[order]
 
         # Interpolate redshifted SED and LyAbs at new wavelength points
-        sed = griddata(self.wave * (1 + z), SED.SED, wf) * SED.SED.unit
-        lyabs = griddata(self.wave , self.lyman_abs, wf)
-
-        """
-        Old Method:
-        
-        WR = (np.trapz(sed * lyabs * tp * wf, wf) /c.c.to(u.AA/u.s)).value
-        F_mean = WR/f_mean2.value/z1#/c.c.to(u.AA / u.s)
-        
-        #Convert fluxes to AB magnitudes
-        Mag = -2.5*np.log10( F_mean * c.L_sun.cgs.value/ (4* np.pi* (c.pc.cgs.value*10)**2) ) - 48.6
-        Mag += self.dm
-        
-        # Coded as this in BC03
-        #
-        # AB0 = -2.5*np.log10( c.L_sun.cgs.value/ (4* np.pi* (10 * c.pc.cgs.value)**2) )
-        # Mag = AB0 - 2.5*np.log10(F_mean) - 48.6
-                
-        Flux = 10**((23.9 - Mag)/2.5) * u.uJy #uJy
-        #print Flux/Flux2.to(u.mJy)
-        print Flux, self.tmp.to(u.uJy)
-        
-        """
+        sed = griddata(self.wave * (1 + z), SED.SED.T, wf).T * SED.SED.unit
+        lyabs = griddata(self.wave, self.lyman_abs, wf)
 
         # Calculate f_nu mean
         # Integrate SED through filter, as per BC03 Fortran
         # As: f_nu=int(dnu Fnu Rnu/h*nu)/int(dnu Rnu/h*nu)
         # ie: f_nu=int(dlm Flm Rlm lm / c)/int(dlm Rlm/lm)
-
-        top = np.trapz(sed * lyabs[:,None,None,None,None]* tp * wf / c.c.to(u.AA / u.s), wf)
+        top = np.trapz(sed * lyabs[None, None, None, None, None, :] * tp * wf / c.c.to(u.AA / u.s), wf)
         bottom = np.trapz(tp / wf, wf)
-
         area = (4 * np.pi * (dl ** 2))
+        Flux = top / bottom / (1 + z) / area
 
-        F_mean = top / bottom / (1 + z) / area
-
-        # Set flux to appropriate units and calculate AB magnitude
-        Flux = F_mean.to(u.erg / u.cm ** 2 / u.s / u.Hz)
-        ABmag = -2.5 * np.log10(Flux.to(u.Jy) / (3631 * u.Jy))
-
-        return Flux.to(units), ABmag
-
-    def calcFlux2(self, filt, z, dm, units):
-        wf = filt.wave.value
-        tp = filt.response
-        z1 = z + 1
-
-        if len(wf) > 1000:  # Re-sample large filters for performance
-            wfx = np.linspace(wf[0], wf[-1], 1000)
-            tpx = griddata(wf, tp, wfx)
-
-            wf = wfx
-            tp = tpx
-
-
-        # Find SED wavelength entries within filter range
-        wff = np.array([wf[0] < self.wave.value[i] < wf[-1]
-                        for i in range(len(self.wave.value))])
-        wft = self.wave[wff]
-
-        #Interpolate to find throughput values at new wavelength points
-        tpt = griddata(wf, tp, wft)
-
-        #Join arrays and sort w.r.t to wf
-        wf = np.concatenate((wf, wft))
-        tp = np.concatenate((tp, tpt))
-
-        order = np.argsort(wf)
-        wf = wf[order]
-        tp = tp[order]
-        sed = griddata(self.wave * (1 + z), self.SED.SED.value, wf)
-        lyabs = griddata(self.wave, self.lyman_abs, wf)
-        dwf = np.diff(wf)
-        nwf = len(wf)
-
-        tpwf = tp / wf
-        f_mean2 = np.dot(dwf, (tpwf[:nwf - 1] + tpwf[1:]) / 2)
-        tpwf = tp * wf  #Reassign tpwf as product
-
-        wf1 = wf / z1
-
-        WR = 0.
-        for i in range(nwf):
-            #Interpolation indices
-            j = np.where(self.wave.value < wf1[i])[0][-1]
-
-            a = (wf1[i] - self.wave.value[j]) / (self.wave.value[j + 1] - self.wave.value[j])
-            tpa = (tpwf[i] * ((1 - a) * (self.SED.SED.value[j] * self.lyman_abs[j]) +
-                              a * self.SED.SED.value[j + 1] * self.lyman_abs[j + 1]))
-            if i != 0:
-                WR += dwf[i - 1] * (tpb + tpa)
-
-            tpb = tpa
-
-        F_mean = WR / 2 / z1 / f_mean2 / 2.997925e18
-        AB0 = 5 * np.log10(1.7684e8 * 1e-5)
-        # dl = 10pc in Mpc
-        # this factor is sqrt(4*pi*(3.0856e24)^2 Lsun)
-
-        #Convert fluxes to AB magnitudes
-        Mag = AB0 - 2.5 * np.log10(F_mean) - 48.6
-        Mag += dm
-
-        Flux = 10 ** ((23.9 - Mag) / 2.5) * u.uJy  #uJy
-
-        return Flux.to(units), Mag
-
-
-# must define cosmo before calling an Observe
+        return Flux.to(units)

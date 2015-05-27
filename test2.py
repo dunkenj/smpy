@@ -24,7 +24,7 @@ fescs = [0, 0.5, 1.]
 
 start = time.time()
 #ages2 = np.array([0.1, 0.25, 0.5, 1., 1.5, 2., 5., 10.]) * u.Gyr
-ages2 = np.logspace(-2, 1.1, 25) * u.Gyr
+ages2 = np.logspace(-2, 1.1, 2) * u.Gyr
 taus2 =  np.array([0.05, 0.5, 1., 2.5, 10.]) * u.Gyr
 tauv = np.array([0, 0.25, 0.5, 0.75, 1., 1.5, 2.])
 metals = np.array([0.2, 1.])
@@ -32,3 +32,15 @@ gal.build(ages2,taus2,tauv,metals, fesc=fescs, verbose=True)
 
 finish = (time.time()-start)
 print finish, finish/np.product(gal.SFR.shape), np.product(gal.SFR.shape)
+
+
+Filts = S.FilterSet()
+Filts.addTophatFilter(1500*u.AA, 150*u.AA)
+Filts.addTophatFilter(3000*u.AA, 150*u.AA)
+Filts.addTophatFilter(4000*u.AA, 150*u.AA)
+Filts.addTophatFilter(5000*u.AA, 150*u.AA)
+Filts.addTophatFilter(6000*u.AA, 150*u.AA)
+
+
+
+Obs = S.Observe(gal, Filts, np.linspace(0.,6.,100), verbose=True)

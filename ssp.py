@@ -200,9 +200,8 @@ class BC(SSP):
             :param path:
             :return:
         """
-        super(BC, self).__init__()
+        super(BC, self).__init__(path)
 
-        self.SSPpath = path
         self.files = glob(self.SSPpath + '*.ised')
         self.files.sort()
         self.iseds = []
