@@ -1,4 +1,4 @@
-## aMasSED Code 
+## SMpy
 __A Python based SED fitting code__
 
 ---
