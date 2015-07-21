@@ -237,3 +237,66 @@ class BC(SSP):
         self.rmtm_arr = np.array(self.rmtm_arr)[:, :]
         self.iseds = np.array(self.iseds)
 
+class BPASS(SSP):
+    """ BPASS
+    
+    www.bpass.org.uk
+    Eldridge & Stanway, 2009, MNRAS, 400, 1019
+    
+    """
+
+    def __init__(self, path='../ssp/bpass_v1.1/SEDS/'):
+        """
+            :type path: string
+            :param path:
+            :return:
+        """
+        super(BC, self).__init__(path)
+        head, tail = os.path.split(path)
+        readme = open(head+'/'+'sed.bpass.readme.txt','r')
+        ages = [-10]
+        for line in readme.readlines():
+            if 'log(Age/yrs)=' in line:
+                n = line.split(')')[2].strip('=').strip()
+                age.append(float(n))
+            else:
+                continue
+        self.ages = np.log10(ages)
+        self.ages[0] = 1.
+        
+        self.files = glob(self.SSPpath)
+        self.files.sort()
+        self.iseds = []
+        self.ta_arr = []
+        self.metal_arr = []
+        self.iw_arr = []
+        self.wave_arr = []
+        self.sed_arr = []
+        self.strm_arr = []
+        self.rmtm_arr = []
+        
+        metallicities = np.zeros(len(self.files))
+        for i, file in enumerate(self.files):
+            data = np.loadtxt(file)
+            self.wave_arr.append(data[:,0])
+            sed = data
+            sed[:,0] *= 0. # Make zero age column
+
+            self.ta_arr.append(self.ages)
+            self.metal_arr.append(file)
+            self.iw_arr.append(sed.shape[0])
+            self.sed_arr.append(sed)
+            self.strm_arr.append(np.ones_like(self.ages))
+            self.rmtm_arr.append(np.ones_like(self.ages))
+            self.iseds.append(None)
+            metallicities[i] = float(file.split('z')[-1])
+            
+        self.metallicities = metallicities / 100 / 0.02  # Normalise to solar metallicity
+        self.ages = np.array(self.ta_arr[0]) * u.yr
+        self.wave_arr = np.array(self.wave_arr) * u.AA
+        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :]
+        self.sed_arr *= u.Lsun / u.AA
+        self.strm_arr = np.array(self.strm_arr)[:, :]
+        self.rmtm_arr = np.array(self.rmtm_arr)[:, :]
+        self.iseds = np.array(self.iseds)
+
