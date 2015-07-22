@@ -543,9 +543,21 @@ if __name__ == '__main__':
 
     output = Table(meta=parameters)
 
-    names = ['N','ID','z','Bestfit_Mass','Bestfit_chi2','Age','Dust_Tau','SFH_Tau','SSP_Number','TotCol_rest', 'M1500','temp_index','SFR','nfilts','Beta','z_model']
-    units = [None,None,None, u.Msun ,None, u.Gyr, None, u.Gyr, None, u.mag, u.mag,None,u.Msun/u.yr,None,None,None]
-    types = ['i4','i4','f4','f4','f4','f4','f4','f4','i4', 'f4', 'f4','f4','f4','i4','f4','f4']
+    names = ['N', 'ID', 'z', 'Bestfit_Mass',
+             'Bestfit_chi2','Age','Dust_Tau','SFH_Tau',
+             'SSP_Number', 'M1500','temp_index',
+             'SFR','nfilts','Beta','z_model']
+             
+    units = [None, None, None, u.Msun,
+             None, u.Gyr, None, u.Gyr, 
+             None, u.mag, None, 
+             u.Msun/u.yr, None, None, None]
+             
+    types = ['i4', 'i4', 'f4', 'f4',
+             'f4', 'f4', 'f4', 'f4',
+             'i4', 'f4', 'i4',
+             'f4', 'i4', 'f4', 'f4']
+             
     if params.include_rest:
         for name in filter_names:
             names.append(name[:-len(params.flux_col_end)]+'_rest')
