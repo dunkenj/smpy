@@ -3,8 +3,10 @@ import array
 import copy
 import re
 import sys
+import os
 from glob import glob
 
+from scipy.interpolate import griddata
 from astropy import units as u
 from astropy import constants as c
 
@@ -25,7 +27,12 @@ class Ised(object):
         the function tries '03 format first and retries with the '07 format
         if the returned number of ages isn't as expected (e.g. 221 ages)
 
-        :type filename: string
+            Paramaters
+            ----------
+            
+            filename : str, filename (including relative/full path) of
+                Bruzual & Charlot model to be loaded into class.
+    
         """
 
         with open(filename, 'rb') as file:
@@ -196,9 +203,12 @@ class BC(SSP):
 
     def __init__(self, path='../ssp/bc03/salpeter/lr/'):
         """
-            :type path: string
-            :param path:
-            :return:
+            Paramaters
+            ----------
+            path : str,
+                Path to desired subset of Bruzual & Charlot models, should include
+                relevant wildcard to match multiple metallicities.
+                
         """
         super(BC, self).__init__(path)
 
@@ -246,23 +256,27 @@ class BPASS(SSP):
     """
 
     def __init__(self, path='../ssp/bpass_v1.1/SEDS/'):
+        """ 
+            Paramaters
+            ----------
+            path : str,
+                Path to desired subset of BPASS models, should include
+                relevant wildcard to match multiple metallicities.
+            
         """
-            :type path: string
-            :param path:
-            :return:
-        """
-        super(BC, self).__init__(path)
+        super(BPASS, self).__init__(path)
         head, tail = os.path.split(path)
         readme = open(head+'/'+'sed.bpass.readme.txt','r')
-        ages = [-10]
+        ages = [1]
         for line in readme.readlines():
             if 'log(Age/yrs)=' in line:
                 n = line.split(')')[2].strip('=').strip()
-                age.append(float(n))
+                ages.append(float(n))
             else:
                 continue
-        self.ages = np.log10(ages)
-        self.ages[0] = 1.
+
+        #self.ages[0] = 5.
+        self.ages = np.power(10, ages)
         
         self.files = glob(self.SSPpath)
         self.files.sort()
@@ -279,7 +293,7 @@ class BPASS(SSP):
         for i, file in enumerate(self.files):
             data = np.loadtxt(file)
             self.wave_arr.append(data[:,0])
-            sed = data
+            sed = np.copy(data)
             sed[:,0] *= 0. # Make zero age column
 
             self.ta_arr.append(self.ages)
@@ -291,12 +305,127 @@ class BPASS(SSP):
             self.iseds.append(None)
             metallicities[i] = float(file.split('z')[-1])
             
-        self.metallicities = metallicities / 100 / 0.02  # Normalise to solar metallicity
+        self.metallicities = metallicities / 1000 / 0.02  # Normalise to solar metallicity
         self.ages = np.array(self.ta_arr[0]) * u.yr
         self.wave_arr = np.array(self.wave_arr) * u.AA
-        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :]
+        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :] / 1e6
         self.sed_arr *= u.Lsun / u.AA
         self.strm_arr = np.array(self.strm_arr)[:, :]
         self.rmtm_arr = np.array(self.rmtm_arr)[:, :]
         self.iseds = np.array(self.iseds)
 
+
+class BPASS2(SSP):
+    """ BPASS v2
+    
+    www.bpass.org.uk
+    Eldridge & Stanway, 2009, MNRAS, 400, 1019
+    
+    """
+
+    def __init__(self, path='../ssp/bpass_v1.1/SEDS/', nsteps = 5000):
+        """ 
+            Parameters
+            ----------
+            path : str,
+                Path to desired subset of BPASS models, should include
+                relevant wildcard to match multiple metallicities.
+            nsteps : int
+                Number of wavelength steps in which to interpolate 
+            
+        """
+        super(BPASS2, self).__init__(path)
+
+        #self.ages[0] = 5.
+        self.ages = np.power(10, 6+(0.1*np.arange(41)))
+        self.ages = np.insert(self.ages, 0, 1e5)
+        
+        self.files = glob(self.SSPpath)
+        self.files.sort()
+        self.iseds = []
+        self.ta_arr = []
+        self.metal_arr = []
+        self.iw_arr = []
+        self.wave_arr = []
+        self.sed_arr = []
+        self.strm_arr = []
+        self.rmtm_arr = []
+        
+        metallicities = np.zeros(len(self.files))
+        for i, file in enumerate(self.files):
+            data = np.loadtxt(file)
+            
+            wave_large = data[:,0] * u.AA
+            wave_sht = np.unique(np.logspace(np.log10(wave_large.min()/u.AA),
+                                             np.log10(wave_large.max()/u.AA), nsteps).astype('int')) *u.AA
+
+            sed = np.copy(data)
+            sed[:,0] *= 0. # Make zero age column
+
+            sed_sht = rebin_sed(wave_large, sed, wave_sht)
+            self.wave_arr.append(wave_sht)
+            
+
+            self.ta_arr.append(self.ages)
+            self.metal_arr.append(file)
+            self.iw_arr.append(sed_sht.shape[0])
+            self.sed_arr.append(sed_sht)
+            self.strm_arr.append(np.ones_like(self.ages))
+            self.rmtm_arr.append(np.ones_like(self.ages))
+            self.iseds.append(None)
+            metallicities[i] = float(os.path.splitext(file)[0].split('z')[-1])
+            
+        self.metallicities = metallicities / 1000 / 0.02  # Normalise to solar metallicity
+        self.ages = np.array(self.ta_arr[0]) * u.yr
+        self.wave_arr = np.array(self.wave_arr) * u.AA
+        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :] / 1e6
+        self.sed_arr *= u.Lsun / u.AA
+        self.strm_arr = np.array(self.strm_arr)[:, :]
+        self.rmtm_arr = np.array(self.rmtm_arr)[:, :]
+        self.iseds = np.array(self.iseds)
+
+def rebin_sed(wave_in, sed_in, wave_out):
+    """ Rebin an SED to new wavelength grid with flux density conserved
+    
+        Parameters
+        ----------
+            wave_in : numpy.array or '~astropy.units.Quantity' array
+                Input wavelength grid, with length N
+            sed_in : numpy.array or '~astropy.units.Quantity' array
+                Input grid of SEDs, with shape (N, x)
+            wave_out : numpy.array or '~astropy.units.Quantity' array
+                Desired wavelength grid for rebinned SED, with length M
+    
+        Returns
+        -------
+            sed_out : numpy.array or '~astropy.units.Quantity' array
+                Rebinned SEDs, with shape (M, x)
+    
+    """
+
+    edges = np.empty(len(wave_out) + 1, dtype=np.float64) * wave_in.unit
+    edges[1:-1] = (wave_out[1:] + wave_out[:-1]) * 0.5
+
+    # Compute the first and last by making them symmetric
+    edges[0] = 2.0 * wave_out[0] - edges[1]
+    edges[-1] = 2.0 * wave_out[-1] - edges[-2]
+
+    indices = np.searchsorted(wave_in, edges)
+    i_beg = indices[:-1]
+    i_end = indices[1:]
+
+    avflux = sed_in[:-1] #(sed_in[1:, :] + sed_in[:-1, :]) * 0.5
+    deltaw = wave_in[1:] - wave_in[:-1]
+
+    #print avflux.shape
+    sed_out = np.empty(shape=(len(wave_out), sed_in.shape[1]), dtype=np.float64)
+
+    for i in range(len(i_beg)):
+        first = i_beg[i]
+        last = i_end[i]
+        cur_dw = deltaw[first:last]
+        avg = np.sum(avflux[first:last, :] * cur_dw[:, None], 0) / cur_dw.sum()
+        sed_out[i, :] = avg
+
+    return sed_out
+        
