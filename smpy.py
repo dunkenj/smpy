@@ -242,8 +242,8 @@ class CSP:
         
         # Interpolate SED, stellar mass fraction and remnant fractions
         # for SFH age grid using calculated Barycentric coordinates (bc).
-        print self.sed_arr.shape
-        print (len(self.metallicities) * len(self.ages), self.iw)
+        #print self.sed_arr.shape
+        #print (len(self.metallicities) * len(self.ages), self.iw)
         
         self.sed_sfh = (self.sed_arr.reshape(len(self.metallicities) *
                                              len(self.ages), self.iw)[self.simplices] *
@@ -460,7 +460,10 @@ class CSP:
         nlyman = const * np.trapz(f, w, axis=-1)
         # print np.log10(N_lyman)
         return nlyman
-    
+        
+    def __getitem__(self, slice):
+        return self.
+
     def __add__(self, other):
         new = None
         if isinstance(other, CSP):
@@ -967,7 +970,28 @@ class FObserve:
         self.AB = f.create_dataset("mags", gridshape, dtype='f')
         
         # Set up hdf5 dimensions based on SED ranges for convenient
-        # slicing if used not used for fitting.
+        # slicing if not used for fitting.
+        f['z'] = self.redshifts
+        f['sfh'] = SED.tau
+        f['ages'] = SED.tg
+        f['dust'] = SED.tauv
+        f['metallicities'] = SED.mi
+        f['fesc'] = SED.fesc
+        
+        for dataset in ['fluxes', 'mag']:
+            f[dataset].dims.create_scale(f['z'], 'z')
+            f[dataset].dims.create_scale(f['sfh'], 'sfh')
+            f[dataset].dims.create_scale(f['ages'], 'ages')
+            f[dataset].dims.create_scale(f['dust'], 'dust')
+            f[dataset].dims.create_scale(f['metallicities'], 'met')
+            f[dataset].dims.create_scale(f['fesc'], 'sfh')
+        
+            f[dataset].dims[0].attach_scale(f['z'])
+            f[dataset].dims[2].attach_scale(f['metallicities'])
+            f[dataset].dims[3].attach_scale(f['ages'])
+            f[dataset].dims[4].attach_scale(f['sfh'])
+            f[dataset].dims[5].attach_scale(f['dust'])
+            f[dataset].dims[6].attach_scale(f['fesc'])
         
         # ...
         
@@ -995,6 +1019,11 @@ class FObserve:
         
         # Convert spectral flux density to AB magnitudes
         self.AB = (-2.5 * np.log10(self.fluxes.to(u.Jy) / (3631 * u.Jy))) * u.mag
+        f.close()
+    
+    def load(self, loadpath):
+        
+        
     
     def calcflux(self, SED, filt, z, dl, units):
         """ Convolve synthetic SEDs with a given filter

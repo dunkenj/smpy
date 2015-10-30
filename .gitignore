@@ -6,6 +6,7 @@ smpy-fits/error.log
 *.pdf
 *.txt
 *.png
+*.pyc
 smpy-obs/Dust Extinction Curves.py
 smpy-obs/DustExtinctionCurves.py
 smpy-obs/test.py
