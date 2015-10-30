@@ -7,7 +7,9 @@ smpy-fits/error.log
 *.txt
 *.png
 *.pyc
+*.tex
 smpy-obs/Dust Extinction Curves.py
 smpy-obs/DustExtinctionCurves.py
 smpy-obs/test.py
 smpy-obs/filters/*
+bpass_tests.py
