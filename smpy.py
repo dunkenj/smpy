@@ -108,7 +108,7 @@ class CSP:
     #@profile
     def build(self, age, sfh, dust, metal, fesc=1.,
               sfh_law=exponential, dust_model=Calzetti,
-              neb_cont=True, neb_met=True, timesteps = 400, verbose=False):
+              neb_cont=True, neb_met=True, timesteps = 500, verbose=False):
 
         """ Build composite stellar population SED(s) from input SSP models
         
@@ -145,7 +145,10 @@ class CSP:
             
             
         """
-        self.tau = u.Quantity(sfh, ndmin=1)
+        try:
+            self.tau = u.Quantity(sfh, ndmin=1)
+        except:
+            self.tau = sfh
         self.tg = u.Quantity(age, ndmin=1).to(u.yr)
         
         self.tauv = np.array(dust, ndmin=1)
@@ -461,8 +464,8 @@ class CSP:
         # print np.log10(N_lyman)
         return nlyman
         
-    def __getitem__(self, slice):
-        return self.
+#    def __getitem__(self, slice):
+#        return self.
 
     def __add__(self, other):
         new = None
@@ -1021,7 +1024,7 @@ class FObserve:
         self.AB = (-2.5 * np.log10(self.fluxes.to(u.Jy) / (3631 * u.Jy))) * u.mag
         f.close()
     
-    def load(self, loadpath):
+    #def load(self, loadpath):
         
         
     
