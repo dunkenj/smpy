@@ -13,3 +13,4 @@ smpy-obs/DustExtinctionCurves.py
 smpy-obs/test.py
 smpy-obs/filters/*
 bpass_tests.py
+misc_testing/*
