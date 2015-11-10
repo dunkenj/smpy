@@ -15,3 +15,6 @@ smpy-obs/filters/*
 bpass_tests.py
 misc_testing/*
 trunc_exponential.py
+fitting/*
+*.hdf
+dust_tests.py

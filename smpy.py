@@ -2,6 +2,7 @@ import numpy as np
 import array
 import copy
 import re
+import os
 import sys
 import h5py
 
@@ -104,11 +105,11 @@ class CSP:
             else:
                 self.build(age, sfh, dust, metal_ind, f_esc, sfh_law, dust_model, neb_cont, neb_met)
 
-    
-    #@profile
-    def build(self, age, sfh, dust, metal, fesc=1.,
-              sfh_law=exponential, dust_model=Calzetti,
-              neb_cont=True, neb_met=True, timesteps = 500, verbose=False):
+    def build(self, age, sfh, dust, metal, fesc = 1.,
+              sfh_law = exponential, dust_model = Calzetti,
+              neb_dust_weight = 1.,
+              neb_cont = True, neb_met = True, 
+              timesteps = 500, verbose = False):
 
         """ Build composite stellar population SED(s) from input SSP models
         
@@ -149,8 +150,8 @@ class CSP:
             self.tau = u.Quantity(sfh, ndmin=1)
         except:
             self.tau = sfh
+            
         self.tg = u.Quantity(age, ndmin=1).to(u.yr)
-        
         self.tauv = np.array(dust, ndmin=1)
         self.mi = np.array(metal, ndmin=1)
         self.fesc = np.array(fesc, ndmin=1)
@@ -171,7 +172,7 @@ class CSP:
         self.STR = np.zeros(self.SED.shape[: -1])
         self.SFR = np.zeros(self.SED.shape[: -1]) * u.solMass / u.yr
         
-        # Set up grid for NDinterpolation
+        # Set up grid for ND-interpolation
         ti, mi = np.meshgrid(np.log10(self.ages / u.yr), np.log10(self.metallicities))
         self.grid = zip(mi.flatten(), ti.flatten())
         
@@ -214,6 +215,7 @@ class CSP:
         nebrange1 = (self.metallicities <= 0.02)
         nebrange2 = (self.metallicities > 0.02) * (self.metallicities <= 0.2)
         nebrange3 = (self.metallicities > 0.2)
+        
         self.neb_sed_arr[nebrange1, :, :] *= ((self.neb_cont * self.inc_cont) +
                                               self.neb_hlines +
                                               (self.neb_metal[:, 0] * self.inc_met))
@@ -271,7 +273,6 @@ class CSP:
         self.Nly_sfh = (self.Nly_arr.reshape(len(self.metallicities) *
                                             len(self.ages))[self.simplices]
                                             * self.bc).sum(1)
-        
         self.Nly_sfh = self.Nly_sfh.reshape(sfh_grid_shape) #*
                         #(1 - self.fesc[None, None, :, None]))
         
@@ -296,24 +297,27 @@ class CSP:
             self.weights = self.sfr_func(self.tg[None, :, None] - self.ta_sfh,
                                          *tau) / self.norm
             self.sfh_weights *= self.weights
-
                 
-                # Offset added to renormalise from B to V band.
             for idA, Av in enumerate(self.tauv):
                 for idf, fesc in enumerate(self.fesc):
                     self.Att = self.getAttenuation(self.ta_sfh, self.wave, Av)
+                    
+                    neb_att = self.getAttenuation(self.ta_sfh, self.wave, Av * neb_dust_weight)
+                    
                     combined_sed = self.sed_sfh
                     
                     # Absorbed LyC photons
                     combined_sed[:, :, :, self.wave <= 912 * u.AA] *= fesc
+                    
                     # Resulting nebular emission
-                    combined_sed += ((1 - fesc) * self.Nly_sfh[:, :, :, None] * self.neb_sed_sfh)
                     combined_sed *= self.Att # Dust attenuated combined SED
+                    combined_sed += neb_att * ((1 - fesc) * self.Nly_sfh[:, :, :, None] * self.neb_sed_sfh)
                     
                     # Integrate over star-formation history
                     self.SED[:, :, idT, idA, idf, :] = np.trapz(self.sfh_weights[:, :, :, None] * combined_sed,
-                                                              self.ta_sfh[:, :, :, None].value,
-                                                              axis=-2)
+                                                                self.ta_sfh[:, :, :, None].value,
+                                                                axis=-2)
+                    
                     self.STR[:, :, idT, idA, idf] = np.trapz(self.sfh_weights * self.strm_sfh, self.ta_sfh)
                     
                     self.SFR[:, :, idT, idA, idf] = self.sfr_hist[:, :, -1] * u.solMass
@@ -323,77 +327,53 @@ class CSP:
         self.SFR /= self.STR
         self.SED = self.SED / self.STR[:, :, :, :, :, None]
         
-        self.Nly = self.calc_lyman_f(self.wave, self.SED).cgs
-
-        
-        # self.beta = self.calc_beta(self.wave,self.SED)
+        self.Nly = self.calc_lyman(self.wave, self.SED).cgs
         self.Ms = np.ones_like(self.SFR) * u.Msun
-    
-    def calc_beta(self, wave, sed):
-        """ Measure UV continuum slope
         
-        Estimates UV continuum slope (beta) by fitting a power law
-        to the spectral windows defined in Calzetti et al. 1994
         
-            Parameters
-            ----------
-            
-            wave : array of floats
-                Wavelength
-            SED : array of floats, with same dimension as wave
-                SED at wavelengths in wave
-        
-        Returns UV slope index and the error on that fit
-        """
-        # new_wave = np.arange(1200,2650)
-        #new_SED = griddata(wave,SED,new_wave)
-        #wave = new_wave
-        #SED = new_SED
-        
-        #window_lower = np.array([1268.,1309.,1342.,1407.,1562.,1677.,1760.,1866.,1930.,2400.])
-        #window_upper = np.array([1284.,1316.,1371.,1515.,1583.,1740.,1833.,1890.,1950.,2580.])
-        
-        window_lower = np.array([1600, 2400])
-        window_upper = np.array([1950, 2600])
-        
-        ww = np.zeros_like(wave, dtype=bool)
-        for w in np.arange(len(window_lower)):
-            ww[(wave >= window_lower[w]) * (wave < window_upper[w])] = True
-        
-        #window_mean = (window_lower+window_upper)/2 #midpoint for power-law fitting
-        
-        fluxes = np.zeros_like(window_lower)
-        
-        #for w, window_lower in enumerate(window_lower):
-        #    wf = np.where((wave > window_lower) & (wave <= window_upper[w]))
-        #    fluxes[w] = np.mean(SED[wf])
-        
-        #fluxes *= 2.997925e18/(window_mean**2)
-        fluxerr = np.sqrt(fluxes)
-        
-        logx = np.log10(wave[ww])
-        logy = np.log10(sed[ww])
-        logyerr = 1.  #fluxerr/fluxes
-        
-        fitfunc = lambda p, x: p[0] + (x * p[1])
-        errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
-        
-        pinit = [np.max(sed[ww]), -2.0]
-        out = leastsq(errfunc, pinit, args=(logx, logy, logyerr))
-        #out = leastsq(errfunc, pinit, args=(log,fluxes,fluxerr))
-        
-        pfinal = out[0]
-        covar = out[1]
-        #print pfinal
-        index = pfinal[1]
-        #indexerr = np.sqrt(covar[0])
-        
-        return (index)  #, indexerr)
-    
     @staticmethod
     def calc_lyman(wave, seds):
         """ Calculate total Lyman continuum photons for an SED
         
+            Semi-pythonic version of the fortran routine in BC03 code,
+            allows flexible input array shapes provided wavelength axis
+            is the last one.
+        
+            Parameters
+            ----------
+            
+            wave : array of floats,
+                Wavelength array
+            seds : 
+        
+        """
+        wly = 912. * u.AA
+        const = (1e-8 / (u.AA / u.cm)) / c.h.cgs / c.c.cgs
+
+        n = int(sum([wave < wly][0]))
+        S = np.array(seds.shape)
+        S[-1] = n+1
+        f = np.zeros(S) * seds.unit * u.AA
+        w = np.zeros(n + 1) * u.AA
+        
+        for i in range(n + 1):
+            if wave[i] <= wly:
+                w[i] = wave[i]
+                np.rollaxis(f, -1)[i] = w[i] * np.rollaxis(seds, -1)[i]
+            elif wave[i] > wly:
+                w[i] = wly
+                np.rollaxis(f, -1)[i] = w[i] * (np.rollaxis(seds,-1)[i - 1] + (
+                    (w[i] - wave[i - 1]) * (np.rollaxis(seds, -1)[i] - np.rollaxis(seds, -1)[i - 1]) / (wave[i] - wave[i - 1])))
+                            
+        nlyman = const * np.trapz(f, w, axis=-1)
+        return nlyman
+    
+    @staticmethod
+    def calc_lyman_s(wave, seds):
+        """ Calculate total Lyman continuum photons for an SED
+            
+            Deprecated due to flexible version above.
+            
             Parameters
             ----------
             
@@ -430,6 +410,8 @@ class CSP:
     def calc_lyman_f(wave, seds):
         """ Calculate total Lyman continuum photons for an SED
         
+            Deprecated due to flexible version above.
+            
             Parameters
             ----------
             
@@ -464,9 +446,6 @@ class CSP:
         # print np.log10(N_lyman)
         return nlyman
         
-#    def __getitem__(self, slice):
-#        return self.
-
     def __add__(self, other):
         new = None
         if isinstance(other, CSP):
@@ -480,7 +459,7 @@ class CSP:
                 new.Nly = new.Nly
             if (new.Nly > 0.) and (other.Nly > 0.):
                 new.Nly = self.Nly + other.Nly
-            #new.beta = new.calc_beta(new.wave, new.SED)
+
         assert isinstance(new, CSP)
         return new
     
@@ -497,7 +476,7 @@ class CSP:
                 new.Nly = new.Nly
             if (new.Nly > 0.) and (other.Nly > 0.):
                 new.Nly = self.Nly + other.Nly
-            #new.beta = new.calc_beta(new.wave, new.SED)
+
         assert isinstance(new, CSP)
         return new
     
@@ -565,8 +544,10 @@ class CSP:
         wbin = np.argmin(np.abs(self.wave - wavelength))
         binwidth = np.mean(np.diff(self.wave)[wbin - 1:wbin + 1])
         continuum = self.SED[:, :, :, :, :, wbin:wbin + 1].mean(-1)
+        
         print continuum.unit 
         lineluminosity = continuum * EqW
+        
         print (lineluminosity / binwidth).unit
         self.Lalpha = lineluminosity
         self.SED[:, :, :, :, :,wbin] += (lineluminosity / binwidth)
@@ -792,7 +773,7 @@ class Observe:
     
     """
     
-    def __init__(self, SED, Filters, redshift, v=1, force_age=True, 
+    def __init__(self, SED, Filters, redshift, force_age=True, 
                  madau=True, units=u.uJy, verbose=False):
         """
         
@@ -803,11 +784,8 @@ class Observe:
             Filters : '~smpy.FilterSet' object
                 Filter set through which to observe the set of models included
                 in SED object
-            
-            redshift : 
-            
-            v : 
-        
+            redshift : float of numpy.array
+                Redshift(s) at which models are to be observed
             force_age : boolean
                 Require age of the stellar population to be younger than
                 the age of the Universe at the desired redshift.
@@ -822,6 +800,8 @@ class Observe:
         self.F = Filters
         self.redshifts = np.array(redshift, ndmin=1)
         self.wave = SED.wave
+        self.Ms = SED.Ms
+        self.SFR = SED.SFR
         
         self.fluxes = np.zeros(np.append([len(self.redshifts),
                                           len(self.F.filters)], SED.SED.shape[:-1])) * units
@@ -910,7 +890,7 @@ class Observe:
         
         return Flux.to(units)
 
-class FObserve:
+class FileObserve:
     """ Mock photometry class
     
         Attributes
@@ -920,9 +900,12 @@ class FObserve:
         -------
     
     """
-    
-    def __init__(self, SED, Filters, redshift, savepath, v=1, 
-                 force_age=True, madau=True, units=u.uJy, verbose=False):
+    def __init__(self):
+        self.test = 1.
+        
+    def build(self, SED, Filters, redshift, savepath, v=1, 
+              force_age=True, madau=True, units=u.uJy, 
+              verbose=False, clobber=True):
         """
         
             Parameters
@@ -963,69 +946,97 @@ class FObserve:
         self.dl = cosmo.luminosity_distance(self.redshifts).cgs
         self.dl[self.redshifts == 0] = 10 * c.pc
         
+        
         assert type(savepath) is StringType, "File save path is not a string: %r" % savepath
         self.savepath = savepath
+        if clobber:
+            if os.path.isfile(self.savepath):
+                os.remove(self.savepath)
         
-        f = h5py.File(savepath, 'w')
+        with h5py.File(savepath, 'w') as f:
         
-        gridshape = np.append([len(self.redshifts), len(self.F.filters)], SED.SED.shape[:-1])
-        self.fluxes = f.create_dataset("fluxes", gridshape, dtype='f')
-        self.AB = f.create_dataset("mags", gridshape, dtype='f')
+            gridshape = np.append([len(self.redshifts), len(self.F.filters)], SED.SED.shape[:-1])
+            self.fluxes = f.create_dataset("fluxes", gridshape, dtype='f')
+            self.fluxes.attrs['unit'] = SED.SED.unit.to_string()
         
-        # Set up hdf5 dimensions based on SED ranges for convenient
-        # slicing if not used for fitting.
-        f['z'] = self.redshifts
-        f['sfh'] = SED.tau
-        f['ages'] = SED.tg
-        f['dust'] = SED.tauv
-        f['metallicities'] = SED.mi
-        f['fesc'] = SED.fesc
+            self.AB = f.create_dataset("mags", gridshape, dtype='f')
         
-        for dataset in ['fluxes', 'mag']:
-            f[dataset].dims.create_scale(f['z'], 'z')
-            f[dataset].dims.create_scale(f['sfh'], 'sfh')
-            f[dataset].dims.create_scale(f['ages'], 'ages')
-            f[dataset].dims.create_scale(f['dust'], 'dust')
-            f[dataset].dims.create_scale(f['metallicities'], 'met')
-            f[dataset].dims.create_scale(f['fesc'], 'sfh')
+            # ...
         
-            f[dataset].dims[0].attach_scale(f['z'])
-            f[dataset].dims[2].attach_scale(f['metallicities'])
-            f[dataset].dims[3].attach_scale(f['ages'])
-            f[dataset].dims[4].attach_scale(f['sfh'])
-            f[dataset].dims[5].attach_scale(f['dust'])
-            f[dataset].dims[6].attach_scale(f['fesc'])
-        
-        # ...
-        
-        if verbose:
-            bar = ProgressBar(len(self.redshifts))
-        
-        for i, z in enumerate(self.redshifts):
-            self.lyman_abs = np.ones(len(self.wave))
-            if madau:
-                self.lyman_abs = np.clip(tau_madau(self.wave, z), 0., 1.)
-            
-            for j, filter in enumerate(self.F.filters):
-                self.wl[j] = filter.lambda_c
-                self.fwhm[j] = filter.fwhm
-                self.fluxes[i, j] = self.calcflux(SED, filter, z, self.dl[i], units)
-                
-                if not force_age:
-                    # Set fluxes for ages older than universe to zero
-                    agecut = (SED.tg.to(u.Gyr) > cosmo.age(z))
-                    self.fluxes[i, j, :, agecut] = 0.
-            
             if verbose:
-                assert isinstance(bar, object)
-                bar.update()
+                bar = ProgressBar(len(self.redshifts))
         
-        # Convert spectral flux density to AB magnitudes
-        self.AB = (-2.5 * np.log10(self.fluxes.to(u.Jy) / (3631 * u.Jy))) * u.mag
-        f.close()
+            for i, z in enumerate(self.redshifts):
+                self.lyman_abs = np.ones(len(self.wave))
+                if madau:
+                    self.lyman_abs = np.clip(tau_madau(self.wave, z), 0., 1.)
+            
+                for j, filter in enumerate(self.F.filters):
+                    self.wl[j] = filter.lambda_c
+                    self.fwhm[j] = filter.fwhm
+                    fluxes = self.calcflux(SED, filter, z, self.dl[i], units)
+                    self.fluxes[i, j] = fluxes
+                    self.AB[i, j] =  (-2.5 * np.log10(fluxes.to(u.Jy) / (3631 * u.Jy))).value
+                    if not force_age:
+                        # Set fluxes for ages older than universe to zero
+                        agecut = (SED.tg.to(u.Gyr) > cosmo.age(z))
+                        self.fluxes[i, j, :, agecut] = 0.
+                        self.AB[i, j, :, agecut] = np.inf
+                        
+                if verbose:
+                    assert isinstance(bar, object)
+                    bar.update()
+                    
+            # Set up hdf5 dimensions based on SED ranges for convenient
+            # slicing if not used for fitting.
+            f.create_dataset('z', data = self.redshifts)
+            f.create_dataset('ages', data = SED.tg.value)
+            f['ages'].attrs['unit'] = SED.tg.unit.to_string()
+        
+            f.create_dataset('dust', data = SED.tauv)
+            f.create_dataset('metallicities', data = SED.mi)
+            f.create_dataset('fesc', data = SED.fesc)
+
+            """
+            if len(SED.tau[0]) == 1:
+                taus = f.create_dataset('sfh', data = SED.tau)
+                taus.attrs['unit'] = SED.tau.unit.to_string()
+            elif len(SED.tau[0]) > 1:
+                taus = np.zeros((len(SED.tau), len()))
+            """   
+        
+            for dataset in ['fluxes', 'mags']:
+                f[dataset].dims.create_scale(f['z'], 'z')
+                #f[dataset].dims.create_scale(f['sfh'], 'sfh')
+                f[dataset].dims.create_scale(f['ages'], 'ages')
+                f[dataset].dims.create_scale(f['dust'], 'dust')
+                f[dataset].dims.create_scale(f['metallicities'], 'met')
+                f[dataset].dims.create_scale(f['fesc'], 'fesc')
+        
+                f[dataset].dims[0].attach_scale(f['z'])
+                f[dataset].dims[2].attach_scale(f['metallicities'])
+                f[dataset].dims[3].attach_scale(f['ages'])
+                #f[dataset].dims[4].attach_scale(f['sfh'])
+                f[dataset].dims[5].attach_scale(f['dust'])
+                f[dataset].dims[6].attach_scale(f['fesc'])
     
-    #def load(self, loadpath):
+            for attribute in SED.__dict__.keys():
+                try:
+                    f.create_dataset(attribute, data=SED.__dict__[attribute])
+                except:
+                    # in cases of functions etc.
+                    continue
+                    
+        self.load(self.savepath)
+    
+    def load(self, loadpath):
+        self.f = h5py.File(loadpath, 'r')
         
+        self.fluxes = self.f['fluxes']
+        self.AB = self.f['mags']
+        
+        self.Ms = self.f['Ms'].value
+        self.SFR = self.f['SFR'].value
         
     
     def calcflux(self, SED, filt, z, dl, units):
@@ -1080,3 +1091,6 @@ class FObserve:
         Flux = top / bottom / (1 + z) / area
         
         return Flux.to(units)
+        
+    def __getitem__(self, items):
+        return self.fluxes[items] * u.Unit(self.f['fluxes'].attrs['unit'])

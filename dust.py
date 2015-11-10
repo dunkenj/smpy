@@ -8,6 +8,10 @@ from glob import glob
 from astropy import units as u
 from astropy import constants as c
 
+""" 
+Functional Forms:
+
+"""
 
 def dust_func(lam, ai, bi, ni, li):
     """
@@ -20,7 +24,17 @@ def dust_func(lam, ai, bi, ni, li):
     eta_i = ai / ki
     return eta_i
 
-# Dust Section
+def drude_profile(lam, Eb, lambda_central=2175*u.AA, delta_lambda=350*u.AA):
+    top = Eb * (lam*delta_lambda)**2
+    bottom = (lam**2 - lambda_central**2)**2 + (lam*delta_lambda)**2
+    return top/bottom
+
+
+"""
+Attenuation and Extinction Laws
+
+"""
+
 def Charlot(ta_grid, wave, Av, mu=0.3):
     Att = np.ones(np.append(ta_grid.shape, len(wave)))
     tv = ((Av / 1.0857) * np.ones_like(ta_grid))
@@ -129,3 +143,28 @@ def MW(ta_grid, wave, Av):
     Att *= np.power(10, -0.4 * Ab * eta)
     return Att
 
+def flexible(ta_grid, wave, Av, delta = 0., e_bump = 0., 
+             lambda_central=2175*u.AA, delta_lambda=350*u.AA):
+    Att = np.ones(np.append(ta_grid.shape, len(wave)))
+    k = np.zeros_like(wave.value)
+
+    w0 = [wave <= 1200 * u.AA]
+    w1 = [wave < 6300 * u.AA]
+    w2 = [wave >= 6300 * u.AA]
+    w_u = wave.to(u.um).value
+
+    x1 = np.argmin(np.abs(wave - 1200 * u.AA))
+    x2 = np.argmin(np.abs(wave - 1250 * u.AA))
+
+    k[w2] = 2.659 * (-1.857 + 1.040 / w_u[w2])
+    k[w1] = 2.659 * (-2.156 + (1.509 / w_u[w1]) - (0.198 / w_u[w1] ** 2) + (0.011 / w_u[w1] ** 3))
+    k[w0] = k[x1] + ((wave[w0] - 1200. * u.AA) * (k[x1] - k[x2]) / (wave[x1] - wave[x2]))
+
+    k += 4.05
+    k[k < 0.] = 0.
+
+    bump = drude_profile(wave, e_bump, lambda_central, delta_lambda)
+
+    tv = Av * (k + bump) * (wave/5500*u.AA)**delta / 4.05 
+    Att *= np.power(10, -0.4 * tv)
+    return Att
