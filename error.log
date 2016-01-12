@@ -1,0 +1,2 @@
+/data2/ken/smpy_beta/smpy/smpy/sfh.py:17: RuntimeWarning: overflow encountered in exp
+  sfh = np.exp(-1 * t / tau) / np.abs(tau)

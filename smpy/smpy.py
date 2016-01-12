@@ -17,10 +17,13 @@ from astropy import constants as c
 from astropy import cosmology as cos
 from astropy.utils.console import ProgressBar
 
-from ssp import Ised, SSP, BC
-from dust import Charlot, Calzetti, Calzetti2, MW, LMC, SMC
-from sfh import exponential
-from misc_functions import tau_madau
+
+import data
+
+from .ssp import Ised, SSP, BC
+from .dust import Charlot, Calzetti, Calzetti2, MW, LMC, SMC
+from .sfh import exponential
+from .misc_functions import tau_madau
 
 cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
@@ -28,6 +31,7 @@ f = open("error.log", "w")
 original_stderr = sys.stderr
 sys.stderr = f
 
+data_path = data.__path__[0]
 
 class CSP:
     """ Class for building composite stellar populations from input SSPs
@@ -91,7 +95,7 @@ class CSP:
         
         # Find closest match for each tg value in ta - set tg to these values
         
-        nebular = np.loadtxt('data/nebular_emission.dat', skiprows=1)
+        nebular = np.loadtxt(data_path+'/nebular_emission.dat', skiprows=1)
         self.neb_cont = nebular[:, 1]
         self.neb_hlines = nebular[:, 2]
         self.neb_metal = nebular[:, 3:]
