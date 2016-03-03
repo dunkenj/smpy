@@ -1,2 +1,5 @@
-/data2/ken/smpy_beta/smpy/smpy/sfh.py:17: RuntimeWarning: overflow encountered in exp
-  sfh = np.exp(-1 * t / tau) / np.abs(tau)
+WARNING: W03: None:47:4: W03: Implicitly generating an ID from a name '[DVR2000]' -> '__DVR2000_' [astropy.io.votable.exceptions]
+WARNING: W03: None:63:4: W03: Implicitly generating an ID from a name '2mag' -> '_2mag' [astropy.io.votable.exceptions]
+WARNING: W03: None:70:4: W03: Implicitly generating an ID from a name '8mag' -> '_8mag' [astropy.io.votable.exceptions]
+//anaconda/lib/python2.7/site-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if self._edgecolors == str('face'):

@@ -103,11 +103,13 @@ class CSP:
         
         if None not in (age, sfh, dust, metal_ind):
             if f_esc == None:
-                self.build(age, sfh, dust, metal_ind, sfh_law=sfh_law, dust_model=dust_model,
+                self.build(age, sfh, dust, metal_ind, sfh_law=sfh_law, 
+                           dust_model=dust_model,
                            neb_cont=neb_cont, neb_met=neb_met)
             
             else:
-                self.build(age, sfh, dust, metal_ind, f_esc, sfh_law, dust_model, neb_cont, neb_met)
+                self.build(age, sfh, dust, metal_ind, 
+                           f_esc, sfh_law, dust_model, neb_cont, neb_met)
 
     def build(self, age, sfh, dust, metal, fesc = 1.,
               sfh_law = exponential, dust_model = Calzetti,
@@ -177,7 +179,8 @@ class CSP:
         self.SFR = np.zeros(self.SED.shape[: -1]) * u.solMass / u.yr
         
         # Set up grid for ND-interpolation
-        ti, mi = np.meshgrid(np.log10(self.ages / u.yr), np.log10(self.metallicities))
+        ti, mi = np.meshgrid(np.log10(self.ages / u.yr),
+                             np.log10(self.metallicities))
         self.grid = zip(mi.flatten(), ti.flatten())
         
         tri_grid = Delaunay(self.grid)
@@ -546,6 +549,527 @@ class CSP:
         self.SED[:, :, :, :, :,wbin] += (lineluminosity / binwidth)
 
 
+class CSP2:
+    """ Class for building composite stellar populations from input SSPs
+    
+        Attributes
+        ----------
+        
+        Methods
+        -------
+    
+    """
+    
+    def __init__(self, ssp,
+                 age=None, sfh=None, dust=None, metal_ind=None, f_esc=None,
+                 sfh_law=exponential, dust_model=Calzetti, neb_cont=True, neb_met=True):
+        """
+        
+            Parameters
+            ----------
+                ssp : 
+                
+                age : '~astropy.units.Quantity' array (with units of time)
+                    Desired stellar population age(s) since the onset of 
+                    star-formation
+                sfh :  array of float or '~astropy.units.Quantity',
+                    Star-formation history parameter/exponent
+                dust : array of floats,
+                    Strength of dust extinction in Av
+                metal_ind : float or float array,
+                    Metallicity or metallicity range of stellar population relative
+                    to solar metallicity (Z/Z_sol), min and max allowed values set by
+                    range of input metallicities in 'ssp' class
+                f_esc : float or array of float,
+                    Escape fraction(s) of nebular emission component
+                sfh_law : '~smpy.sfh' or user defined function,
+                    Star-formation history parametrisation for composite
+                    stellar population.
+                dust_model : '~smpy.dust' or user defined function,
+                    Dust extinction or attenuation law parametrisation
+                neb_cont : boolean, default = True
+                    Include continuum emission component in nebular emission
+                    model
+                neb_met : boolean, default = True
+                    Include metal line component in nebular emission model
+        """
+        
+        self.beta = None
+        self.SSP = ssp
+        self.metallicities = self.SSP.metallicities  # Normalise to solar metallicity
+        self.ages = self.SSP.ages
+        
+        self.wave = self.SSP.wave_arr[0]
+        self.iw = self.SSP.iw_arr[0]
+        self.sed_arr = self.SSP.sed_arr
+        
+        if hasattr(self.SSP, 'strm_arr') and hasattr(self.SSP, 'rmtm_arr'):
+            self.strm_arr = np.array(self.SSP.strm_arr)
+            self.rmtm_arr = np.array(self.SSP.rmtm_arr)
+        
+        self.iseds = np.array(self.SSP.iseds)
+        
+        # Find closest match for each tg value in ta - set tg to these values
+        
+        nebular = np.loadtxt(data_path+'/nebular_emission.dat', skiprows=1)
+        self.neb_cont = nebular[:, 1]
+        self.neb_hlines = nebular[:, 2]
+        self.neb_metal = nebular[:, 3:]
+        self.neb_wave = nebular[:, 0]
+        
+        if None not in (age, sfh, dust, metal_ind):
+            if f_esc == None:
+                self.build(age, sfh, dust, metal_ind, sfh_law=sfh_law, 
+                           dust_model=dust_model,
+                           neb_cont=neb_cont, neb_met=neb_met)
+            
+            else:
+                self.build(age, sfh, dust, metal_ind, 
+                           f_esc, sfh_law, dust_model, neb_cont, neb_met)
+
+    def build(self, age, sfh, dust, metal, fesc = 1.,
+              sfh_law = exponential, dust_model = Calzetti,
+              neb_dust_weight = 1.,
+              neb_cont = True, neb_met = True, 
+              timesteps = 500, verbose = False):
+
+        """ Build composite stellar population SED(s) from input SSP models
+        
+            Parameters
+            ----------
+                ssp : 
+            
+                age : '~astropy.units.Quantity' array (with units of time)
+                    Desired stellar population age(s) since the onset of 
+                    star-formation
+                sfh :  array of float or '~astropy.units.Quantity',
+                    Star-formation history parameter/exponent
+                dust : array of floats,
+                    Strength of dust extinction in Av
+                metal_ind : float or float array,
+                    Metallicity or metallicity range of stellar population relative
+                    to solar metallicity (Z/Z_sol), min and max allowed values set by
+                    range of input metallicities in 'ssp' class
+                f_esc : float or array of float,
+                    Escape fraction(s) of nebular emission component
+                sfh_law : '~smpy.sfh' or user defined function,
+                    Star-formation history parametrisation for composite
+                    stellar population.
+                dust_model : '~smpy.dust' or user defined function,
+                    Dust extinction or attenuation law parametrisation
+                neb_cont : boolean, default = True
+                    Include continuum emission component in nebular emission
+                    model
+                neb_met : boolean, default = True
+                    Include metal line component in nebular emission model
+                    
+            Returns
+            -------
+            
+            
+        """
+        try:
+            self.tau = u.Quantity(sfh, ndmin=1)
+        except:
+            self.tau = sfh
+            
+        self.tg = u.Quantity(age, ndmin=1).to(u.yr)
+        self.tauv = np.array(dust, ndmin=1)
+        self.mi = np.array(metal, ndmin=1)
+        self.fesc = np.array(fesc, ndmin=1)
+        self.sfh_law = sfh_law
+        self.inc_cont = neb_cont
+        self.inc_met = neb_met
+        self.getAttenuation = dust_model
+        self.sfr_func = sfh_law
+        
+        mu = 0.3
+        
+        self.ta = self.ages
+        
+        outshape = [len(self.mi), len(self.tg),
+                    len(self.tau), len(self.tauv),
+                    len(self.fesc), len(self.wave)]
+        self.SED = np.zeros(outshape) * self.sed_arr.unit
+        self.STR = np.zeros(self.SED.shape[: -1])
+        self.SFR = np.zeros(self.SED.shape[: -1]) * u.solMass / u.yr
+        
+        # Set up nebular emission arrays -- WILL CHANGE
+        if len(self.neb_wave) != len(self.wave):
+            self.neb_cont = griddata(self.neb_wave, self.neb_cont, self.wave)
+            self.neb_hlines = griddata(self.neb_wave, self.neb_hlines, self.wave)
+            neb_metaln = np.zeros((len(self.wave), 3))
+            for i in range(3):
+                neb_metaln[:, i] = griddata(self.neb_wave, self.neb_metal[:, i], self.wave)
+            self.neb_metal = neb_metaln
+            self.neb_wave = self.wave
+        
+        self.neb_cont[self.wave <= 912. * u.AA] = 0.
+        self.neb_hlines[self.wave <= 912. * u.AA] = 0.
+        self.neb_metal[self.wave <= 912. * u.AA, :] = 0.
+        
+        self.Nly_arr = self.calc_lyman(self.wave, self.sed_arr)
+        self.neb_sed_arr = np.ones_like(self.sed_arr.value)
+        
+        nebrange1 = (self.metallicities <= 0.02)
+        nebrange2 = (self.metallicities > 0.02) * (self.metallicities <= 0.2)
+        nebrange3 = (self.metallicities > 0.2)
+        
+        self.neb_sed_arr[nebrange1, :, :] *= ((self.neb_cont * self.inc_cont) +
+                                              self.neb_hlines +
+                                              (self.neb_metal[:, 0] * self.inc_met))
+        
+        self.neb_sed_arr[nebrange2, :, :] *= ((self.neb_cont * self.inc_cont) +
+                                              self.neb_hlines +
+                                              (self.neb_metal[:, 1] * self.inc_met))
+        
+        self.neb_sed_arr[nebrange3, :, :] *= ((self.neb_cont * self.inc_cont) +
+                                              self.neb_hlines +
+                                              (self.neb_metal[:, 2] * self.inc_met))
+        
+        self.neb_sed_arr *= (c.c.to(u.AA / u.s) / (self.wave ** 2)).value  # Convert to Flambda
+        self.neb_sed_arr =  self.neb_sed_arr * self.sed_arr.unit / self.Nly_arr.unit
+        
+        
+        # Set up grid for ND-interpolation
+        ti, mi = np.meshgrid(np.log10(self.ages / u.yr).value,
+                             np.log10(self.metallicities))
+        self.grid = zip(mi.flatten(), ti.flatten())
+        
+        tri_grid = Delaunay(self.grid)
+        
+        # Make cube of interpolated age and SFHs.
+        # Uses array slicing and vectorisation to minimise
+        # loops where possible.
+        sfh_grid_shape = (len(self.mi),
+                          timesteps)
+        
+        self.me_sfh = np.ones(sfh_grid_shape)
+        
+        for met_idx, metal in enumerate(self.mi):
+            self.me_sfh[met_idx] *= metal
+
+        if verbose:
+            bar = ProgressBar(np.product(self.SED.shape[1:-1]))
+                  
+        for idG, age in enumerate(self.tg):
+            ta_range = np.logspace(np.log10(self.ages / u.yr).min(),
+                                   np.log10(age / u.yr), timesteps)
+            self.ta_sfh = np.ones(sfh_grid_shape) * u.yr
+            self.ta_sfh *= ta_range[None, :]
+        
+        # Calculate Barycentric coordinates for all ages/metallicities in SFH.
+            points = np.array(zip(np.log10(self.me_sfh.flatten()), np.log10(self.ta_sfh.flatten() / u.yr)))
+        
+            #if verbose:
+            #    print 'Interpolating SEDs at SFH timesteps'
+            ss = tri_grid.find_simplex(points)
+        
+            X = tri_grid.transform[ss, :2]
+            Y = points - tri_grid.transform[ss, 2]
+        
+            b = np.einsum('ijk,ik->ij', X, Y)
+            self.bc = np.c_[b, 1 - b.sum(axis=1)]
+            self.simplices = tri_grid.simplices[ss]
+        
+            #if verbose:
+            #    print 'Reshaping grids'
+            # Interpolate SED, stellar mass fraction and remnant fractions
+            # for SFH age grid using calculated Barycentric coordinates (bc).
+            #print self.sed_arr.shape
+            #print (len(self.metallicities) * len(self.ages), self.iw)
+        
+            self.temp = self.sed_arr.reshape(len(self.metallicities) *
+                                             len(self.ages), self.iw)[self.simplices]
+            self.sed_sfh = (self.temp * self.bc[:, :, None]).sum(1)
+            self.sed_sfh = self.sed_sfh.reshape(np.append(sfh_grid_shape, self.iw))
+        
+            self.temp = self.neb_sed_arr.reshape(len(self.metallicities) *
+                                                 len(self.ages), self.iw)[self.simplices]
+            self.neb_sed_sfh = (self.temp * self.bc[:, :, None]).sum(1)
+            self.neb_sed_sfh = self.neb_sed_sfh.reshape(np.append(sfh_grid_shape, self.iw))
+        
+            self.strm_sfh = np.array(self.strm_arr.reshape(len(self.metallicities) *
+                                                           len(self.ages))[self.simplices]
+                                                            * self.bc).sum(1)
+            self.strm_sfh = self.strm_sfh.reshape(sfh_grid_shape)
+        
+            self.rmtm_sfh = np.array(self.rmtm_arr.reshape(len(self.metallicities) *
+                                                           len(self.ages))[self.simplices]
+                                                            * self.bc).sum(1)
+            self.rmtm_sfh = self.rmtm_sfh.reshape(sfh_grid_shape)
+        
+            self.Nly_sfh = (self.Nly_arr.reshape(len(self.metallicities) *
+                                                len(self.ages))[self.simplices]
+                                                * self.bc).sum(1)
+            self.Nly_sfh = self.Nly_sfh.reshape(sfh_grid_shape) #*
+                            #(1 - self.fesc[None, None, :, None]))
+        
+            # Star-formation history
+            
+
+        
+            for idT, t in enumerate(self.tau):
+                if type(t) == tuple:
+                    tau = t
+                else:
+                    tau = tuple([t])
+                        
+                self.sfr_hist = self.sfr_func(self.ta_sfh, *tau)
+                # Enforce integrated SFR = 1 Msol.
+                self.norm = np.trapz(self.sfr_hist, self.ta_sfh, axis=-1)[:, None]
+            
+                self.sfr_hist /= self.norm
+                self.weights = np.abs(self.sfr_func(self.tg[None, idG, None] - self.ta_sfh,
+                                             *tau)) / self.norm
+                self.sfh_weights = np.ones(sfh_grid_shape) * self.weights
+                
+                for idA, Av in enumerate(self.tauv):
+                    for idf, fesc in enumerate(self.fesc):
+                        self.Att = self.getAttenuation(self.ta_sfh, self.wave, Av)
+                    
+                        neb_att = self.getAttenuation(self.ta_sfh, self.wave, Av * neb_dust_weight)
+                    
+                        combined_sed = self.sed_sfh
+                    
+                        # Absorbed LyC photons
+                        combined_sed[:, :, self.wave <= 912 * u.AA] *= fesc
+                    
+                        # Resulting nebular emission
+                        combined_sed *= self.Att # Dust attenuated combined SED
+                        combined_sed += neb_att * ((1 - fesc) * self.Nly_sfh[:, :, None] * self.neb_sed_sfh)
+                    
+                        # Integrate over star-formation history
+                        self.SED[:, idG, idT, idA, idf, :] = np.trapz(self.sfh_weights[:, :, None] * combined_sed,
+                                                                    self.ta_sfh[:, :, None],
+                                                                    axis=-2)
+                    
+                        self.STR[:, idG, idT, idA, idf] = np.trapz(self.sfh_weights * self.strm_sfh, self.ta_sfh)
+                    
+                        self.SFR[:, idG, idT, idA, idf] = self.sfr_hist[:, -1] * u.solMass
+                        if verbose:
+                            bar.update()
+        
+        # Normalise by stellar mass fraction (stars + remnants in case of BC03)
+        self.SFR /= self.STR
+        self.SED = self.SED / self.STR[:, :, :, :, :, None]
+        self.Ms = np.ones_like(self.SFR.value) * u.Msun
+
+        
+        self.Nly = self.calc_lyman(self.wave, self.SED).cgs
+        
+        
+    @staticmethod
+    def calc_lyman(wave, seds):
+        """ Calculate total Lyman continuum photons for an SED
+        
+            Semi-pythonic version of the fortran routine in BC03 code,
+            allows flexible input array shapes provided wavelength axis
+            is the last one.
+        
+            Parameters
+            ----------
+            
+            wave : array of floats,
+                Wavelength array
+            seds : 
+        
+        """
+        wly = 912. * u.AA
+        const = (1e-8 / (u.AA / u.cm)) / c.h.cgs / c.c.cgs
+
+        n = int(sum([wave < wly][0]))
+        S = np.array(seds.shape)
+        S[-1] = n+1
+        f = np.zeros(S) * seds.unit * u.AA
+        w = np.zeros(n + 1) * u.AA
+        
+        for i in range(n + 1):
+            if wave[i] <= wly:
+                w[i] = wave[i]
+                np.rollaxis(f, -1)[i] = w[i] * np.rollaxis(seds, -1)[i]
+            elif wave[i] > wly:
+                w[i] = wly
+                np.rollaxis(f, -1)[i] = w[i] * (np.rollaxis(seds,-1)[i - 1] + (
+                    (w[i] - wave[i - 1]) * (np.rollaxis(seds, -1)[i] - np.rollaxis(seds, -1)[i - 1]) / (wave[i] - wave[i - 1])))
+                            
+        nlyman = const * np.trapz(f, w, axis=-1)
+        return nlyman
+    
+    @staticmethod
+    def calc_lyman_s(wave, seds):
+        """ Calculate total Lyman continuum photons for an SED
+            
+            Deprecated due to flexible version above.
+            
+            Parameters
+            ----------
+            
+            wave : array of floats,
+                Wavelength
+            seds : 
+        
+        """
+        wly = 912. * u.AA
+        const = (1e-8 / (u.AA / u.cm)) / c.h.cgs / c.c.cgs
+        
+        n = int(sum([wave < wly][0]))
+        f = np.zeros((seds.shape[0], seds.shape[1], n + 1)) * seds.unit * u.AA
+        w = np.zeros(n + 1) * u.AA
+        
+        for i in range(n + 1):
+            if wave[i] < wly:
+                w[i] = wave[i]
+                f[:, :, i] = w[i] * seds[:, :, i]
+            elif wave[i] == wly:
+                w[i] = wave[i]
+                f[:, :, i] = w[i] * seds[:, :, i]
+            elif wave[i] > wly:
+                w[i] = wly
+                f[:, :, i] = w[i] * (seds[:, :, i - 1] + (
+                    (w[i] - wave[i - 1]) * (seds[:, :, i] - seds[:, :, i - 1]) / (wave[i] - wave[i - 1])))
+                # f[:,:,i] = f[:,:,i]
+        
+        nlyman = const * np.trapz(f, w, axis=-1)
+        # print np.log10(N_lyman)
+        return nlyman
+    
+    @staticmethod
+    def calc_lyman_f(wave, seds):
+        """ Calculate total Lyman continuum photons for an SED
+        
+            Deprecated due to flexible version above.
+            
+            Parameters
+            ----------
+            
+            wave : array of floats,
+                Wavelength
+            seds : 
+        
+        """
+        wly = 912. * u.AA
+        const = (1e-8 / (u.AA / u.cm)) / c.h.cgs / c.c.cgs
+        
+        n = int(sum([wave < wly][0]))
+        S = np.array(seds.shape)
+        S[-1] = n+1
+        f = np.zeros(S) * seds.unit * u.AA
+        w = np.zeros(n + 1) * u.AA
+        
+        for i in range(n + 1):
+            if wave[i] < wly:
+                w[i] = wave[i]
+                f[:, :, :, :, :, i] = w[i] * seds[:, :, :, :, :, i]
+            elif wave[i] == wly:
+                w[i] = wave[i]
+                f[:, :, :, :, :, i] = w[i] * seds[:, :, :, :, :, i]
+            elif wave[i] > wly:
+                w[i] = wly
+                f[:, :, :, :, :, i] = w[i] * (seds[:, :, :, :, :, i - 1] + (
+                    (w[i] - wave[i - 1]) * (seds[:, :, :, :, :, i] - seds[:, :, :, :, :, i - 1]) / (wave[i] - wave[i - 1])))
+                # f[:,:,i] = f[:,:,i]
+        
+        nlyman = const * np.trapz(f, w, axis=-1)
+        # print np.log10(N_lyman)
+        return nlyman
+        
+    def __add__(self, other):
+        new = None
+        if isinstance(other, CSP):
+            new = copy.deepcopy(self)
+            new.SED += other.SED
+            new.SFR += other.SFR
+            new.Ms += other.Ms
+            new.Nly = self.Nly + other.Nly
+
+        assert isinstance(new, CSP)
+        return new
+    
+    def __iadd__(self, other):
+        new = None
+        if isinstance(other, CSP):
+            new = copy.deepcopy(self)
+            new.SED += other.SED
+            new.SFR += other.SFsR
+            new.Ms += other.Ms
+            new.Nly = self.Nly + other.Nly
+
+        assert isinstance(new, CSP)
+        return new
+    
+    def __mul__(self, other):
+        new = copy.deepcopy(self)
+        new.SED *= other
+        new.SFR *= other
+        new.Ms *= other
+        if other == 0.:
+            new.Nly = 0.
+        else:
+            new.Nly /= other
+            new.Nly = np.maximum(new.Nly, 0)
+        return new
+    
+    def __imul__(self, other):
+        new = copy.deepcopy(self)
+        new.SED *= other
+        new.SFR *= other
+        new.Ms *= other
+        if other == 0.:
+            new.Nly = 0.
+        else:
+            new.Nly /= other
+            new.Nly = np.maximum(new.Nly, 0)
+        return new
+    
+    def __div__(self, other):
+        new = copy.deepcopy(self)
+        new.SED /= other
+        new.SFR /= other
+        new.Ms /= other
+        if other == 0.:
+            new.Nly = 0.
+        else:
+            new.Nly /= other
+            new.Nly = np.maximum(new.Nly, 0)
+        return new
+    
+    def __idiv__(self, other):
+        new = copy.deepcopy(self)
+        new.SED /= other
+        new.SFR /= other
+        new.Ms /= other
+        if other == 0.:
+            new.Nly = 0.
+        else:
+            new.Nly /= other
+            new.Nly = np.maximum(new.Nly, 0)
+        return new
+    
+    def __rmul__(self, other):
+        new = copy.deepcopy(self)
+        new.SED *= other
+        new.SFR *= other
+        new.Ms *= other
+        if other == 0.:
+            new.Nly = 0.
+        else:
+            new.Nly /= other
+            new.Nly = np.maximum(new.Nly, 0)
+        return new
+    
+    def addEmissionLine(self, wavelength, EqW):
+        wbin = np.argmin(np.abs(self.wave - wavelength))
+        binwidth = np.mean(np.diff(self.wave)[wbin - 1:wbin + 1])
+        continuum = self.SED[:, :, :, :, :, wbin:wbin + 1].mean(-1)
+        
+        print continuum.unit 
+        lineluminosity = continuum * EqW
+        
+        print (lineluminosity / binwidth).unit
+        self.Lalpha = lineluminosity
+        self.SED[:, :, :, :, :,wbin] += (lineluminosity / binwidth)
+
 class Filter(object):
     def __init__(self):
         self.wave = []
@@ -727,7 +1251,7 @@ class LoadEAZYFilters(object):
                 else:
                     self.central_wl = np.append(self.central_wl, lambda_c)
         
-        self.central_wl *= lambda_c.unit
+        #self.central_wl = self.central_wl*lambda_c.unit
         
     def search(self, searchterm, error=0.1):
         if type(searchterm) == str:
@@ -968,7 +1492,7 @@ class FileObserve:
         
             gridshape = np.append([len(self.redshifts), len(self.F.filters)], SED.SED.shape[:-1])
             self.fluxes = f.create_dataset("fluxes", gridshape, dtype='f')
-            self.fluxes.attrs['unit'] = SED.SED.unit.to_string()
+            self.fluxes.attrs['unit'] = units.to_string()
         
             self.AB = f.create_dataset("mags", gridshape, dtype='f')
         
@@ -986,7 +1510,7 @@ class FileObserve:
                     self.wl[j] = filter.lambda_c
                     self.fwhm[j] = filter.fwhm
                     fluxes = self.calcflux(SED, filter, z, self.dl[i], units)
-                    self.fluxes[i, j] = fluxes
+                    self.fluxes[i, j] = fluxes.to(units)
                     self.AB[i, j] =  (-2.5 * np.log10(fluxes.to(u.Jy) / (3631 * u.Jy))).value
                     if not force_age:
                         # Set fluxes for ages older than universe to zero

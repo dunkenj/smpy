@@ -243,8 +243,8 @@ class BC(SSP):
         self.ages = np.array(self.ta_arr[0]) * u.yr
         self.ages[0] = (10 * u.yr)  # Make non-zero but insignificant
         self.wave_arr = np.array(self.wave_arr) * u.AA
-        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :]
-        self.sed_arr *= u.Lsun / u.AA
+        sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :]
+        self.sed_arr = sed_arr * (u.Lsun / u.AA)
         self.strm_arr = np.array(self.strm_arr)[:, :]
         self.rmtm_arr = np.array(self.rmtm_arr)[:, :]
         self.iseds = np.array(self.iseds)
