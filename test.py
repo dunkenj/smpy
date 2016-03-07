@@ -24,36 +24,21 @@ filters.addEAZYFilter(EAZYfilters, EAZYfilters.search('KPNO/IRIMJ'))
 filters.addEAZYFilter(EAZYfilters, EAZYfilters.search('KPNO/IRIMH'))
 filters.addEAZYFilter(EAZYfilters, EAZYfilters.search('irac'))
 
-stop
 obs_fluxes = []
 
 ages = [1e7] * u.yr
 sfhs = np.array([10.])*u.Gyr
-metallicities = [0.5, 1.] #[0.01, 0.1, 0.3, 0.5, 0.7, 1., 2.]
-dusts = np.linspace(2.,2.2,30)
+metallicities = [0.5, 1.] 
+dusts = np.linspace(0.,2.,20)
 fesc = [1.]
 #models.build(ages, sfhs, dusts, metallicities, verbose=True)
 models.build(ages, sfhs, dusts, metallicities, fesc=fesc, verbose=True)
 
-Obs = S.Observe(models, filters, 1.7)
+zrange = np.linspace(0, 6, 30)
 
-norm_sfr = 1200
-
-Ob_Mags = [26.04, 24.9, 24.144, 23.12, 22.07, 22.17, 21.29, 20.89, 20.67, 20.84]
-
-
-Norm_flux = (10**(-0.4*(Ob_Mags[6]-23.9))/Obs.fluxes[:,6].value)[None, None, :]
-
-Norm = (norm_sfr/models.SFR.value)[None, None, :]
-#
-Mags = 23.9 - 2.5*np.log10(Norm * Obs.fluxes.value).reshape((10, np.product(Norm.shape)))
-
-
-plt.semilogx(Obs.wl, Mags, color='firebrick', alpha=0.2)
-plt.semilogx(Obs.wl, Ob_Mags, 'o')
-plt.xlim([5000, 200000])
-plt.ylim([23, 19])
-plt.show()
+Obs = S.Observe(models, filters, zrange)
+Obs2 = S.FileObserve()
+Obs2.build(models, filters, zrange, 'test_output.hdf',verbose=True)
 
 
 #models = S.CSP(bc03)

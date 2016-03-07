@@ -23,7 +23,7 @@ import data
 from .ssp import Ised, SSP, BC
 from .dust import Charlot, Calzetti, Calzetti2, MW, LMC, SMC
 from .sfh import exponential
-from .misc_functions import tau_madau
+from .misc import tau_madau
 
 cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
@@ -1425,6 +1425,10 @@ class Observe:
         
         return Flux.to(units)
 
+    def __getitem__(self, items):
+        return self.fluxes[items]
+
+
 class FileObserve:
     """ Mock photometry class
     
@@ -1527,7 +1531,10 @@ class FileObserve:
             f.create_dataset('z', data = self.redshifts)
             f.create_dataset('ages', data = SED.tg.value)
             f['ages'].attrs['unit'] = SED.tg.unit.to_string()
-        
+            
+            taus = f.create_dataset('sfh', data = SED.tau)
+            taus.attrs['unit'] = SED.tau.unit.to_string()  
+                  
             f.create_dataset('dust', data = SED.tauv)
             f.create_dataset('metallicities', data = SED.mi)
             f.create_dataset('fesc', data = SED.fesc)
@@ -1542,7 +1549,7 @@ class FileObserve:
         
             for dataset in ['fluxes', 'mags']:
                 f[dataset].dims.create_scale(f['z'], 'z')
-                #f[dataset].dims.create_scale(f['sfh'], 'sfh')
+                f[dataset].dims.create_scale(f['sfh'], 'sfh')
                 f[dataset].dims.create_scale(f['ages'], 'ages')
                 f[dataset].dims.create_scale(f['dust'], 'dust')
                 f[dataset].dims.create_scale(f['metallicities'], 'met')
@@ -1551,7 +1558,7 @@ class FileObserve:
                 f[dataset].dims[0].attach_scale(f['z'])
                 f[dataset].dims[2].attach_scale(f['metallicities'])
                 f[dataset].dims[3].attach_scale(f['ages'])
-                #f[dataset].dims[4].attach_scale(f['sfh'])
+                f[dataset].dims[4].attach_scale(f['sfh'])
                 f[dataset].dims[5].attach_scale(f['dust'])
                 f[dataset].dims[6].attach_scale(f['fesc'])
     

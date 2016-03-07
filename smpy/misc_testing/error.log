@@ -1,20 +1,0 @@
-//anaconda/lib/python2.7/site-packages/IPython/core/formatters.py:239: FormatterWarning: Exception in image/png formatter: 
-S_{\nu}(\text{HBA})
-        ^
-Unknown symbol: \text (at char 8), (line:1, col:9)
-  FormatterWarning,
-//anaconda/lib/python2.7/site-packages/IPython/core/formatters.py:239: FormatterWarning: Exception in image/png formatter: 
-$10^{29} m{W Hz}^{-1}$
-^
-Expected end of text (at char 0), (line:1, col:1)
-  FormatterWarning,
-//anaconda/lib/python2.7/site-packages/IPython/core/formatters.py:239: FormatterWarning: Exception in image/png formatter: 
-$10^{29} W m{Hz}^{-1}$
-^
-Expected end of text (at char 0), (line:1, col:1)
-  FormatterWarning,
-//anaconda/lib/python2.7/site-packages/IPython/core/formatters.py:239: FormatterWarning: Exception in image/png formatter: 
-$10^{29} m{W} Hz^{-1}$
-^
-Expected end of text (at char 0), (line:1, col:1)
-  FormatterWarning,
