@@ -1,12 +1,24 @@
-smpy-obs/error.log
-smpy-fits/error.log
+error.log
+scripts/misc/*
 *.ipynb
 *.npz
 *.npy
 *.pdf
 *.txt
 *.png
+*.pyc
+*.tex
 smpy-obs/Dust Extinction Curves.py
 smpy-obs/DustExtinctionCurves.py
 smpy-obs/test.py
 smpy-obs/filters/*
+bpass_tests.py
+misc_testing/*
+trunc_exponential.py
+*.hdf
+*.pickle
+dust_tests.py
+
+*.pyc
+
+*.pyc

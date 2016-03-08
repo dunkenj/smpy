@@ -1,0 +1,2 @@
+//anaconda/lib/python2.7/site-packages/smpy/smpy.py:1035: RuntimeWarning: divide by zero encountered in log10
+  / (3631 * u.Jy))).value

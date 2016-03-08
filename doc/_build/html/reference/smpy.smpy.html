@@ -1,0 +1,1283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>smpy &mdash; smpy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="smpy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="prev" title="sfh" href="smpy.sfh.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="smpy.sfh.html" title="sfh"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">smpy 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-smpy.smpy">
+<span id="smpy"></span><h1><a class="reference internal" href="smpy.html#module-smpy" title="smpy"><code class="xref py py-mod docutils literal"><span class="pre">smpy</span></code></a><a class="headerlink" href="#module-smpy.smpy" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.CSP" title="smpy.smpy.CSP"><code class="xref py py-obj docutils literal"><span class="pre">CSP</span></code></a>(ssp[,&nbsp;age,&nbsp;sfh,&nbsp;dust,&nbsp;metal_ind,&nbsp;f_esc,&nbsp;...])</td>
+<td>Class for building composite stellar populations from input SSPs</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.FileFilter" title="smpy.smpy.FileFilter"><code class="xref py py-obj docutils literal"><span class="pre">FileFilter</span></code></a>(filepath[,&nbsp;maxbins])</td>
+<td><p class="rubric">Methods</p>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.Filter" title="smpy.smpy.Filter"><code class="xref py py-obj docutils literal"><span class="pre">Filter</span></code></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.FilterSet" title="smpy.smpy.FilterSet"><code class="xref py py-obj docutils literal"><span class="pre">FilterSet</span></code></a>([path])</td>
+<td><p class="rubric">Methods</p>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.LoadEAZYFilters" title="smpy.smpy.LoadEAZYFilters"><code class="xref py py-obj docutils literal"><span class="pre">LoadEAZYFilters</span></code></a>(path)</td>
+<td>Load EAZY filter file into easily accessible library</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.Observe" title="smpy.smpy.Observe"><code class="xref py py-obj docutils literal"><span class="pre">Observe</span></code></a>(SED,&nbsp;Filters,&nbsp;redshift[,&nbsp;force_age,&nbsp;...])</td>
+<td>Mock photometry class</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.ObserveToFile" title="smpy.smpy.ObserveToFile"><code class="xref py py-obj docutils literal"><span class="pre">ObserveToFile</span></code></a>()</td>
+<td>Mock photometry class</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.TophatFilter" title="smpy.smpy.TophatFilter"><code class="xref py py-obj docutils literal"><span class="pre">TophatFilter</span></code></a>(centre,&nbsp;width[,&nbsp;steps])</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="csp">
+<h2><a class="reference internal" href="#smpy.smpy.CSP" title="smpy.smpy.CSP"><code class="xref py py-class docutils literal"><span class="pre">CSP</span></code></a><a class="headerlink" href="#csp" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.CSP">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">CSP</code><span class="sig-paren">(</span><em>ssp</em>, <em>age=None</em>, <em>sfh=None</em>, <em>dust=None</em>, <em>metal_ind=None</em>, <em>f_esc=None</em>, <em>sfh_law=&lt;function exponential&gt;</em>, <em>dust_model=&lt;function Calzetti&gt;</em>, <em>neb_cont=True</em>, <em>neb_met=True</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.CSP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for building composite stellar populations from input SSPs</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.CSP.addEmissionLine" title="smpy.smpy.CSP.addEmissionLine"><code class="xref py py-obj docutils literal"><span class="pre">addEmissionLine</span></code></a>(wavelength,&nbsp;EqW)</td>
+<td>Add emission line to SED</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.CSP.build" title="smpy.smpy.CSP.build"><code class="xref py py-obj docutils literal"><span class="pre">build</span></code></a>(age,&nbsp;sfh,&nbsp;dust,&nbsp;metal[,&nbsp;fesc,&nbsp;...])</td>
+<td>Build composite stellar population SED(s) from input SSP models</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.CSP.calc_lyman" title="smpy.smpy.CSP.calc_lyman"><code class="xref py py-obj docutils literal"><span class="pre">calc_lyman</span></code></a>(wave,&nbsp;seds)</td>
+<td>Calculate total Lyman continuum photons for an SED</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.smpy.CSP.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>ssp</em>, <em>age=None</em>, <em>sfh=None</em>, <em>dust=None</em>, <em>metal_ind=None</em>, <em>f_esc=None</em>, <em>sfh_law=&lt;function exponential&gt;</em>, <em>dust_model=&lt;function Calzetti&gt;</em>, <em>neb_cont=True</em>, <em>neb_met=True</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.CSP.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ssp :</strong> :</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>age <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;~astropy.units.Quantity&#8217; array (with units of time)</span></dt>
+<dd><p class="first last">Desired stellar population age(s) since the onset of
+star-formation</p>
+</dd>
+<dt>sfh <span class="classifier-delimiter">:</span> <span class="classifier">array of float or &#8216;~astropy.units.Quantity&#8217;,</span></dt>
+<dd><p class="first last">Star-formation history parameter/exponent</p>
+</dd>
+<dt>dust <span class="classifier-delimiter">:</span> <span class="classifier">array of floats,</span></dt>
+<dd><p class="first last">Strength of dust extinction in Av</p>
+</dd>
+<dt>metal_ind <span class="classifier-delimiter">:</span> <span class="classifier">float or float array,</span></dt>
+<dd><p class="first last">Metallicity or metallicity range of stellar population 
+relative to solar metallicity (Z/Z_sol), min and max
+allowed values set by range of input metallicities in 
+&#8216;ssp&#8217; class</p>
+</dd>
+<dt>f_esc <span class="classifier-delimiter">:</span> <span class="classifier">float or array of float,</span></dt>
+<dd><p class="first last">Escape fraction(s) of nebular emission component</p>
+</dd>
+<dt>sfh_law <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;~smpy.sfh&#8217; or user defined function,</span></dt>
+<dd><p class="first last">Star-formation history parametrisation for composite
+stellar population.</p>
+</dd>
+<dt>dust_model <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;~smpy.dust&#8217; or user defined function,</span></dt>
+<dd><p class="first last">Dust extinction or attenuation law parametrisation</p>
+</dd>
+<dt>neb_cont <span class="classifier-delimiter">:</span> <span class="classifier">boolean, default = True</span></dt>
+<dd><p class="first last">Include continuum emission component in nebular emission
+model</p>
+</dd>
+<dt>neb_met <span class="classifier-delimiter">:</span> <span class="classifier">boolean, default = True</span></dt>
+<dd><p class="first last">Include metal line component in nebular emission model</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.CSP.addEmissionLine">
+<code class="descname">addEmissionLine</code><span class="sig-paren">(</span><em>wavelength</em>, <em>EqW</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.CSP.addEmissionLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add emission line to SED</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.CSP.build">
+<code class="descname">build</code><span class="sig-paren">(</span><em>age</em>, <em>sfh</em>, <em>dust</em>, <em>metal</em>, <em>fesc=1.0</em>, <em>sfh_law=&lt;function exponential&gt;</em>, <em>dust_model=&lt;function Calzetti&gt;</em>, <em>neb_dust_weight=1.0</em>, <em>neb_cont=True</em>, <em>neb_met=True</em>, <em>timesteps=500</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.CSP.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build composite stellar population SED(s) from input SSP models</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ssp :</strong> :</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>age <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;~astropy.units.Quantity&#8217; array (with units of time)</span></dt>
+<dd><p class="first last">Desired stellar population age(s) since the onset of
+star-formation</p>
+</dd>
+<dt>sfh <span class="classifier-delimiter">:</span> <span class="classifier">array of float or &#8216;~astropy.units.Quantity&#8217;,</span></dt>
+<dd><p class="first last">Star-formation history parameter/exponent</p>
+</dd>
+<dt>dust <span class="classifier-delimiter">:</span> <span class="classifier">array of floats,</span></dt>
+<dd><p class="first last">Strength of dust extinction in Av</p>
+</dd>
+<dt>metal_ind <span class="classifier-delimiter">:</span> <span class="classifier">float or float array,</span></dt>
+<dd><p class="first last">Metallicity or metallicity range of stellar population
+relative to solar metallicity (Z/Z_sol), min and max
+allowed values set by range of input metallicities in &#8216;ssp&#8217; 
+class</p>
+</dd>
+<dt>f_esc <span class="classifier-delimiter">:</span> <span class="classifier">float or array of float,</span></dt>
+<dd><p class="first last">Escape fraction(s) of nebular emission component</p>
+</dd>
+<dt>sfh_law <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;~smpy.sfh&#8217; or user defined function,</span></dt>
+<dd><p class="first last">Star-formation history parametrisation for composite
+stellar population.</p>
+</dd>
+<dt>dust_model <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;~smpy.dust&#8217; or user defined function,</span></dt>
+<dd><p class="first last">Dust extinction or attenuation law parametrisation</p>
+</dd>
+<dt>neb_cont <span class="classifier-delimiter">:</span> <span class="classifier">boolean, default = True</span></dt>
+<dd><p class="first last">Include continuum emission component in nebular emission
+model</p>
+</dd>
+<dt>neb_met <span class="classifier-delimiter">:</span> <span class="classifier">boolean, default = True</span></dt>
+<dd><p class="first last">Include metal line component in nebular emission model</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="smpy.smpy.CSP.calc_lyman">
+<em class="property">static </em><code class="descname">calc_lyman</code><span class="sig-paren">(</span><em>wave</em>, <em>seds</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.CSP.calc_lyman" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate total Lyman continuum photons for an SED</p>
+<p>Semi-pythonic version of the fortran routine in BC03 code,
+allows flexible input array shapes provided wavelength axis
+is the last one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>wave</strong> : array of floats,</p>
+<blockquote>
+<div><p>Wavelength array</p>
+</div></blockquote>
+<p class="last"><strong>seds :</strong> :</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="delaunay">
+<h2><a class="reference internal" href="#smpy.smpy.Delaunay" title="smpy.smpy.Delaunay"><code class="xref py py-class docutils literal"><span class="pre">Delaunay</span></code></a><a class="headerlink" href="#delaunay" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.Delaunay">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">Delaunay</code><span class="sig-paren">(</span><em>points</em>, <em>furthest_site=False</em>, <em>incremental=False</em>, <em>qhull_options=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Delaunay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">scipy.spatial.qhull._QhullUser</span></code></p>
+<p>Delaunay tesselation in N dimensions.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.9.</span></p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>points</strong> : ndarray of floats, shape (npoints, ndim)</p>
+<blockquote>
+<div><p>Coordinates of points to triangulate</p>
+</div></blockquote>
+<p><strong>furthest_site</strong> : bool, optional</p>
+<blockquote>
+<div><p>Whether to compute a furthest-site Delaunay triangulation.
+Default: False</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.12.0.</span></p>
+</div>
+</div></blockquote>
+<p><strong>incremental</strong> : bool, optional</p>
+<blockquote>
+<div><p>Allow adding new points incrementally. This takes up some additional
+resources.</p>
+</div></blockquote>
+<p><strong>qhull_options</strong> : str, optional</p>
+<blockquote>
+<div><p>Additional options to pass to Qhull. See Qhull manual for
+details. Option &#8220;Qt&#8221; is always enabled.
+Default:&#8221;Qbb Qc Qz Qx&#8221; for ndim &gt; 4 and &#8220;Qbb Qc Qz&#8221; otherwise.
+Incremental mode omits &#8220;Qz&#8221;.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.12.0.</span></p>
+</div>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>QhullError</strong> :</p>
+<blockquote>
+<div><p>Raised when Qhull encounters an error condition, such as
+geometrical degeneracy when options to resolve are not enabled.</p>
+</div></blockquote>
+<p><strong>ValueError</strong> :</p>
+<blockquote class="last">
+<div><p>Raised if an incompatible array is given as input.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>The tesselation is computed using the Qhull library 
+<a class="reference external" href="http://www.qhull.org/">Qhull library</a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unless you pass in the Qhull option &#8220;QJ&#8221;, Qhull does not
+guarantee that each input point appears as a vertex in the
+Delaunay triangulation. Omitted points are listed in the
+<cite>coplanar</cite> attribute.</p>
+</div>
+<p>Do not call the <code class="docutils literal"><span class="pre">add_points</span></code> method from a <code class="docutils literal"><span class="pre">__del__</span></code>
+destructor.</p>
+<p class="rubric">Examples</p>
+<p>Triangulation of a set of points:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">Delaunay</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tri</span> <span class="o">=</span> <span class="n">Delaunay</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can plot it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">triplot</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">tri</span><span class="o">.</span><span class="n">simplices</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;o&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Point indices and coordinates for the two triangles forming the
+triangulation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tri</span><span class="o">.</span><span class="n">simplices</span>
+<span class="go">array([[3, 2, 0],</span>
+<span class="go">       [3, 1, 0]], dtype=int32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">points</span><span class="p">[</span><span class="n">tri</span><span class="o">.</span><span class="n">simplices</span><span class="p">]</span>
+<span class="go">array([[[ 1. ,  1. ],</span>
+<span class="go">        [ 1. ,  0. ],</span>
+<span class="go">        [ 0. ,  0. ]],</span>
+<span class="go">       [[ 1. ,  1. ],</span>
+<span class="go">        [ 0. ,  1.1],</span>
+<span class="go">        [ 0. ,  0. ]]])</span>
+</pre></div>
+</div>
+<p>Triangle 0 is the only neighbor of triangle 1, and it&#8217;s opposite to
+vertex 1 of triangle 1:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">tri</span><span class="o">.</span><span class="n">neighbors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">array([-1,  0, -1], dtype=int32)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">points</span><span class="p">[</span><span class="n">tri</span><span class="o">.</span><span class="n">simplices</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span>
+<span class="go">array([ 0. ,  1.1])</span>
+</pre></div>
+</div>
+<p>We can find out which triangle points are in:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tri</span><span class="o">.</span><span class="n">find_simplex</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">array([ 1, -1], dtype=int32)</span>
+</pre></div>
+</div>
+<p>We can also compute barycentric coordinates in triangle 1 for
+these points:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">tri</span><span class="o">.</span><span class="n">transform</span><span class="p">[</span><span class="mi">1</span><span class="p">,:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">tri</span><span class="o">.</span><span class="n">transform</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+<span class="go">array([[ 0.1       ,  0.2       ,  0.7       ],</span>
+<span class="go">       [ 1.27272727,  0.27272727, -0.54545455]])</span>
+</pre></div>
+</div>
+<p>The coordinates for the first point are all positive, meaning it
+is indeed inside the triangle.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.Delaunay.transform" title="smpy.smpy.Delaunay.transform"><code class="xref py py-obj docutils literal"><span class="pre">transform</span></code></a></td>
+<td>Affine transform from <code class="docutils literal"><span class="pre">x</span></code> to the barycentric coordinates <code class="docutils literal"><span class="pre">c</span></code>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.Delaunay.vertex_to_simplex" title="smpy.smpy.Delaunay.vertex_to_simplex"><code class="xref py py-obj docutils literal"><span class="pre">vertex_to_simplex</span></code></a></td>
+<td>Lookup array, from a vertex, to some simplex which it is a part of.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.Delaunay.convex_hull" title="smpy.smpy.Delaunay.convex_hull"><code class="xref py py-obj docutils literal"><span class="pre">convex_hull</span></code></a></td>
+<td>Vertices of facets forming the convex hull of the point set.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.Delaunay.vertex_neighbor_vertices" title="smpy.smpy.Delaunay.vertex_neighbor_vertices"><code class="xref py py-obj docutils literal"><span class="pre">vertex_neighbor_vertices</span></code></a></td>
+<td>Neighboring vertices of vertices.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.smpy.Delaunay.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Delaunay.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="smpy.smpy.Delaunay.convex_hull">
+<code class="descname">convex_hull</code><a class="headerlink" href="#smpy.smpy.Delaunay.convex_hull" title="Permalink to this definition">¶</a></dt>
+<dd><p>Vertices of facets forming the convex hull of the point set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">ndarray of int, shape (nfaces, ndim)</td>
+</tr>
+</tbody>
+</table>
+<p>The array contains the indices of the points
+belonging to the (N-1)-dimensional facets that form the convex
+hull of the triangulation.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Computing convex hulls via the Delaunay triangulation is
+inefficient and subject to increased numerical instability.
+Use <cite>ConvexHull</cite> instead.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.Delaunay.find_simplex">
+<code class="descname">find_simplex</code><span class="sig-paren">(</span><em>self</em>, <em>xi</em>, <em>bruteforce=False</em>, <em>tol=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Delaunay.find_simplex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the simplices containing the given points.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>tri</strong> : DelaunayInfo</p>
+<blockquote>
+<div><p>Delaunay triangulation</p>
+</div></blockquote>
+<p><strong>xi</strong> : ndarray of double, shape (..., ndim)</p>
+<blockquote>
+<div><p>Points to locate</p>
+</div></blockquote>
+<p><strong>bruteforce</strong> : bool, optional</p>
+<blockquote>
+<div><p>Whether to only perform a brute-force search</p>
+</div></blockquote>
+<p><strong>tol</strong> : float, optional</p>
+<blockquote>
+<div><p>Tolerance allowed in the inside-triangle check.
+Default is <code class="docutils literal"><span class="pre">100*eps</span></code>.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>i</strong> : ndarray of int, same shape as <cite>xi</cite></p>
+<blockquote class="last">
+<div><p>Indices of simplices containing each point.
+Points outside the triangulation get the value -1.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>This uses an algorithm adapted from Qhull&#8217;s <code class="docutils literal"><span class="pre">qh_findbestfacet</span></code>,
+which makes use of the connection between a convex hull and a
+Delaunay triangulation. After finding the simplex closest to
+the point in N+1 dimensions, the algorithm falls back to
+directed search in N dimensions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.Delaunay.lift_points">
+<code class="descname">lift_points</code><span class="sig-paren">(</span><em>self</em>, <em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Delaunay.lift_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lift points to the Qhull paraboloid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.Delaunay.plane_distance">
+<code class="descname">plane_distance</code><span class="sig-paren">(</span><em>self</em>, <em>xi</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Delaunay.plane_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute hyperplane distances to the point <cite>xi</cite> from all simplices.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="smpy.smpy.Delaunay.transform">
+<code class="descname">transform</code><a class="headerlink" href="#smpy.smpy.Delaunay.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Affine transform from <code class="docutils literal"><span class="pre">x</span></code> to the barycentric coordinates <code class="docutils literal"><span class="pre">c</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">ndarray of double, shape (nsimplex, ndim+1, ndim)</td>
+</tr>
+</tbody>
+</table>
+<p>This is defined by:</p>
+<div class="highlight-python"><div class="highlight"><pre>T c = x - r
+</pre></div>
+</div>
+<p>At vertex <code class="docutils literal"><span class="pre">j</span></code>, <code class="docutils literal"><span class="pre">c_j</span> <span class="pre">=</span> <span class="pre">1</span></code> and the other coordinates zero.</p>
+<p>For simplex <code class="docutils literal"><span class="pre">i</span></code>, <code class="docutils literal"><span class="pre">transform[i,:ndim,:ndim]</span></code> contains
+inverse of the matrix <code class="docutils literal"><span class="pre">T</span></code>, and <code class="docutils literal"><span class="pre">transform[i,ndim,:]</span></code>
+contains the vector <code class="docutils literal"><span class="pre">r</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="smpy.smpy.Delaunay.vertex_neighbor_vertices">
+<code class="descname">vertex_neighbor_vertices</code><a class="headerlink" href="#smpy.smpy.Delaunay.vertex_neighbor_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Neighboring vertices of vertices.</p>
+<p>Tuple of two ndarrays of int: (indices, indptr). The indices of
+neighboring vertices of vertex <cite>k</cite> are
+<code class="docutils literal"><span class="pre">indptr[indices[k]:indices[k+1]]</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="smpy.smpy.Delaunay.vertex_to_simplex">
+<code class="descname">vertex_to_simplex</code><a class="headerlink" href="#smpy.smpy.Delaunay.vertex_to_simplex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lookup array, from a vertex, to some simplex which it is a part of.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">ndarray of int, shape (npoints,)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="filefilter">
+<h2><a class="reference internal" href="#smpy.smpy.FileFilter" title="smpy.smpy.FileFilter"><code class="xref py py-class docutils literal"><span class="pre">FileFilter</span></code></a><a class="headerlink" href="#filefilter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.FileFilter">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">FileFilter</code><span class="sig-paren">(</span><em>filepath</em>, <em>maxbins=500</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.FileFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#smpy.smpy.Filter" title="smpy.smpy.Filter"><code class="xref py py-class docutils literal"><span class="pre">smpy.smpy.Filter</span></code></a></p>
+<p class="rubric">Methods</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>__init__ :</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.smpy.FileFilter.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>filepath</em>, <em>maxbins=500</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.FileFilter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build filter class from ascii file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filepath</strong> : str</p>
+<blockquote>
+<div><p>Filename (including relative/absolute path) for filter file.
+Should be readable as ascii file and contain two columns,
+where column one is wavelength in angstroms and columns two
+is the filter response.</p>
+</div></blockquote>
+<p><strong>maxbins</strong> : int</p>
+<blockquote class="last">
+<div><p>Maximum number of wavelength bins for filter. Large (&gt;1000)
+numbers of wavelength bins result in slower calculations for
+minimal gain in accuracy.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="filter">
+<h2><a class="reference internal" href="#smpy.smpy.Filter" title="smpy.smpy.Filter"><code class="xref py py-class docutils literal"><span class="pre">Filter</span></code></a><a class="headerlink" href="#filter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.Filter">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">Filter</code><a class="headerlink" href="#smpy.smpy.Filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="smpy.smpy.Filter.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Filter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="filterset">
+<h2><a class="reference internal" href="#smpy.smpy.FilterSet" title="smpy.smpy.FilterSet"><code class="xref py py-class docutils literal"><span class="pre">FilterSet</span></code></a><a class="headerlink" href="#filterset" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.FilterSet">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">FilterSet</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.FilterSet" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.FilterSet.addEAZYFilter" title="smpy.smpy.FilterSet.addEAZYFilter"><code class="xref py py-obj docutils literal"><span class="pre">addEAZYFilter</span></code></a>(EAZYset,&nbsp;N)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.FilterSet.addFileFilter" title="smpy.smpy.FilterSet.addFileFilter"><code class="xref py py-obj docutils literal"><span class="pre">addFileFilter</span></code></a>(path)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.FilterSet.addTophatFilter" title="smpy.smpy.FilterSet.addTophatFilter"><code class="xref py py-obj docutils literal"><span class="pre">addTophatFilter</span></code></a>(centre,&nbsp;width[,&nbsp;steps])</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.smpy.FilterSet.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.FilterSet.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.FilterSet.addEAZYFilter">
+<code class="descname">addEAZYFilter</code><span class="sig-paren">(</span><em>EAZYset</em>, <em>N</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.FilterSet.addEAZYFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.FilterSet.addFileFilter">
+<code class="descname">addFileFilter</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.FilterSet.addFileFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.FilterSet.addTophatFilter">
+<code class="descname">addTophatFilter</code><span class="sig-paren">(</span><em>centre</em>, <em>width</em>, <em>steps=200</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.FilterSet.addTophatFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="loadeazyfilters">
+<h2><a class="reference internal" href="#smpy.smpy.LoadEAZYFilters" title="smpy.smpy.LoadEAZYFilters"><code class="xref py py-class docutils literal"><span class="pre">LoadEAZYFilters</span></code></a><a class="headerlink" href="#loadeazyfilters" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.LoadEAZYFilters">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">LoadEAZYFilters</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.LoadEAZYFilters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Load EAZY filter file into easily accessible library</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.LoadEAZYFilters.search" title="smpy.smpy.LoadEAZYFilters.search"><code class="xref py py-obj docutils literal"><span class="pre">search</span></code></a>(searchterm[,&nbsp;error])</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.smpy.LoadEAZYFilters.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.LoadEAZYFilters.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load in EAZY filters.res formatted files</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path</strong> : str</p>
+<blockquote class="last">
+<div><p>EAZY filter file to load</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.LoadEAZYFilters.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>searchterm</em>, <em>error=0.1</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.LoadEAZYFilters.search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="observe">
+<h2><a class="reference internal" href="#smpy.smpy.Observe" title="smpy.smpy.Observe"><code class="xref py py-class docutils literal"><span class="pre">Observe</span></code></a><a class="headerlink" href="#observe" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.Observe">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">Observe</code><span class="sig-paren">(</span><em>SED</em>, <em>Filters</em>, <em>redshift</em>, <em>force_age=True</em>, <em>madau=True</em>, <em>units=Unit(&quot;uJy&quot;)</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Observe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Mock photometry class</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.Observe.calcflux" title="smpy.smpy.Observe.calcflux"><code class="xref py py-obj docutils literal"><span class="pre">calcflux</span></code></a>(SED,&nbsp;filt,&nbsp;z,&nbsp;dl,&nbsp;units)</td>
+<td>Convolve synthetic SEDs with a given filter</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.smpy.Observe.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>SED</em>, <em>Filters</em>, <em>redshift</em>, <em>force_age=True</em>, <em>madau=True</em>, <em>units=Unit(&quot;uJy&quot;)</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Observe.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>SED</strong> : &#8216;~smpy.CSP&#8217; object</p>
+<blockquote>
+<div><p>Built</p>
+</div></blockquote>
+<p><strong>Filters</strong> : &#8216;~smpy.FilterSet&#8217; object</p>
+<blockquote>
+<div><p>Filter set through which to observe the set of models included
+in SED object</p>
+</div></blockquote>
+<p><strong>redshift</strong> : float of numpy.array</p>
+<blockquote>
+<div><p>Redshift(s) at which models are to be observed</p>
+</div></blockquote>
+<p><strong>force_age</strong> : boolean</p>
+<blockquote>
+<div><p>Require age of the stellar population to be younger than
+the age of the Universe at the desired redshift.</p>
+</div></blockquote>
+<p><strong>madau</strong> : boolean</p>
+<blockquote>
+<div><p>Apply IGM absorption following Madau 1999 prescription</p>
+</div></blockquote>
+<p><strong>units</strong> : &#8216;~astropy.units.Quantity&#8217;</p>
+<blockquote>
+<div><p>Desired output units, must be in spectral flux density equivalent</p>
+</div></blockquote>
+<p><strong>verbose</strong> : boolean</p>
+<blockquote class="last">
+<div><p>Add additional terminal outputs if true</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">redshifts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">Observe</span><span class="p">(</span><span class="n">CSP</span><span class="p">,</span> <span class="n">Filters</span><span class="p">,</span> <span class="n">redshifts</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="71%" />
+<col width="23%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>fluxes</td>
+<td>Apparent fluxes of CSP models observed through &#8216;Filters&#8217; at</td>
+<td>the desired redshifts</td>
+</tr>
+<tr class="row-even"><td>AB</td>
+<td>Apparent AB magnitudes of CSP models observed through &#8216;Filters&#8217; at</td>
+<td>the desired redshifts</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.Observe.calcflux">
+<code class="descname">calcflux</code><span class="sig-paren">(</span><em>SED</em>, <em>filt</em>, <em>z</em>, <em>dl</em>, <em>units</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Observe.calcflux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolve synthetic SEDs with a given filter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>Flux</strong> : &#8216;~astropy.units.Quantity&#8217;</p>
+<blockquote class="last">
+<div><p>Spectral flux density, with exact units as given by &#8216;units&#8217;</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="observetofile">
+<h2><a class="reference internal" href="#smpy.smpy.ObserveToFile" title="smpy.smpy.ObserveToFile"><code class="xref py py-class docutils literal"><span class="pre">ObserveToFile</span></code></a><a class="headerlink" href="#observetofile" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.ObserveToFile">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">ObserveToFile</code><a class="headerlink" href="#smpy.smpy.ObserveToFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Mock photometry class</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.ObserveToFile.build" title="smpy.smpy.ObserveToFile.build"><code class="xref py py-obj docutils literal"><span class="pre">build</span></code></a>(SED,&nbsp;Filters,&nbsp;redshift,&nbsp;savepath[,&nbsp;v,&nbsp;...])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.ObserveToFile.calcflux" title="smpy.smpy.ObserveToFile.calcflux"><code class="xref py py-obj docutils literal"><span class="pre">calcflux</span></code></a>(SED,&nbsp;wf,&nbsp;tp,&nbsp;z,&nbsp;dl,&nbsp;units)</td>
+<td>Convolve synthetic SEDs with a given filter</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.ObserveToFile.load" title="smpy.smpy.ObserveToFile.load"><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></a>(loadpath)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.smpy.ObserveToFile.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.ObserveToFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.ObserveToFile.build">
+<code class="descname">build</code><span class="sig-paren">(</span><em>SED</em>, <em>Filters</em>, <em>redshift</em>, <em>savepath</em>, <em>v=1</em>, <em>force_age=True</em>, <em>madau=True</em>, <em>units=Unit(&quot;uJy&quot;)</em>, <em>verbose=False</em>, <em>clobber=True</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.ObserveToFile.build" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>SED</strong> : &#8216;~smpy.CSP&#8217; object</p>
+<blockquote>
+<div><p>Built</p>
+</div></blockquote>
+<p><strong>Filters</strong> : &#8216;~smpy.FilterSet&#8217; object</p>
+<blockquote>
+<div><p>Filter set through which to observe the set of models included
+in SED object</p>
+</div></blockquote>
+<p><strong>redshift :</strong> :</p>
+<p><strong>savepath</strong> : str,</p>
+<blockquote>
+<div><p>Filename for hdf5 save file</p>
+</div></blockquote>
+<p><strong>v :</strong> :</p>
+<p><strong>force_age</strong> : boolean</p>
+<blockquote>
+<div><p>Require age of the stellar population to be younger than
+the age of the Universe at the desired redshift.</p>
+</div></blockquote>
+<p><strong>madau</strong> : boolean</p>
+<blockquote>
+<div><p>Apply IGM absorption following Madau 1999 prescription</p>
+</div></blockquote>
+<p><strong>units</strong> : &#8216;~astropy.units.Quantity&#8217;</p>
+<blockquote>
+<div><p>Desired output units, must be in spectral flux density
+equivalent</p>
+</div></blockquote>
+<p><strong>verbose</strong> : boolean</p>
+<blockquote class="last">
+<div><p>Add additional terminal outputs if true</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.ObserveToFile.calcflux">
+<code class="descname">calcflux</code><span class="sig-paren">(</span><em>SED</em>, <em>wf</em>, <em>tp</em>, <em>z</em>, <em>dl</em>, <em>units</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.ObserveToFile.calcflux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolve synthetic SEDs with a given filter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>Flux</strong> : &#8216;~astropy.units.Quantity&#8217;</p>
+<blockquote class="last">
+<div><p>Spectral flux density, with exact units as given by &#8216;units&#8217;</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.ObserveToFile.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>loadpath</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.ObserveToFile.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="progressbar">
+<h2><a class="reference internal" href="#smpy.smpy.ProgressBar" title="smpy.smpy.ProgressBar"><code class="xref py py-class docutils literal"><span class="pre">ProgressBar</span></code></a><a class="headerlink" href="#progressbar" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.ProgressBar">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">ProgressBar</code><span class="sig-paren">(</span><em>total_or_items</em>, <em>ipython_widget=False</em>, <em>file=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.ProgressBar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">astropy.extern.six.Iterator</span></code></p>
+<p>A class to display a progress bar in the terminal.</p>
+<p>It is designed to be used either with the <code class="docutils literal"><span class="pre">with</span></code> statement:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">))</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>or as a generator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+    <span class="n">item</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.smpy.ProgressBar.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>total_or_items</em>, <em>ipython_widget=False</em>, <em>file=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.ProgressBar.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>total_or_items</strong> : int or sequence</p>
+<blockquote>
+<div><p>If an int, the number of increments in the process being
+tracked.  If a sequence, the items to iterate over.</p>
+</div></blockquote>
+<p><strong>ipython_widget</strong> : bool, optional</p>
+<blockquote>
+<div><p>If <cite>True</cite>, the progress bar will display as an IPython
+notebook widget.</p>
+</div></blockquote>
+<p><strong>file</strong> : writable file-like object, optional</p>
+<blockquote class="last">
+<div><p>The file to write the progress bar to.  Defaults to
+<cite>sys.stdout</cite>.  If <cite>file</cite> is not a tty (as determined by
+calling its <cite>isatty</cite> member, if any, or special case hacks
+to detect the IPython console), the progress bar will be
+completely silent.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="smpy.smpy.ProgressBar.map">
+<em class="property">classmethod </em><code class="descname">map</code><span class="sig-paren">(</span><em>function</em>, <em>items</em>, <em>multiprocess=False</em>, <em>file=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.ProgressBar.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a <cite>map</cite> operation while displaying a progress bar with
+percentage complete.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">work</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="n">ProgressBar</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>function</strong> : function</p>
+<blockquote>
+<div><p>Function to call for each step</p>
+</div></blockquote>
+<p><strong>items</strong> : sequence</p>
+<blockquote>
+<div><p>Sequence where each element is a tuple of arguments to pass to
+<em>function</em>.</p>
+</div></blockquote>
+<p><strong>multiprocess</strong> : bool, optional</p>
+<blockquote>
+<div><p>If <cite>True</cite>, use the <cite>multiprocessing</cite> module to distribute each
+task to a different processor core.</p>
+</div></blockquote>
+<p><strong>file</strong> : writeable file-like object, optional</p>
+<blockquote class="last">
+<div><p>The file to write the progress bar to.  Defaults to
+<cite>sys.stdout</cite>.  If <cite>file</cite> is not a tty (as determined by
+calling its <cite>isatty</cite> member, if any), the scrollbar will
+be completely silent.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.smpy.ProgressBar.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>value=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.ProgressBar.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update progress bar via the console or notebook accordingly.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tophatfilter">
+<h2><a class="reference internal" href="#smpy.smpy.TophatFilter" title="smpy.smpy.TophatFilter"><code class="xref py py-class docutils literal"><span class="pre">TophatFilter</span></code></a><a class="headerlink" href="#tophatfilter" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.smpy.TophatFilter">
+<em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">TophatFilter</code><span class="sig-paren">(</span><em>centre</em>, <em>width</em>, <em>steps=200</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.TophatFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#smpy.smpy.Filter" title="smpy.smpy.Filter"><code class="xref py py-class docutils literal"><span class="pre">smpy.smpy.Filter</span></code></a></p>
+<dl class="method">
+<dt id="smpy.smpy.TophatFilter.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>centre</em>, <em>width</em>, <em>steps=200</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.TophatFilter.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build filter class for any arbitrary tophat function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>centre</strong> : int or float</p>
+<blockquote>
+<div><p>Central wavelength for tophat function in Angstroms</p>
+</div></blockquote>
+<p><strong>width</strong> : int or float</p>
+<blockquote>
+<div><p>Width of tophat function in Angstroms</p>
+</div></blockquote>
+<p><strong>steps</strong> : int or float</p>
+<blockquote class="last">
+<div><p>Number of wavelength steps to use. Should be a relatively fine
+grid as SED interpolated to wavelength grid of the filter during
+convolution.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="calzetti">
+<h2>Calzetti<a class="headerlink" href="#calzetti" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.smpy.Calzetti">
+<code class="descclassname">smpy.smpy.</code><code class="descname">Calzetti</code><span class="sig-paren">(</span><em>ta_grid</em>, <em>wave</em>, <em>Av</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.Calzetti" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="exponential">
+<h2>exponential<a class="headerlink" href="#exponential" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.smpy.exponential">
+<code class="descclassname">smpy.smpy.</code><code class="descname">exponential</code><span class="sig-paren">(</span><em>t</em>, <em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exponential star formation history</p>
+</dd></dl>
+
+</div>
+<div class="section" id="griddata">
+<h2>griddata<a class="headerlink" href="#griddata" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.smpy.griddata">
+<code class="descclassname">smpy.smpy.</code><code class="descname">griddata</code><span class="sig-paren">(</span><em>points</em>, <em>values</em>, <em>xi</em>, <em>method='linear'</em>, <em>fill_value=nan</em>, <em>rescale=False</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.griddata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate unstructured D-dimensional data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>points</strong> : ndarray of floats, shape (n, D)</p>
+<blockquote>
+<div><p>Data point coordinates. Can either be an array of
+shape (n, D), or a tuple of <cite>ndim</cite> arrays.</p>
+</div></blockquote>
+<p><strong>values</strong> : ndarray of float or complex, shape (n,)</p>
+<blockquote>
+<div><p>Data values.</p>
+</div></blockquote>
+<p><strong>xi</strong> : ndarray of float, shape (M, D)</p>
+<blockquote>
+<div><p>Points at which to interpolate data.</p>
+</div></blockquote>
+<p><strong>method</strong> : {&#8216;linear&#8217;, &#8216;nearest&#8217;, &#8216;cubic&#8217;}, optional</p>
+<blockquote>
+<div><p>Method of interpolation. One of</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">nearest</span></code></dt>
+<dd><p class="first last">return the value at the data point closest to
+the point of interpolation.  See <cite>NearestNDInterpolator</cite> for
+more details.</p>
+</dd>
+<dt><code class="docutils literal"><span class="pre">linear</span></code></dt>
+<dd><p class="first last">tesselate the input point set to n-dimensional
+simplices, and interpolate linearly on each simplex.  See
+<cite>LinearNDInterpolator</cite> for more details.</p>
+</dd>
+<dt><code class="docutils literal"><span class="pre">cubic</span></code> (1-D)</dt>
+<dd><p class="first last">return the value determined from a cubic
+spline.</p>
+</dd>
+<dt><code class="docutils literal"><span class="pre">cubic</span></code> (2-D)</dt>
+<dd><p class="first last">return the value determined from a
+piecewise cubic, continuously differentiable (C1), and
+approximately curvature-minimizing polynomial surface. See
+<cite>CloughTocher2DInterpolator</cite> for more details.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>fill_value</strong> : float, optional</p>
+<blockquote>
+<div><p>Value used to fill in for requested points outside of the
+convex hull of the input points.  If not provided, then the
+default is <code class="docutils literal"><span class="pre">nan</span></code>. This option has no effect for the
+&#8216;nearest&#8217; method.</p>
+</div></blockquote>
+<p><strong>rescale</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>Rescale points to unit cube before performing interpolation.
+This is useful if some of the input dimensions have
+incommensurable units and differ by many orders of magnitude.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.14.0.</span></p>
+</div>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.9.</span></p>
+</div>
+<p class="rubric">Examples</p>
+<p>Suppose we want to interpolate the 2-D function</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+</pre></div>
+</div>
+<p>on a grid in [0, 1]x[0, 1]</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="mi">100j</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="mi">200j</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>but we only know its values at 1000 data points:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">values</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This can be done with <cite>griddata</cite> &#8211; below we try out all of the
+interpolation methods:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">griddata</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grid_z0</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grid_z1</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grid_z2</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;cubic&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>One can see that the exact result is reproduced by all of the
+methods to some degree, but for this smooth function the piecewise
+cubic interpolant gives the best results:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">221</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;k.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Original&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">222</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">grid_z0</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Nearest&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">223</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">grid_z1</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Linear&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">224</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">grid_z2</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Cubic&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="tau-madau">
+<h2>tau_madau<a class="headerlink" href="#tau-madau" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.smpy.tau_madau">
+<code class="descclassname">smpy.smpy.</code><code class="descname">tau_madau</code><span class="sig-paren">(</span><em>wave</em>, <em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.tau_madau" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lyman limit system absorption following Madau 1995</p>
+<p>This version is in part based on my previous python implementation
+and the simpler version shown here
+<a class="reference external" href="https://github.com/spacetelescope/pysynphot/issues/77">https://github.com/spacetelescope/pysynphot/issues/77</a></p>
+<p>This version has been extended to include the additional
+higher order lines calculated in EAZY.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd>wave (array): Array with astropy.units of length
+z (float): redshift at which the source is being observed</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>LyL_absorption (array): Throughput along the line of sight</dt>
+<dd>for wavelengths in wave from Lyman-alpha forest and 
+Lyman-limit systems</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal"><span class="pre">smpy</span></code></a><ul>
+<li><a class="reference internal" href="#csp"><code class="docutils literal"><span class="pre">CSP</span></code></a></li>
+<li><a class="reference internal" href="#delaunay"><code class="docutils literal"><span class="pre">Delaunay</span></code></a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#filefilter"><code class="docutils literal"><span class="pre">FileFilter</span></code></a></li>
+<li><a class="reference internal" href="#filter"><code class="docutils literal"><span class="pre">Filter</span></code></a></li>
+<li><a class="reference internal" href="#filterset"><code class="docutils literal"><span class="pre">FilterSet</span></code></a></li>
+<li><a class="reference internal" href="#loadeazyfilters"><code class="docutils literal"><span class="pre">LoadEAZYFilters</span></code></a></li>
+<li><a class="reference internal" href="#observe"><code class="docutils literal"><span class="pre">Observe</span></code></a></li>
+<li><a class="reference internal" href="#observetofile"><code class="docutils literal"><span class="pre">ObserveToFile</span></code></a></li>
+<li><a class="reference internal" href="#progressbar"><code class="docutils literal"><span class="pre">ProgressBar</span></code></a></li>
+<li><a class="reference internal" href="#tophatfilter"><code class="docutils literal"><span class="pre">TophatFilter</span></code></a></li>
+<li><a class="reference internal" href="#calzetti">Calzetti</a></li>
+<li><a class="reference internal" href="#exponential">exponential</a></li>
+<li><a class="reference internal" href="#griddata">griddata</a></li>
+<li><a class="reference internal" href="#tau-madau">tau_madau</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="smpy.sfh.html"
+                        title="previous chapter"><code class="docutils literal"><span class="pre">sfh</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/smpy.smpy.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Kenneth Duncan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="../_sources/reference/smpy.smpy.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
