@@ -1,6 +1,5 @@
 ## SMpy: Stellar populations and Masses with Python
 
-
 This module is designed for building and processing composite stellar populations in a simple but flexible manner. It allows for easy synthetic photometry to be produced for single models or large suites of models.
 
 The code makes use of the `Astropy <https://astropy.readthedocs.org>`_ module throughout and therefore allows for easy conversion of physical units and a wide range of allowed cosmologies.
