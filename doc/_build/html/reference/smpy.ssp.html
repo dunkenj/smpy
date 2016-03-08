@@ -1,0 +1,420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ssp &mdash; smpy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="smpy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../index.html">smpy 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-smpy.ssp">
+<span id="ssp"></span><h1><code class="xref py py-mod docutils literal"><span class="pre">ssp</span></code><a class="headerlink" href="#module-smpy.ssp" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.ssp.BC" title="smpy.ssp.BC"><code class="xref py py-obj docutils literal"><span class="pre">BC</span></code></a>([path])</td>
+<td>Bruzual &amp; Charlot 2003/07 SSP Models</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.ssp.BPASS" title="smpy.ssp.BPASS"><code class="xref py py-obj docutils literal"><span class="pre">BPASS</span></code></a>([path,&nbsp;nsteps])</td>
+<td>www.bpass.org.uk</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.ssp.BPASS2" title="smpy.ssp.BPASS2"><code class="xref py py-obj docutils literal"><span class="pre">BPASS2</span></code></a>([path,&nbsp;nsteps])</td>
+<td>BPASS v2</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.ssp.Ised" title="smpy.ssp.Ised"><code class="xref py py-obj docutils literal"><span class="pre">Ised</span></code></a>(path)</td>
+<td><p class="rubric">Methods</p>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.ssp.SSP" title="smpy.ssp.SSP"><code class="xref py py-obj docutils literal"><span class="pre">SSP</span></code></a>([path])</td>
+<td>Base class for SSP objects</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.ssp.rebin_sed" title="smpy.ssp.rebin_sed"><code class="xref py py-obj docutils literal"><span class="pre">rebin_sed</span></code></a>(wave_in,&nbsp;sed_in,&nbsp;wave_out)</td>
+<td>Rebin an SED to new wavelength grid with flux density conserved</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="bc">
+<h2><a class="reference internal" href="#smpy.ssp.BC" title="smpy.ssp.BC"><code class="xref py py-class docutils literal"><span class="pre">BC</span></code></a><a class="headerlink" href="#bc" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.ssp.BC">
+<em class="property">class </em><code class="descclassname">smpy.ssp.</code><code class="descname">BC</code><span class="sig-paren">(</span><em>path='../ssp/bc03/salpeter/lr/'</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.BC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#smpy.ssp.SSP" title="smpy.ssp.SSP"><code class="xref py py-class docutils literal"><span class="pre">smpy.ssp.SSP</span></code></a></p>
+<p>Bruzual &amp; Charlot 2003/07 SSP Models</p>
+<dl class="method">
+<dt id="smpy.ssp.BC.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>path='../ssp/bc03/salpeter/lr/'</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.BC.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="bpass">
+<h2><a class="reference internal" href="#smpy.ssp.BPASS" title="smpy.ssp.BPASS"><code class="xref py py-class docutils literal"><span class="pre">BPASS</span></code></a><a class="headerlink" href="#bpass" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.ssp.BPASS">
+<em class="property">class </em><code class="descclassname">smpy.ssp.</code><code class="descname">BPASS</code><span class="sig-paren">(</span><em>path='../ssp/bpass_v1.1/SEDS/'</em>, <em>nsteps=3000</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.BPASS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#smpy.ssp.SSP" title="smpy.ssp.SSP"><code class="xref py py-class docutils literal"><span class="pre">smpy.ssp.SSP</span></code></a></p>
+<p>www.bpass.org.uk
+Eldridge &amp; Stanway, 2009, MNRAS, 400, 1019</p>
+<dl class="method">
+<dt id="smpy.ssp.BPASS.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>path='../ssp/bpass_v1.1/SEDS/'</em>, <em>nsteps=3000</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.BPASS.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="bpass2">
+<h2><a class="reference internal" href="#smpy.ssp.BPASS2" title="smpy.ssp.BPASS2"><code class="xref py py-class docutils literal"><span class="pre">BPASS2</span></code></a><a class="headerlink" href="#bpass2" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.ssp.BPASS2">
+<em class="property">class </em><code class="descclassname">smpy.ssp.</code><code class="descname">BPASS2</code><span class="sig-paren">(</span><em>path='../ssp/bpass_v1.1/SEDS/'</em>, <em>nsteps=3000</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.BPASS2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#smpy.ssp.SSP" title="smpy.ssp.SSP"><code class="xref py py-class docutils literal"><span class="pre">smpy.ssp.SSP</span></code></a></p>
+<p>BPASS v2</p>
+<p>www.bpass.org.uk
+Eldridge &amp; Stanway, 2009, MNRAS, 400, 1019</p>
+<dl class="method">
+<dt id="smpy.ssp.BPASS2.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>path='../ssp/bpass_v1.1/SEDS/'</em>, <em>nsteps=3000</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.BPASS2.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>path</strong> : str,</p>
+<blockquote>
+<div><p>Path to desired subset of BPASS models, should include
+relevant wildcard to match multiple metallicities.</p>
+</div></blockquote>
+<p><strong>nsteps</strong> : int</p>
+<blockquote class="last">
+<div><p>Number of wavelength steps in which to interpolate</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="ised">
+<h2><a class="reference internal" href="#smpy.ssp.Ised" title="smpy.ssp.Ised"><code class="xref py py-class docutils literal"><span class="pre">Ised</span></code></a><a class="headerlink" href="#ised" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.ssp.Ised">
+<em class="property">class </em><code class="descclassname">smpy.ssp.</code><code class="descname">Ised</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.Ised" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.ssp.Ised.read_ised" title="smpy.ssp.Ised.read_ised"><code class="xref py py-obj docutils literal"><span class="pre">read_ised</span></code></a>(filename)</td>
+<td>This function reads data from Bruzual &amp; Charlot binary format SSP files and returns the necessary data in an array The input files should be &#8216;.ised&#8217; files, either 2003 or 2007.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.ssp.Ised.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.Ised.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="smpy.ssp.Ised.read_ised">
+<code class="descname">read_ised</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.Ised.read_ised" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function reads data from Bruzual &amp; Charlot binary format
+SSP files and returns the necessary data in an array The input files
+should be &#8216;.ised&#8217; files, either 2003 or 2007.</p>
+<p>&#8216;ks&#8217; in the binary files is slightly different between 03/07 files
+so the read length and index should be set appropriately, therefore 
+the function tries &#8216;03 format first and retries with the &#8216;07 format
+if the returned number of ages isn&#8217;t as expected (e.g. 221 ages)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="progressbar">
+<h2><a class="reference internal" href="#smpy.ssp.ProgressBar" title="smpy.ssp.ProgressBar"><code class="xref py py-class docutils literal"><span class="pre">ProgressBar</span></code></a><a class="headerlink" href="#progressbar" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.ssp.ProgressBar">
+<em class="property">class </em><code class="descclassname">smpy.ssp.</code><code class="descname">ProgressBar</code><span class="sig-paren">(</span><em>total_or_items</em>, <em>ipython_widget=False</em>, <em>file=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.ProgressBar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">astropy.extern.six.Iterator</span></code></p>
+<p>A class to display a progress bar in the terminal.</p>
+<p>It is designed to be used either with the <code class="docutils literal"><span class="pre">with</span></code> statement:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">))</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>or as a generator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+    <span class="n">item</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+</tbody>
+</table>
+<dl class="method">
+<dt id="smpy.ssp.ProgressBar.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>total_or_items</em>, <em>ipython_widget=False</em>, <em>file=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.ProgressBar.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>total_or_items</strong> : int or sequence</p>
+<blockquote>
+<div><p>If an int, the number of increments in the process being
+tracked.  If a sequence, the items to iterate over.</p>
+</div></blockquote>
+<p><strong>ipython_widget</strong> : bool, optional</p>
+<blockquote>
+<div><p>If <cite>True</cite>, the progress bar will display as an IPython
+notebook widget.</p>
+</div></blockquote>
+<p><strong>file</strong> : writable file-like object, optional</p>
+<blockquote class="last">
+<div><p>The file to write the progress bar to.  Defaults to
+<cite>sys.stdout</cite>.  If <cite>file</cite> is not a tty (as determined by
+calling its <cite>isatty</cite> member, if any, or special case hacks
+to detect the IPython console), the progress bar will be
+completely silent.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="smpy.ssp.ProgressBar.map">
+<em class="property">classmethod </em><code class="descname">map</code><span class="sig-paren">(</span><em>function</em>, <em>items</em>, <em>multiprocess=False</em>, <em>file=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.ProgressBar.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a <cite>map</cite> operation while displaying a progress bar with
+percentage complete.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">work</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="n">ProgressBar</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">work</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">))</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>function</strong> : function</p>
+<blockquote>
+<div><p>Function to call for each step</p>
+</div></blockquote>
+<p><strong>items</strong> : sequence</p>
+<blockquote>
+<div><p>Sequence where each element is a tuple of arguments to pass to
+<em>function</em>.</p>
+</div></blockquote>
+<p><strong>multiprocess</strong> : bool, optional</p>
+<blockquote>
+<div><p>If <cite>True</cite>, use the <cite>multiprocessing</cite> module to distribute each
+task to a different processor core.</p>
+</div></blockquote>
+<p><strong>file</strong> : writeable file-like object, optional</p>
+<blockquote class="last">
+<div><p>The file to write the progress bar to.  Defaults to
+<cite>sys.stdout</cite>.  If <cite>file</cite> is not a tty (as determined by
+calling its <cite>isatty</cite> member, if any), the scrollbar will
+be completely silent.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="smpy.ssp.ProgressBar.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>value=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.ProgressBar.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update progress bar via the console or notebook accordingly.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="id1">
+<h2><a class="reference internal" href="#smpy.ssp.SSP" title="smpy.ssp.SSP"><code class="xref py py-class docutils literal"><span class="pre">SSP</span></code></a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="smpy.ssp.SSP">
+<em class="property">class </em><code class="descclassname">smpy.ssp.</code><code class="descname">SSP</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.SSP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Base class for SSP objects</p>
+<dl class="method">
+<dt id="smpy.ssp.SSP.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.SSP.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="glob">
+<h2>glob<a class="headerlink" href="#glob" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.ssp.glob">
+<code class="descclassname">smpy.ssp.</code><code class="descname">glob</code><span class="sig-paren">(</span><em>pathname</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.glob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of paths matching a pathname pattern.</p>
+<p>The pattern may contain simple shell-style wildcards a la
+fnmatch. However, unlike fnmatch, filenames starting with a
+dot are special cases that are not matched by &#8216;*&#8217; and &#8216;?&#8217;
+patterns.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="rebin-sed">
+<h2>rebin_sed<a class="headerlink" href="#rebin-sed" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.ssp.rebin_sed">
+<code class="descclassname">smpy.ssp.</code><code class="descname">rebin_sed</code><span class="sig-paren">(</span><em>wave_in</em>, <em>sed_in</em>, <em>wave_out</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.ssp.rebin_sed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rebin an SED to new wavelength grid with flux density conserved</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>wave_in</strong> : numpy.array or &#8216;~astropy.units.Quantity&#8217; array</p>
+<blockquote>
+<div><blockquote>
+<div><p>Input wavelength grid, with length N</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>sed_in <span class="classifier-delimiter">:</span> <span class="classifier">numpy.array or &#8216;~astropy.units.Quantity&#8217; array</span></dt>
+<dd><p class="first last">Input grid of SEDs, with shape (N, x)</p>
+</dd>
+<dt>wave_out <span class="classifier-delimiter">:</span> <span class="classifier">numpy.array or &#8216;~astropy.units.Quantity&#8217; array</span></dt>
+<dd><p class="first last">Desired wavelength grid for rebinned SED, with length M</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>sed_out</strong> : numpy.array or &#8216;~astropy.units.Quantity&#8217; array</p>
+<blockquote class="last">
+<div><p>Rebinned SEDs, with shape (M, x)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal"><span class="pre">ssp</span></code></a><ul>
+<li><a class="reference internal" href="#bc"><code class="docutils literal"><span class="pre">BC</span></code></a></li>
+<li><a class="reference internal" href="#bpass"><code class="docutils literal"><span class="pre">BPASS</span></code></a></li>
+<li><a class="reference internal" href="#bpass2"><code class="docutils literal"><span class="pre">BPASS2</span></code></a></li>
+<li><a class="reference internal" href="#ised"><code class="docutils literal"><span class="pre">Ised</span></code></a></li>
+<li><a class="reference internal" href="#progressbar"><code class="docutils literal"><span class="pre">ProgressBar</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal"><span class="pre">SSP</span></code></a></li>
+<li><a class="reference internal" href="#glob">glob</a></li>
+<li><a class="reference internal" href="#rebin-sed">rebin_sed</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/smpy.ssp.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Kenneth Duncan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="../_sources/reference/smpy.ssp.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

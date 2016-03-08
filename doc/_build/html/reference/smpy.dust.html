@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dust &mdash; smpy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="smpy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="misc" href="smpy.misc.html" />
+    <link rel="prev" title="data" href="smpy.data.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="smpy.misc.html" title="misc"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="smpy.data.html" title="data"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">smpy 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-smpy.dust">
+<span id="dust"></span><h1><code class="xref py py-mod docutils literal"><span class="pre">dust</span></code><a class="headerlink" href="#module-smpy.dust" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.dust.Calzetti" title="smpy.dust.Calzetti"><code class="xref py py-obj docutils literal"><span class="pre">Calzetti</span></code></a>(ta_grid,&nbsp;wave,&nbsp;Av)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.dust.Calzetti2" title="smpy.dust.Calzetti2"><code class="xref py py-obj docutils literal"><span class="pre">Calzetti2</span></code></a>(ta_grid,&nbsp;wave,&nbsp;Av)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.dust.Charlot" title="smpy.dust.Charlot"><code class="xref py py-obj docutils literal"><span class="pre">Charlot</span></code></a>(ta_grid,&nbsp;wave,&nbsp;Av[,&nbsp;mu])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.dust.LMC" title="smpy.dust.LMC"><code class="xref py py-obj docutils literal"><span class="pre">LMC</span></code></a>(ta_grid,&nbsp;wave,&nbsp;Av)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.dust.MW" title="smpy.dust.MW"><code class="xref py py-obj docutils literal"><span class="pre">MW</span></code></a>(ta_grid,&nbsp;wave,&nbsp;Av)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.dust.SMC" title="smpy.dust.SMC"><code class="xref py py-obj docutils literal"><span class="pre">SMC</span></code></a>(ta_grid,&nbsp;wave,&nbsp;Av)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.dust.drude_profile" title="smpy.dust.drude_profile"><code class="xref py py-obj docutils literal"><span class="pre">drude_profile</span></code></a>(lam,&nbsp;Eb[,&nbsp;lambda_central,&nbsp;...])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.dust.dust_func" title="smpy.dust.dust_func"><code class="xref py py-obj docutils literal"><span class="pre">dust_func</span></code></a>(lam,&nbsp;ai,&nbsp;bi,&nbsp;ni,&nbsp;li)</td>
+<td>Functional form for SMC, LMC and MW extinction curves of Pei et al.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.dust.flexible" title="smpy.dust.flexible"><code class="xref py py-obj docutils literal"><span class="pre">flexible</span></code></a>(ta_grid,&nbsp;wave,&nbsp;Av[,&nbsp;delta,&nbsp;e_bump,&nbsp;...])</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="calzetti">
+<h2>Calzetti<a class="headerlink" href="#calzetti" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.Calzetti">
+<code class="descclassname">smpy.dust.</code><code class="descname">Calzetti</code><span class="sig-paren">(</span><em>ta_grid</em>, <em>wave</em>, <em>Av</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.Calzetti" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="calzetti2">
+<h2>Calzetti2<a class="headerlink" href="#calzetti2" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.Calzetti2">
+<code class="descclassname">smpy.dust.</code><code class="descname">Calzetti2</code><span class="sig-paren">(</span><em>ta_grid</em>, <em>wave</em>, <em>Av</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.Calzetti2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="charlot">
+<h2>Charlot<a class="headerlink" href="#charlot" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.Charlot">
+<code class="descclassname">smpy.dust.</code><code class="descname">Charlot</code><span class="sig-paren">(</span><em>ta_grid</em>, <em>wave</em>, <em>Av</em>, <em>mu=0.3</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.Charlot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="lmc">
+<h2>LMC<a class="headerlink" href="#lmc" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.LMC">
+<code class="descclassname">smpy.dust.</code><code class="descname">LMC</code><span class="sig-paren">(</span><em>ta_grid</em>, <em>wave</em>, <em>Av</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.LMC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="mw">
+<h2>MW<a class="headerlink" href="#mw" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.MW">
+<code class="descclassname">smpy.dust.</code><code class="descname">MW</code><span class="sig-paren">(</span><em>ta_grid</em>, <em>wave</em>, <em>Av</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.MW" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="smc">
+<h2>SMC<a class="headerlink" href="#smc" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.SMC">
+<code class="descclassname">smpy.dust.</code><code class="descname">SMC</code><span class="sig-paren">(</span><em>ta_grid</em>, <em>wave</em>, <em>Av</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.SMC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="drude-profile">
+<h2>drude_profile<a class="headerlink" href="#drude-profile" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.drude_profile">
+<code class="descclassname">smpy.dust.</code><code class="descname">drude_profile</code><span class="sig-paren">(</span><em>lam</em>, <em>Eb</em>, <em>lambda_central=&lt;Quantity 2175.0 Angstrom&gt;</em>, <em>delta_lambda=&lt;Quantity 350.0 Angstrom&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.drude_profile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="dust-func">
+<h2>dust_func<a class="headerlink" href="#dust-func" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.dust_func">
+<code class="descclassname">smpy.dust.</code><code class="descname">dust_func</code><span class="sig-paren">(</span><em>lam</em>, <em>ai</em>, <em>bi</em>, <em>ni</em>, <em>li</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.dust_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Functional form for SMC, LMC and MW extinction curves of
+Pei et al. 1992</p>
+</dd></dl>
+
+</div>
+<div class="section" id="flexible">
+<h2>flexible<a class="headerlink" href="#flexible" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.dust.flexible">
+<code class="descclassname">smpy.dust.</code><code class="descname">flexible</code><span class="sig-paren">(</span><em>ta_grid</em>, <em>wave</em>, <em>Av</em>, <em>delta=0.0</em>, <em>e_bump=0.0</em>, <em>lambda_central=&lt;Quantity 2175.0 Angstrom&gt;</em>, <em>delta_lambda=&lt;Quantity 350.0 Angstrom&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.dust.flexible" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal"><span class="pre">dust</span></code></a><ul>
+<li><a class="reference internal" href="#calzetti">Calzetti</a></li>
+<li><a class="reference internal" href="#calzetti2">Calzetti2</a></li>
+<li><a class="reference internal" href="#charlot">Charlot</a></li>
+<li><a class="reference internal" href="#lmc">LMC</a></li>
+<li><a class="reference internal" href="#mw">MW</a></li>
+<li><a class="reference internal" href="#smc">SMC</a></li>
+<li><a class="reference internal" href="#drude-profile">drude_profile</a></li>
+<li><a class="reference internal" href="#dust-func">dust_func</a></li>
+<li><a class="reference internal" href="#flexible">flexible</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="smpy.data.html"
+                        title="previous chapter"><code class="docutils literal"><span class="pre">data</span></code></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="smpy.misc.html"
+                        title="next chapter"><code class="docutils literal"><span class="pre">misc</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/smpy.dust.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Kenneth Duncan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="../_sources/reference/smpy.dust.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

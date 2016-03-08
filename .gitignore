@@ -1,5 +1,5 @@
-smpy-obs/error.log
-smpy-fits/error.log
+error.log
+scripts/misc/*
 *.ipynb
 *.npz
 *.npy
@@ -15,6 +15,6 @@ smpy-obs/filters/*
 bpass_tests.py
 misc_testing/*
 trunc_exponential.py
-fitting/*
 *.hdf
+*.pickle
 dust_tests.py

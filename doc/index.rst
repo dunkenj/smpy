@@ -1,6 +1,6 @@
 .. shablona documentation master file, created by sphinx-quickstart on Tue Apr 14 10:29:06 2015. You can adapt this file completely to your liking, but it should at least contain the root `toctree` directive.
 
-Welcome to shablona's documentation!
+Welcome to astro-smpy's documentation!
 ====================================
 
 `Shablona` is a template for a small scientific Python project. 

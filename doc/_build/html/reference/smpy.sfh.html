@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>sfh &mdash; smpy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="smpy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="smpy" href="smpy.smpy.html" />
+    <link rel="prev" title="misc" href="smpy.misc.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="smpy.smpy.html" title="smpy"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="smpy.misc.html" title="misc"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">smpy 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-smpy.sfh">
+<span id="sfh"></span><h1><code class="xref py py-mod docutils literal"><span class="pre">sfh</span></code><a class="headerlink" href="#module-smpy.sfh" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.sfh.delayed" title="smpy.sfh.delayed"><code class="xref py py-obj docutils literal"><span class="pre">delayed</span></code></a>(t,&nbsp;tau)</td>
+<td>&#8216;Delated&#8217; star formation history</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.sfh.exponential" title="smpy.sfh.exponential"><code class="xref py py-obj docutils literal"><span class="pre">exponential</span></code></a>(t,&nbsp;tau)</td>
+<td>Exponential star formation history</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.sfh.power" title="smpy.sfh.power"><code class="xref py py-obj docutils literal"><span class="pre">power</span></code></a>(t,&nbsp;alpha)</td>
+<td>Power-law star formation history</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#smpy.sfh.truncated" title="smpy.sfh.truncated"><code class="xref py py-obj docutils literal"><span class="pre">truncated</span></code></a>(t,&nbsp;tstop)</td>
+<td>Truncated star formation history</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.sfh.truncated_exp" title="smpy.sfh.truncated_exp"><code class="xref py py-obj docutils literal"><span class="pre">truncated_exp</span></code></a>(t,&nbsp;tau,&nbsp;tstop)</td>
+<td>Truncated exponential star formation history</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="delayed">
+<h2>delayed<a class="headerlink" href="#delayed" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.sfh.delayed">
+<code class="descclassname">smpy.sfh.</code><code class="descname">delayed</code><span class="sig-paren">(</span><em>t</em>, <em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.sfh.delayed" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;Delated&#8217; star formation history</p>
+</dd></dl>
+
+</div>
+<div class="section" id="exponential">
+<h2>exponential<a class="headerlink" href="#exponential" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.sfh.exponential">
+<code class="descclassname">smpy.sfh.</code><code class="descname">exponential</code><span class="sig-paren">(</span><em>t</em>, <em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.sfh.exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exponential star formation history</p>
+</dd></dl>
+
+</div>
+<div class="section" id="power">
+<h2>power<a class="headerlink" href="#power" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.sfh.power">
+<code class="descclassname">smpy.sfh.</code><code class="descname">power</code><span class="sig-paren">(</span><em>t</em>, <em>alpha</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.sfh.power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Power-law star formation history</p>
+</dd></dl>
+
+</div>
+<div class="section" id="truncated">
+<h2>truncated<a class="headerlink" href="#truncated" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.sfh.truncated">
+<code class="descclassname">smpy.sfh.</code><code class="descname">truncated</code><span class="sig-paren">(</span><em>t</em>, <em>tstop</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.sfh.truncated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncated star formation history</p>
+<p>Star-formation is continuous until some fraction, tstop, of the total
+time since onset of star-formation history np.max(t).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="truncated-exp">
+<h2>truncated_exp<a class="headerlink" href="#truncated-exp" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.sfh.truncated_exp">
+<code class="descclassname">smpy.sfh.</code><code class="descname">truncated_exp</code><span class="sig-paren">(</span><em>t</em>, <em>tau</em>, <em>tstop</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.sfh.truncated_exp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncated exponential star formation history</p>
+<p>Star-formation is exponential, tstop, of the total
+time since onset of star-formation history np.max(t).</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal"><span class="pre">sfh</span></code></a><ul>
+<li><a class="reference internal" href="#delayed">delayed</a></li>
+<li><a class="reference internal" href="#exponential">exponential</a></li>
+<li><a class="reference internal" href="#power">power</a></li>
+<li><a class="reference internal" href="#truncated">truncated</a></li>
+<li><a class="reference internal" href="#truncated-exp">truncated_exp</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="smpy.misc.html"
+                        title="previous chapter"><code class="docutils literal"><span class="pre">misc</span></code></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="smpy.smpy.html"
+                        title="next chapter"><code class="docutils literal"><span class="pre">smpy</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/smpy.sfh.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Kenneth Duncan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="../_sources/reference/smpy.sfh.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

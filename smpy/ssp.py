@@ -1,15 +1,10 @@
 import numpy as np
 import array
-import copy
 import re
-import sys
 import os
 from glob import glob
 
-from scipy.interpolate import griddata
-
 from astropy import units as u
-from astropy import constants as c
 from astropy.utils.console import ProgressBar
 
 class Ised(object):

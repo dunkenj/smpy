@@ -1,12 +1,6 @@
 import numpy as np
-import array
-import copy
-import re
-import sys
-from glob import glob
-
 from astropy import units as u
-from astropy import constants as c
+#from astropy import constants as c
 
 """ 
 Functional Forms:
