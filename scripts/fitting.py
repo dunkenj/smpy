@@ -533,6 +533,7 @@ if __name__ == '__main__':
 
     output = Table()
 
+
     names = ['N', 'ID', 'z', 'Bestfit_Mass',
              'Bestfit_chi2','Age','Dust_Tau','SFH_Tau',
              'SSP_Number', 'M1500','temp_index',
