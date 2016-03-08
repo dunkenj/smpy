@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>misc &mdash; smpy 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="smpy 0.1 documentation" href="../index.html" />
+    <link rel="up" title="API Reference" href="index.html" />
+    <link rel="next" title="sfh" href="smpy.sfh.html" />
+    <link rel="prev" title="dust" href="smpy.dust.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="smpy.sfh.html" title="sfh"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="smpy.dust.html" title="dust"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">smpy 0.1 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">API Reference</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-smpy.misc">
+<span id="misc"></span><h1><code class="xref py py-mod docutils literal"><span class="pre">misc</span></code><a class="headerlink" href="#module-smpy.misc" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.misc.tau_madau" title="smpy.misc.tau_madau"><code class="xref py py-obj docutils literal"><span class="pre">tau_madau</span></code></a>(wave,&nbsp;z)</td>
+<td>Lyman limit system absorption following Madau 1995</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="tau-madau">
+<h2>tau_madau<a class="headerlink" href="#tau-madau" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="smpy.misc.tau_madau">
+<code class="descclassname">smpy.misc.</code><code class="descname">tau_madau</code><span class="sig-paren">(</span><em>wave</em>, <em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.misc.tau_madau" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lyman limit system absorption following Madau 1995</p>
+<p>This version is in part based on my previous python implementation
+and the simpler version shown here
+<a class="reference external" href="https://github.com/spacetelescope/pysynphot/issues/77">https://github.com/spacetelescope/pysynphot/issues/77</a></p>
+<p>This version has been extended to include the additional
+higher order lines calculated in EAZY.</p>
+<dl class="docutils">
+<dt>Parameters:</dt>
+<dd>wave (array): Array with astropy.units of length
+z (float): redshift at which the source is being observed</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>LyL_absorption (array): Throughput along the line of sight</dt>
+<dd>for wavelengths in wave from Lyman-alpha forest and 
+Lyman-limit systems</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal"><span class="pre">misc</span></code></a><ul>
+<li><a class="reference internal" href="#tau-madau">tau_madau</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="smpy.dust.html"
+                        title="previous chapter"><code class="docutils literal"><span class="pre">dust</span></code></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="smpy.sfh.html"
+                        title="next chapter"><code class="docutils literal"><span class="pre">sfh</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/smpy.misc.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Kenneth Duncan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="../_sources/reference/smpy.misc.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,4 @@
+/Users/ken/Documents/Astro/code/smpy/doc/sphinxext/docscrape.py:123: UserWarning: Unknown section Arguments
+  warn("Unknown section %s" % key)
+/Users/ken/Documents/Astro/code/smpy/doc/sphinxext/docscrape.py:123: UserWarning: Unknown section Paramaters
+  warn("Unknown section %s" % key)
