@@ -18,3 +18,7 @@ trunc_exponential.py
 *.hdf
 *.pickle
 dust_tests.py
+
+*.pyc
+
+*.pyc
