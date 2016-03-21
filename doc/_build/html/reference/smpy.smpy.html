@@ -71,8 +71,7 @@
 <td></td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.FilterSet" title="smpy.smpy.FilterSet"><code class="xref py py-obj docutils literal"><span class="pre">FilterSet</span></code></a>([path])</td>
-<td><p class="rubric">Methods</p>
-</td>
+<td>Class to build sets of filters for mock observations</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.LoadEAZYFilters" title="smpy.smpy.LoadEAZYFilters"><code class="xref py py-obj docutils literal"><span class="pre">LoadEAZYFilters</span></code></a>(path)</td>
 <td>Load EAZY filter file into easily accessible library</td>
@@ -177,7 +176,7 @@ model</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ssp :</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>ssp</strong> : SSP class</p>
 <blockquote class="last">
 <div><dl class="docutils">
 <dt>age <span class="classifier-delimiter">:</span> <span class="classifier">&#8216;~astropy.units.Quantity&#8217; array (with units of time)</span></dt>
@@ -595,20 +594,27 @@ minimal gain in accuracy.</p>
 <dl class="class">
 <dt id="smpy.smpy.FilterSet">
 <em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">FilterSet</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.FilterSet" title="Permalink to this definition">¶</a></dt>
-<dd><p class="rubric">Methods</p>
+<dd><p>Class to build sets of filters for mock observations</p>
+<p>Filter sets can be built from any combination of different
+types of filter.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">filters</span> <span class="o">=</span> <span class="n">FilterSet</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filters</span><span class="o">.</span><span class="n">addTophatFilter</span><span class="p">(</span><span class="n">centre</span><span class="o">=</span><span class="mi">1500</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">150</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">AA</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">filters</span> <span class="o">=</span> <span class="n">FilterSet</span><span class="p">(</span><span class="s">&#39;data/Filter*.txt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
 <col width="10%" />
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.FilterSet.addEAZYFilter" title="smpy.smpy.FilterSet.addEAZYFilter"><code class="xref py py-obj docutils literal"><span class="pre">addEAZYFilter</span></code></a>(EAZYset,&nbsp;N)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#smpy.smpy.FilterSet.addFileFilter" title="smpy.smpy.FilterSet.addFileFilter"><code class="xref py py-obj docutils literal"><span class="pre">addFileFilter</span></code></a>(path)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.FilterSet.addTophatFilter" title="smpy.smpy.FilterSet.addTophatFilter"><code class="xref py py-obj docutils literal"><span class="pre">addTophatFilter</span></code></a>(centre,&nbsp;width[,&nbsp;steps])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#smpy.smpy.FilterSet.__init__" title="smpy.smpy.FilterSet.__init__"><code class="xref py py-obj docutils literal"><span class="pre">__init__</span></code></a>([path])</td>
 <td></td>
 </tr>
 </tbody>
@@ -643,6 +649,28 @@ minimal gain in accuracy.</p>
 <em class="property">class </em><code class="descclassname">smpy.smpy.</code><code class="descname">LoadEAZYFilters</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#smpy.smpy.LoadEAZYFilters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Load EAZY filter file into easily accessible library</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="6%" />
+<col width="76%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>path</td>
+<td>str,</td>
+<td>Path of EAZY filter file</td>
+</tr>
+<tr class="row-even"><td>filters</td>
+<td>list</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>filternames</td>
+<td>list</td>
+<td>Filter names as parsed from the EAZY filter set</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>

@@ -8,7 +8,7 @@ import types
 import glob
 
 from scipy.interpolate import griddata
-from scipy import spatial
+from scipy.spatial import Delaunay
 
 from astropy import units as u
 from astropy import constants as c
@@ -30,7 +30,7 @@ sys.stderr = f
 data_path = data.__path__[0]
 
 
-class CSP(object):
+class CSP:
     """ Class for building composite stellar populations from input SSPs
         
     Attributes
@@ -41,9 +41,10 @@ class CSP(object):
     
     """
     
-    def __init__(self, ssp, age=None, sfh=None, dust=None, metal_ind=None,
-                 f_esc=None, sfh_law=exponential, dust_model=Calzetti,
-                 neb_cont=True, neb_met=True):
+    def __init__(self, ssp,
+                 age=None, sfh=None, dust=None, metal_ind=None, f_esc=None,
+                 sfh_law=exponential, dust_model=Calzetti, neb_cont=True,
+                 neb_met=True):
         """
             
         Parameters
@@ -118,34 +119,34 @@ class CSP(object):
         
         """ Build composite stellar population SED(s) from input SSP models
             
-        Parameters
-        ----------
-            ssp : SSP class
-            
-            age : '~astropy.units.Quantity' array (with units of time)
-                Desired stellar population age(s) since the onset of
-                star-formation
-            sfh :  array of float or '~astropy.units.Quantity',
-                Star-formation history parameter/exponent
-            dust : array of floats,
-                Strength of dust extinction in Av
-            metal_ind : float or float array,
-                Metallicity or metallicity range of stellar population
-                relative to solar metallicity (Z/Z_sol), min and max
-                allowed values set by range of input metallicities in 'ssp' 
-                class
-            f_esc : float or array of float,
-                Escape fraction(s) of nebular emission component
-            sfh_law : '~smpy.sfh' or user defined function,
-                Star-formation history parametrisation for composite
-                stellar population.
-            dust_model : '~smpy.dust' or user defined function,
-                Dust extinction or attenuation law parametrisation
-            neb_cont : boolean, default = True
-                Include continuum emission component in nebular emission
-                model
-            neb_met : boolean, default = True
-                Include metal line component in nebular emission model
+            Parameters
+            ----------
+                ssp :
+                
+                age : '~astropy.units.Quantity' array (with units of time)
+                    Desired stellar population age(s) since the onset of
+                    star-formation
+                sfh :  array of float or '~astropy.units.Quantity',
+                    Star-formation history parameter/exponent
+                dust : array of floats,
+                    Strength of dust extinction in Av
+                metal_ind : float or float array,
+                    Metallicity or metallicity range of stellar population
+                    relative to solar metallicity (Z/Z_sol), min and max
+                    allowed values set by range of input metallicities in 'ssp' 
+                    class
+                f_esc : float or array of float,
+                    Escape fraction(s) of nebular emission component
+                sfh_law : '~smpy.sfh' or user defined function,
+                    Star-formation history parametrisation for composite
+                    stellar population.
+                dust_model : '~smpy.dust' or user defined function,
+                    Dust extinction or attenuation law parametrisation
+                neb_cont : boolean, default = True
+                    Include continuum emission component in nebular emission
+                    model
+                neb_met : boolean, default = True
+                    Include metal line component in nebular emission model
             
             Returns
             -------
@@ -233,7 +234,7 @@ class CSP(object):
                              np.log10(self.metallicities))
         self.grid = zip(mi.flatten(), ti.flatten())
         
-        tri_grid = spatial.Delaunay(self.grid)
+        tri_grid = Delaunay(self.grid)
         
         # Make cube of interpolated age and SFHs.
         # Uses array slicing and vectorisation to minimise
@@ -381,16 +382,16 @@ class CSP(object):
     def calc_lyman(wave, seds):
         """ Calculate total Lyman continuum photons for an SED
             
-        Semi-pythonic version of the fortran routine in BC03 code,
-        allows flexible input array shapes provided wavelength axis
-        is the last one.
-        
-        Parameters
-        ----------
-    
-        wave : array of floats,
-            Wavelength array
-        seds :
+            Semi-pythonic version of the fortran routine in BC03 code,
+            allows flexible input array shapes provided wavelength axis
+            is the last one.
+            
+            Parameters
+            ----------
+            
+            wave : array of floats,
+                Wavelength array
+            seds :
         
         """
         wly = 912. * u.AA
@@ -526,31 +527,31 @@ class Filter(object):
 
 class FileFilter(Filter):
     """
-    
-    Attributes
-    ----------
-    
-    Methods
-    -------
         
-        __init__ :
-
+        Attributes
+        ----------
+        
+        Methods
+        -------
+            
+            __init__ :
+    
     
     """
     def __init__(self, filepath, maxbins=500):
         """ Build filter class from ascii file
             
-        Parameters
-        ----------
-        filepath : str
-            Filename (including relative/absolute path) for filter file.
-            Should be readable as ascii file and contain two columns,
-            where column one is wavelength in angstroms and columns two
-            is the filter response.
-        maxbins : int
-            Maximum number of wavelength bins for filter. Large (>1000)
-            numbers of wavelength bins result in slower calculations for
-            minimal gain in accuracy.
+            Parameters
+            ----------
+            filepath : str
+                Filename (including relative/absolute path) for filter file.
+                Should be readable as ascii file and contain two columns,
+                where column one is wavelength in angstroms and columns two
+                is the filter response.
+            maxbins : int
+                Maximum number of wavelength bins for filter. Large (>1000)
+                numbers of wavelength bins result in slower calculations for
+                minimal gain in accuracy.
         
         """
         super(FileFilter, self).__init__()
@@ -588,18 +589,18 @@ class FileFilter(Filter):
 
 class TophatFilter(Filter):
     def __init__(self, centre, width, steps=200):
-        """ Build filter class for an arbitrary tophat function
-        
-        Parameters
-        ----------
-        centre : int or float
-            Central wavelength for tophat function in Angstroms
-        width : int or float
-            Width of tophat function in Angstroms
-        steps : int or float
-            Number of wavelength steps to use. Should be a relatively fine
-            grid as SED interpolated to wavelength grid of the filter during
-            convolution.
+        """ Build filter class for any arbitrary tophat function
+            
+            Parameters
+            ----------
+            centre : int or float
+                Central wavelength for tophat function in Angstroms
+            width : int or float
+                Width of tophat function in Angstroms
+            steps : int or float
+                Number of wavelength steps to use. Should be a relatively fine
+                grid as SED interpolated to wavelength grid of the filter during
+                convolution.
         
         """
         super(TophatFilter, self).__init__()
@@ -611,7 +612,7 @@ class TophatFilter(Filter):
         resp_upper = self.centre + (self.width * 0.5)
         resp_lower = self.centre - (self.width * 0.5)
         
-        self.wave = np.linspace(lower.value, upper.value, steps) * u.angstrom
+        self.wave = np.linspace(lower, upper, steps)
         self.response = np.zeros_like(self.wave.value)
         
         tophat = (self.wave >= resp_lower) * (self.wave < resp_upper)
@@ -630,24 +631,11 @@ class TophatFilter(Filter):
 class LoadEAZYFilters(object):
     """ Load EAZY filter file into easily accessible library
         
-    Attributes
-    ----------
-    path : str,
-        Path of EAZY filter file
+        Attributes
+        ----------
         
-    filters : list
-        
-    filternames : list
-        Filter names as parsed from the EAZY filter set
-
-    Methods
-    -------
-    
-    Example
-    -------
-    
-        >>> eazy = LoadEAZYFilters('FILTERS.V8.RES')
-        >>> sdss_bands = eazy.search('SDSS/')
+        Methods
+        -------
     
     """
     def __init__(self, path):
@@ -737,40 +725,6 @@ class LoadEAZYFilters(object):
 
 
 class FilterSet:
-    """ Class to build sets of filters for mock observations
-    
-    Filter sets can be built from any combination of different
-    types of filter. 
-    
-    Attributes
-    ----------
-        directory : str,
-            Path to filter files
-        filters : list
-    
-    Methods
-    -------
-        __init__ : Initiate filter object. If called with
-            a valid glob string w
-    
-        addFileFilter : Add filter from file to filter set
-        
-        addTophatFilter :  Add tophat filter to filter set
-    
-        addEAZYFilter : Add filter from EAZY library to filter set
-        
-        
-    Examples
-    --------
-        >>> filters = FilterSet()
-        >>> filters.addTophatFilter(centre=1500*u.AA, width=150*u.AA)
-        
-        Or
-        
-        >>> filters = FilterSet('data/Filter*.txt')
-    
-    
-    """
     def __init__(self, path=None):
         self.directory = path
         self.filters = []
@@ -834,11 +788,9 @@ class Observe(object):
         
         Attributes
         ----------
-        fluxes : array
-            Apparent fluxes of CSP models observed through 'Filters' at 
+        fluxes : Apparent fluxes of CSP models observed through 'Filters' at
             the desired redshifts
-        AB : array
-            Apparent AB magnitudes of CSP models observed through 'Filters' at
+        AB : Apparent AB magnitudes of CSP models observed through 'Filters' at
             the desired redshifts
         
         
@@ -895,24 +847,24 @@ class Observe(object):
     def calcflux(self, SED, filt, z, dl, units):
         """ Convolve synthetic SEDs with a given filter
             
-        Arguments
-        ---------
-            SED : numpy.array
-                Grid of synthetic spectra
-            filt : '~smpy.Filter' class
-                Filter through which to convolve SED grid
-            z : float
-                Redshift at which models are to be observed
-            dl : '~astropy.units.Quantity'
-                Luminosity distance corresponding to redshift(z) in given
-                cosmology.
-            units : '~astropy.units'
-                Desired output flux units (in spectral flux density)
-        
-        Returns
-        -------
-            Flux : '~astropy.units.Quantity'
-                Spectral flux density, with exact units as given by 'units'
+            Arguments
+            ---------
+                SED : numpy.array
+                    Grid of synthetic spectra
+                filt : '~smpy.Filter' class
+                    Filter through which to convolve SED grid
+                z : float
+                    Redshift at which models are to be observed
+                dl : '~astropy.units.Quantity'
+                    Luminosity distance corresponding to redshift(z) in given
+                    cosmology.
+                units : '~astropy.units'
+                    Desired output flux units (in spectral flux density)
+            
+            Returns
+            -------
+                Flux : '~astropy.units.Quantity'
+                    Spectral flux density, with exact units as given by 'units'
         
         """
         # Find SED wavelength entries within filter range
@@ -965,32 +917,36 @@ class ObserveToFile(object):
     def __init__(self):
         self.test = 1.
     
-    def build(self, SED, Filters, redshift, savepath,
+    def build(self, SED, Filters, redshift, savepath, v=1,
               force_age=True, madau=True, units=u.uJy,
               verbose=False, clobber=True):
-        """ 
+        """
             
-        Parameters
-        ----------
-        SED : '~smpy.CSP' object
-            Built CSP model set
-        Filters : '~smpy.FilterSet' object
-            Filter set through which to observe the set of models included
-            in SED object
-        redshift : array
-            Redshift(s) at which to observe SED set
-        savepath : str
-            Filename for hdf5 save file
-        force_age : boolean
-            Require age of the stellar population to be younger than
-            the age of the Universe at the desired redshift.
-        madau : boolean
-            Apply IGM absorption following Madau 1999 prescription
-        units : '~astropy.units.Quantity'
-            Desired output units, must be in spectral flux density
-            equivalent
-        verbose : boolean
-            Add additional terminal outputs if true
+            Parameters
+            ----------
+            SED : '~smpy.CSP' object
+                Built
+            Filters : '~smpy.FilterSet' object
+                Filter set through which to observe the set of models included
+                in SED object
+            
+            redshift :
+            
+            savepath : str,
+                Filename for hdf5 save file
+            
+            v :
+            
+            force_age : boolean
+                Require age of the stellar population to be younger than
+                the age of the Universe at the desired redshift.
+            madau : boolean
+                Apply IGM absorption following Madau 1999 prescription
+            units : '~astropy.units.Quantity'
+                Desired output units, must be in spectral flux density
+                equivalent
+            verbose : boolean
+                Add additional terminal outputs if true
         
         """
         self.F = Filters
@@ -1140,24 +1096,24 @@ class ObserveToFile(object):
     def calcflux(self, SED, wf, tp, z, dl, units):
         """ Convolve synthetic SEDs with a given filter
             
-        Arguments
-        ---------
-            SED : numpy.array
-                Grid of synthetic spectra
-            filt : '~smpy.Filter' class
-                Filter through which to convolve SED grid
-            z : float
-                Redshift at which models are to be observed
-            dl : '~astropy.units.Quantity'
-                Luminosity distance corresponding to redshift(z) in 
-                given cosmology.
-            units : '~astropy.units'
-                Desired output flux units (in spectral flux density)
-        
-        Returns
-        -------
-            Flux : '~astropy.units.Quantity'
-                Spectral flux density, with exact units as given by 'units'
+            Arguments
+            ---------
+                SED : numpy.array
+                    Grid of synthetic spectra
+                filt : '~smpy.Filter' class
+                    Filter through which to convolve SED grid
+                z : float
+                    Redshift at which models are to be observed
+                dl : '~astropy.units.Quantity'
+                    Luminosity distance corresponding to redshift(z) in 
+                    given cosmology.
+                units : '~astropy.units'
+                    Desired output flux units (in spectral flux density)
+            
+            Returns
+            -------
+                Flux : '~astropy.units.Quantity'
+                    Spectral flux density, with exact units as given by 'units'
         
         """
         

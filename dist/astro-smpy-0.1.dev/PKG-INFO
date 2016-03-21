@@ -1,0 +1,45 @@
+Metadata-Version: 1.1
+Name: astro-smpy
+Version: 0.1.dev
+Summary: SMpy: Flexible stellar pops., masses and mock observations with python
+Home-page: http://github.com/dunkenj/smpy
+Author: Kenneth Duncan
+Author-email: duncan@strw.leidenuniv.nl
+License: MIT
+Description: 
+        Stellar populations and Masses with Python
+        ==========================================
+        
+        This package contains Python software designed for building and processing composite stellar populations in a simple but flexible manner. It allows for easy synthetic photometry to be produced for single models or large suites of models.
+        
+        The code makes use of the `Astropy <https://astropy.readthedocs.org>`_ module throughout and therefore allows for easy conversion of physical units and a wide range of allowed cosmologies.
+        
+        Currently supported simple stellar population models are:
+        
+        1. `Bruzual & Charlot 2003 <http://www.bruzual.org/bc03/Updated_version_2012/>`_
+        2. `BPASS V1 & V2 <http://bpass.auckland.ac.nz/>`_ 
+        
+        
+        License
+        =======
+        ``SMpy`` is licensed under the terms of the MIT license. See the file
+        "LICENSE" for information on the history of this software, terms & conditions
+        for usage, and a DISCLAIMER OF ALL WARRANTIES.
+        
+        All trademarks referenced herein are property of their respective holders.
+        
+        Copyright (c) 2015--, Kenneth Duncan
+        
+Platform: OS Independent
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering
+Requires: numpy
+Requires: scipy
+Requires: h5py
+Requires: astropy
+Requires: six

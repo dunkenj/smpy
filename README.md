@@ -2,7 +2,7 @@
 
 This module is designed for building and processing composite stellar populations in a simple but flexible manner. It allows for easy synthetic photometry to be produced for single models or large suites of models.
 
-The code makes use of the `Astropy <https://astropy.readthedocs.org>`_ module throughout and therefore allows for easy conversion of physical units and a wide range of allowed cosmologies.
+The code makes use of the [Astropy](https://astropy.readthedocs.org) module throughout and therefore allows for easy conversion of physical units and a wide range of allowed cosmologies.
 
 Currently supported simple stellar population models are:
 
