@@ -236,7 +236,7 @@ class BC(SSP):
             metallicities[i] = float(re.split("Z=?", metal)[1])
         self.metallicities = metallicities / 0.02  # Normalise to solar metallicity
         self.ages = np.array(self.ta_arr[0]) * u.yr
-        self.ages[0] = (10 * u.yr)  # Make non-zero but insignificant
+        self.ages[0] = (10000 * u.yr)  # Make non-zero but insignificant
         self.wave_arr = np.array(self.wave_arr) * u.AA
         sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :]
         self.sed_arr = sed_arr * (u.Lsun / u.AA)

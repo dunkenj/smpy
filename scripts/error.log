@@ -1,4 +1,2 @@
 //anaconda/lib/python2.7/site-packages/astropy/units/quantity.py:732: FutureWarning: comparison to `None` will result in an elementwise object comparison in the future.
   return super(Quantity, self).__eq__(other)
-//anaconda/lib/python2.7/site-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
-  if self._edgecolors == str('face'):
