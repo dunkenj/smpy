@@ -12,14 +12,14 @@ from astropy.cosmology import FlatLambdaCDM
 
 cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 
-bc03 = B.BC('../smpy/data/ssp/bc03/chab/lr/bc2003_lr_m*')
+bc03 = B.BC('data/ssp/bc03/chab/lr/bc2003_lr_m*')
 models = S.CSP(bc03)
 
 
-ages = np.logspace(7, 10, 5) * u.yr
+ages = np.logspace(7, 10, 20) * u.yr
 sfhs = np.array([0.25, 0.5, 1., 2.5,  5., 7.5, 10.])*u.Gyr
-metallicities = [1.] 
-dusts = np.linspace(0.,2.,10)
+metallicities = [0.2, 1.] 
+dusts = np.linspace(0.,2.,20)
 fesc = [0., 1.]
 
 models.build(ages, sfhs, dusts, metallicities, fesc=fesc, verbose=True)
@@ -30,9 +30,9 @@ models = cPickle.load(file('candels.goodss.csp.pickle', 'rb'))
 print('models_loaded')
 
 
-filters = S.FilterSet('data/Filters/Filter*.txt')
+filters = S.FilterSet('data/Filters/GS/Filter*.txt')
 
-zrange = np.linspace(0, 9, 10)
+zrange = np.linspace(0, 9, 450)
 
 #Obs = S.Observe(models, filters, zrange)
 Obs2 = S.ObserveToFile()

@@ -1,2 +1,6 @@
-//anaconda/lib/python2.7/site-packages/astropy/units/quantity.py:732: FutureWarning: comparison to `None` will result in an elementwise object comparison in the future.
-  return super(Quantity, self).__eq__(other)
+fitting.py:210: RuntimeWarning: invalid value encountered in divide
+  likelihood /= likelihood.sum()
+//anaconda/lib/python2.7/site-packages/numpy/lib/function_base.py:637: RuntimeWarning: invalid value encountered in true_divide
+  return n/db/n.sum(), bins
+fitting.py:520: RuntimeWarning: invalid value encountered in divide
+  weighted_quantiles /= np.sum(sample_weight)
