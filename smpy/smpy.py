@@ -342,7 +342,7 @@ class CSP(object):
                                                       self.wave, 
                                                       Av * neb_dust_weight)
                         
-                        combined_sed = self.sed_sfh
+                        combined_sed = np.copy(self.sed_sfh)
                         
                         # Absorbed LyC photons
                         combined_sed[:, :, self.wave <= 912 * u.AA] *= fesc
