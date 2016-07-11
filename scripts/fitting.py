@@ -225,8 +225,8 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                                                        (n_metal, n_tg, 
                                                        n_tau, n_tauv, n_fesc)) 
 
-            Masses = np.abs(np.log10(scale*flux_corr))
-            SFRs = np.abs(np.log10(scale * SFR * flux_corr))
+            Masses = np.log10(np.abs(scale*flux_corr))
+            SFRs = np.log10(np.abs(scale * SFR * flux_corr))
         
             mass_hist = np.histogram(Masses.flatten(),
                                      range = (log_mass_min, log_mass_max),
@@ -240,8 +240,8 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                                      weights = likelihood.flatten(),
                                      density = True)
         
-            Bestfit_Mass = np.abs(np.log10(scale[mi, tgi, ti, tvi, fi]*flux_corr))
-            Bestfit_SFR = np.abs(np.log10(scale[mi, tgi, ti, tvi, fi] * 
+            Bestfit_Mass = np.log10(np.abs(scale[mi, tgi, ti, tvi, fi]*flux_corr))
+            Bestfit_SFR = np.log10(np.abs(scale[mi, tgi, ti, tvi, fi] * 
                                    SFR[mi, tgi, ti, tvi, fi]*flux_corr))
         
             if np.isnan(Bestfit_Mass) or np.isinf(chimin):
@@ -702,11 +702,11 @@ if __name__ == '__main__':
              'Nfilts']
              
     units = [None, None, None, None,
-             u.Msun, u.Msun/u.yr, None,
+             u.Msun, u.dex(u.Msun/u.yr), None,
              u.Gyr, None, None, 
              None, None,
              u.Msun, u.Msun, u.Msun,
-             u.Msun/u.yr, u.Msun/u.yr, u.Msun/u.yr,
+             u.dex(u.Msun/u.yr), u.dex(u.Msun/u.yr), u.dex(u.Msun/u.yr),
              None]
              
     types = ['i4', 'i4', 'f4', 'f4',
