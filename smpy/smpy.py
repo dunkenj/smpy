@@ -1114,6 +1114,9 @@ class ObserveToFile(object):
                 f[dataset].dims[5].attach_scale(f['dust'])
                 f[dataset].dims[6].attach_scale(f['fesc'])
             
+            f.create_dataset('wl', data=self.wl)
+            f.create_dataset('fwhm', data=self.fwhm)
+            
             # Store all CSP attributes in case they are needed later
             for attribute in SED.__dict__.keys():
                 if attribute == 'SED':
