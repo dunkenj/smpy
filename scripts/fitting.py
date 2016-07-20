@@ -42,7 +42,7 @@ else:
 
 # Fitting function definition for later use by Processess
 
-def galaxyFit(inputQueue, printQueue, printlock):
+def galaxyFitOld(inputQueue, printQueue, printlock):
     for gal in iter(inputQueue.get, 'STOP'):
         j = np.argmin(np.abs(z-zobs[gal])) # Find closest model redshift
 
@@ -151,7 +151,7 @@ def galaxyFit(inputQueue, printQueue, printlock):
         printlock.release()
         printQueue.put(output_string)
 
-def galaxyFit2(inputQueue, printQueue, printlock):
+def galaxyFit(inputQueue, printQueue, printlock):
     for gal in iter(inputQueue.get, 'STOP'):
         
         
@@ -185,6 +185,26 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                 output = output + ' \n'
             printQueue.put(output_string)
             continue
+        
+        if params.exclude_phot_outliers:
+            color_a = np.zeros(len(I))
+            color_b = np.zeros(len(I))
+            color_a[1:] = -2.5*np.log10(flux_obs[I][:-1]/flux_obs[I][1:])
+            color_b[:-1] = -2.5*np.log10(flux_obs[I][:-1]/flux_obs[I][1:])
+            
+            # Identify anomalous datapoints by extreme red/blue colours
+            # Or strong jumps in colour
+            
+            drop = np.logical_and(color_a < -1., color_b > 1.)
+            spike = np.logical_and(color_a > 2, color_b < -2.)
+        
+            criteria1 = np.logical_or(drop, spike)  
+            criteria2 = np.logical_or(color_a < -5, color_b > 5)
+            
+            anomalous = np.logical_or(criteria1,criteria2)
+            anomalous_bands = I[anomalous]
+            
+            I = I[np.invert(anomalous)]
             
         flux_obs = flux_obs[I]                    # and exclude from fit
         flux_err = flux_err[I]
@@ -242,7 +262,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
         
             Bestfit_Mass = np.log10(np.abs(scale[mi, tgi, ti, tvi, fi]*flux_corr))
             Bestfit_SFR = np.log10(np.abs(scale[mi, tgi, ti, tvi, fi]) * 
-                                   SFR[mi, tgi, ti, tvi, fi]*flux_corr))
+                                   SFR[mi, tgi, ti, tvi, fi]*flux_corr)
         
             Bestfit_fluxes = (scale[mi, tgi, ti, tvi, fi] * 
                               f[j,:, mi, tgi, ti, tvi, fi] *
@@ -328,7 +348,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
             output = output + ' \n'
             
         printlock.release()
-        printQueue.put([output, mass_hist, sfr_hist, Bestfit_fluxes,
+        printQueue.put([gal, output, mass_hist, sfr_hist, Bestfit_fluxes,
                         [obs[gal, :], obs_err[gal, :]]])
 
 def galaxyFitMz(inputQueue, printQueue, printlock):
@@ -379,6 +399,26 @@ def galaxyFitMz(inputQueue, printQueue, printlock):
                 output = output + ' \n'
             printQueue.put(output_string)
             continue
+
+        if params.exclude_phot_outliers:
+            color_a = np.zeros(len(I))
+            color_b = np.zeros(len(I))
+            color_a[1:] = -2.5*np.log10(flux_obs[I][:-1]/flux_obs[I][1:])
+            color_b[:-1] = -2.5*np.log10(flux_obs[I][:-1]/flux_obs[I][1:])
+            
+            # Identify anomalous datapoints by extreme red/blue colours
+            # Or strong jumps in colour
+            
+            drop = np.logical_and(color_a < -1., color_b > 1.)
+            spike = np.logical_and(color_a > 2, color_b < -2.)
+        
+            criteria1 = np.logical_or(drop, spike)  
+            criteria2 = np.logical_or(color_a < -5, color_b > 5)
+            
+            anomalous = np.logical_or(criteria1,criteria2)
+            anomalous_bands = I[anomalous]
+            
+            I = I[np.invert(anomalous)]
 
         flux_obs = flux_obs[I]                    # and exclude from fit
         flux_err = flux_err[I]
@@ -440,7 +480,7 @@ def galaxyFitMz(inputQueue, printQueue, printlock):
                 
                 Bestfit_Mass = np.log10(np.abs(scale[mi, tgi, ti, tvi, fi]*flux_corr))
                 Bestfit_SFR = np.log10(np.abs(scale[mi, tgi, ti, tvi, fi]) * 
-                                       SFR[mi, tgi, ti, tvi, fi]*flux_corr))
+                                       SFR[mi, tgi, ti, tvi, fi]*flux_corr)
         
 
                 
@@ -509,10 +549,10 @@ def galaxyFitMz(inputQueue, printQueue, printlock):
         output = output_string.format(**output_values) + ' \n'
             
         printlock.release()
-        printQueue.put([output, 
-                        m_z_best, chi_z_best, sfr_z_best,
-                        m_z_l68, m_z_median, m_z_u68,
-                        sfr_z_l68, sfr_z_median, sfr_z_u68])
+        printQueue.put([gal, output, 
+                        [m_z_best, sfr_z_best, chi_z_best],
+                        [m_z_l68, m_z_median, m_z_u68]
+                        [sfr_z_l68, sfr_z_median, sfr_z_u68]])
 
 def getObservations(inputpath):
     input_data = Table.read(inputpath,format=input_format)
@@ -714,15 +754,34 @@ if __name__ == '__main__':
         output_hdf = h5py.File(output_hdf_path, 'w')
         output_hdf.create_dataset("mass_pdf", (len(ID), 120), dtype="f")
         output_hdf.create_dataset("sfr_pdf", (len(ID), 140), dtype="f")
-        outout_hdf.create_dataset("fit_flux", (len(ID), f.shape[1]), dtype="f")
-        outout_hdf.create_dataset("obs_flux", (len(ID), f.shape[1]), dtype="f")
-        outout_hdf.create_dataset("obs_fluxerr", (len(ID), f.shape[1]),
+        output_hdf.create_dataset("fit_flux", (len(ID), f.shape[1]), dtype="f")
+        output_hdf.create_dataset("obs_flux", (len(ID), f.shape[1]), dtype="f")
+        output_hdf.create_dataset("obs_fluxerr", (len(ID), f.shape[1]),
                                   dtype="f")
         output_hdf.create_dataset("lambda_filt", data = models["wl"])
         output_hdf.create_dataset("fwhm_filt", data = models["fwhm"])
 
-        fitFunction = galaxyFit2
+        fitFunction = galaxyFit
+    
+    elif calc_mode == 'Mz':
+        output_hd = h5py.File(output_hdf_path, 'w')
         
+        output_hdf.create_dataset("m_z_best", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("sfr_z_best", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("chi_z_best", (len(ID), len(z)), dtype="f")
+
+        
+        output_hdf.create_dataset("m_z_median", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("m_z_l68", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("m_z_u68", (len(ID), len(z)), dtype="f")
+
+        output_hdf.create_dataset("sfr_z_median", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("sfr_z_u68", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("sfr_z_l68", (len(ID), len(z)), dtype="f")
+        
+        output_hdf.create_dataset("z", data=z)
+        
+        fitFunction == galaxyFitMz
     else:
         fitFunction = galaxyFit
     
@@ -737,22 +796,41 @@ if __name__ == '__main__':
 
     if calc_mode == 'hist':
         for i, gal in enumerate(ID):
-            printout, mass_hist, sfr_hist, fit_flux, obs_flux = printQueue.get()
+            j, out, mass_hist, sfr_hist, fit_flux, obs_flux = printQueue.get()
             
             if i == 0:
                 mass_centers = 0.5*(mass_hist[1][1:] + mass_hist[1][:-1])
                 sfr_centers = 0.5*(sfr_hist[1][1:] + sfr_hist[1][:-1])
                 
                 output_hdf.create_dataset("mass_bins", data = mass_centers)
-                output_hdf.create_dataset("sfr_bins", data = sfr_centers)            
-            output_hdf["mass_pdf"][i] = mass_hist[0]
-            output_hdf["sfr_pdf"][i] = sfr_hist[0]
-            output_hdf["fit_flux"][i] = fit_flux
-            output_hdf["obs_flux"][i] = obs_flux[0]
-            output_hdf["obs_fluxerr"][i] = obs_flux[1]
+                output_hdf.create_dataset("sfr_bins", data = sfr_centers)       
             
-            temp_file.write( printout )
-        #tau_array.tofile(tau_file)
+            output_hdf["mass_pdf"][j] = mass_hist[0]
+            output_hdf["sfr_pdf"][j] = sfr_hist[0]
+            output_hdf["fit_flux"][j] = fit_flux
+            output_hdf["obs_flux"][j] = obs_flux[0]
+            output_hdf["obs_fluxerr"][j] = obs_flux[1]
+            
+            temp_file.write( out )
+            
+    elif calc_mode == 'Mz':
+        for i, gal in enumerate(ID):
+            j, out, pz_best, mz_median, sfrz_median = printQueue.get()
+            
+            output_hdf["m_z_best"][j,:] = pz_best[0]
+            output_hdf["sfr_z_best"][j,:] = pz_best[1]
+            output_hdf["chi_z_best"][j,:] = pz_best[2]
+
+            output_hdf["m_z_l68"][j,:] = mz_median[0]
+            output_hdf["m_z_median"][j,:] = mz_median[1]
+            output_hdf["m_z_u68"][j,:] = mz_median[2]
+
+            output_hdf["sfr_z_l68"][j,:] = sfrz_median[0]
+            output_hdf["sfr_z_median"][j,:] = sfrz_median[1]
+            output_hdf["sfr_z_u68"][j,:] = sfrz_median[2]
+                        
+            temp_file.write( out )
+            
     else:
         for i, gal in enumerate(ID):
             printout = printQueue.get()
