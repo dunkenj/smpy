@@ -1,0 +1,22 @@
+# In your .cshrc or .login file, define bc03 as the directory which
+# contains the GALAXEV programs (setenv bc03 /full_path_to_GALAXEV_directory)
+#
+setenv FILTERS            $bc03/FILTERBIN.RES
+setenv A0VSED             $bc03/A0V_KURUCZ_92.SED
+setenv SUNSED             $bc03/SUN_KURUCZ_92.SED
+setenv RF_COLORS_ARRAYS   $bc03/RF_COLORS.filters
+setenv STILTS		  $bc97/stilts
+####################################################
+alias  add 		  'csh $bc03/add_bursts.sh'
+alias  csp 		  'csh $bc03/csp_galaxev.sh'
+alias  bcsp 		  'csh $bc03/big_csp_galaxev.sh'
+alias  vdisp 		  'csh $bc03/vel_disp.sh'
+alias  cmev  		  'csh $bc03/cm_evolution.sh'
+alias  fxev  		  'csh $bc03/flux_evolution.sh'
+alias  mmev  		  'csh $bc03/mm_evolution.sh'
+alias  acmev  		  'csh $bc03/acm_evolution.sh'
+alias  dgr  		  'csh $bc03/downgrade_resolution.sh'
+alias  ised2fits  	  'csh $bc03/ised2fits.sh'
+alias  gpl   		  '$bc03/galaxevpl'
+alias  zmag   		  '$bc03/zmag'
+alias  intrp   		  '$bc03/interpolate_ised'

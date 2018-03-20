@@ -1,0 +1,8 @@
+#
+cd $bc03
+./add_filters << !
+filterfrm.res
+n
+y
+FILTERBIN.RES
+!

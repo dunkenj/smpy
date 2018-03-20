@@ -1,0 +1,5 @@
+c	File jb.dec
+
+c	Declares parameter jb used in various programs and routines
+
+        parameter (jb = 100)

@@ -1,0 +1,4 @@
+c	Array declaration for IMF data
+	parameter (imf=10)
+	real lm,mnorm,ml,mu
+	COMMON /SSP_4/ iseg,xx(imf),lm(imf),um(imf),baux(imf),cc(imf),cn(imf),totm,totn,avs,mnorm,ml,mu,buff8

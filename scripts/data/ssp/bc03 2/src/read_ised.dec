@@ -1,0 +1,7 @@
+c	File: read_ised.dec
+
+c	Array and common declaration for SUBROUTINE READSED.
+c	imw = maximum number of wavelength points (defined in SSP_0.dec')
+	include 'SSP_0.dec'
+	parameter (maxt=2000)
+	Common /sed/ ks,ta(maxt),iw,w(imw),f(imw,maxt)

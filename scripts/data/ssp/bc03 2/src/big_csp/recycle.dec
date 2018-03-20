@@ -1,0 +1,1 @@
+	common /totgas/ lgas,epsilon,to(900),so(900)

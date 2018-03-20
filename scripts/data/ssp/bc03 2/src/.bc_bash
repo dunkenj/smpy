@@ -1,0 +1,23 @@
+# In your .profile, .bash_profile or .bashrc  file, define bc03 as the directory which
+# contains the GALAXEV programs, e.g.:
+#   export bc03="/full_path_to_GALAXEV_directory"
+export bc03="/Users/bruzual/bc99lx/bc03/src/"
+# Then read this file into your environment using the command:
+# source $bc03/.bc_bash
+export FILTERS="$bc03/FILTERBIN.RES"
+export A0VSED="$bc03/A0V_KURUCZ_92.SED"
+export SUNSED="$bc03/SUN_KURUCZ_92.SED"
+export RF_COLORS_ARRAYS="$bc03/RF_COLORS.filters"
+####################################################
+alias  add='bash $bc03/add_bursts.bash'
+alias  csp='bash $bc03/csp_galaxev.bash'
+alias  bcsp='bash $bc03/big_csp_galaxev.bash'
+alias  vdisp='bash $bc03/vel_disp.bash'
+alias  cmev='bash $bc03/cm_evolution.bash'
+alias  dgr='bash $bc03/downgrade_resolution.bash'
+alias  fxev='bash $bc03/flux_evolution.bash'
+alias  mmev='bash $bc03/mm_evolution.bash'
+alias  acmev='bash $bc03/acm_evolution.bash'
+alias  gpl='$bc03/galaxevpl'
+alias  zmag='$bc03/zmag'
+alias  intrp='$bc03/interpolate_ised'

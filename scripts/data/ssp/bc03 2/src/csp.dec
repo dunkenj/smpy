@@ -1,0 +1,26 @@
+!	File csp.dec
+
+!	Array declarations for various programs
+
+!	Maximum number of wavelength points
+	include 'SSP_0.dec'
+
+!	IMF data
+	include 'SSP_4.dec'
+
+!	SFR and burst strength data
+	include 'SSP_13.dec'
+
+!	User SFR
+!       parameter (nsfrp=5000)
+        parameter (nsfrp=20000)
+	common /usr_sfrate/ isfrc,time(nsfrp),usr_sfr(nsfrp),jadd,tadd(nsfrp),buff81,buff82
+
+!	Specific variables
+!	jb defined in calling program
+        parameter (its=260,jts=jb*its)
+	common /csp/ nsteps,fl(imw,0:jts),bflx(0:jts),evfl(0:jts),snbr(0:jts),
+     &	pnbr(0:jts),bhtn(0:jts),sntn(0:jts),wdtn(0:jts),rmtm(0:jts),
+     &	toff(0:jts),bolms(0:jts),strm(0:jts),gasms(0:jts),galms(0:jts),tb(0:jts),
+     &  rml(0:jts),rdp(0:jts)
+

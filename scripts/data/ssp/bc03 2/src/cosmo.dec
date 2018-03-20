@@ -1,0 +1,4 @@
+c	FILE cosmo.dec
+
+	common /cosmol/ h,omega,omega_lambda,q,clambda,tg,ttg,tu,zf
+

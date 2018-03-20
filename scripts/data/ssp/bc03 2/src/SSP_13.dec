@@ -1,0 +1,2 @@
+	character*80 id,name1,name2
+	COMMON /SSP_13/ io,tau,tau1,tau2,tauj,con2,tauf,tsng,ampr,ampl,taui,tdur,isingle,nfinal,last,id,t0(2),s(2),name1,name2,tcut

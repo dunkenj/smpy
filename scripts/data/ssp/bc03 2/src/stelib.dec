@@ -1,0 +1,17 @@
+c	File: stelib.dec
+
+c	Array declarations for routines that use the STELIB, MILES or INDOUS atlas
+
+c	parameter (mwix=9000,mfix=110)
+c	parameter (mwix=16000,mfix=450)
+c	parameter (mwix=16000,mfix=650)
+c	parameter (mwix=9000,mfix=3250)
+c	parameter (mwix=16000,mfix=3250)
+	parameter (mwix=24000,mfix=4600)
+        logical galaxev,stelib,cb07,basti
+        character op*4,namestelib(mfix)*70,diewssvl*128
+	integer hires
+	integer grp(mfix),iq(mfix)
+        real wix(mwix),fix(mwix,mfix),tq(mfix),gq(mfix),fq(mfix)
+	common /stelib/ nwix,wix,nfix,fix,iq,tq,gq,fq,grp,namestelib,galaxev,stelib,cb07,basti,
+     &			op,kfit,hires,massloss,diewssvl,ngsl,asm
