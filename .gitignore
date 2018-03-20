@@ -16,6 +16,7 @@ bpass_tests.py
 misc_testing/*
 trunc_exponential.py
 *.hdf
+*.hkl
 *.pickle
 dust_tests.py
 

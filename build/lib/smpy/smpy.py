@@ -20,6 +20,7 @@ import data
 from .dust import Calzetti
 from .sfh import exponential
 from .misc import tau_madau
+import nebular
 
 cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
@@ -94,11 +95,17 @@ class CSP(object):
 
         # Find closest match for each tg value in ta - set tg to these values
 
-        nebular = np.loadtxt(data_path+'/nebular_emission.dat', skiprows=1)
-        self.neb_cont = nebular[:, 1]
-        self.neb_hlines = nebular[:, 2]
-        self.neb_metal = nebular[:, 3:]
-        self.neb_wave = nebular[:, 0]
+
+
+        nebular_old = np.loadtxt(data_path+'/nebular_emission.dat', skiprows=1)
+        self.neb_cont = nebular_old[:, 1]
+
+        self.neb_lines, self.neb_metal = nebular.inoue_lines(self.wave)
+        #self.neb_cont = nebular.continuum(sek)
+
+        self.neb_hlines = nebular_old[:, 2]
+        self.neb_metal = nebular_old[:, 3:]
+        self.neb_wave = nebular_old[:, 0]
 
         if None not in (age, sfh, dust, metal_ind):
             if f_esc == None:
@@ -175,6 +182,7 @@ class CSP(object):
                     len(self.tau), len(self.tauv),
                     len(self.fesc), len(self.wave)]
         self.SED = np.zeros(outshape) * self.sed_arr.unit
+        self.SED0 = np.zeros(outshape) * self.sed_arr.unit
         self.STR = np.zeros(self.SED.shape[: -1])
         self.SFR = np.zeros(self.SED.shape[: -1]) * u.solMass / u.yr
 
@@ -347,6 +355,10 @@ class CSP(object):
                         # Absorbed LyC photons
                         combined_sed[:, :, self.wave <= 912 * u.AA] *= fesc
 
+                        self.SED0[:, idG, idT, idA, idf, :] =  \
+                            np.trapz(self.sfh_weights[:, :, None] * \
+                            combined_sed, self.ta_sfh[:, :, None], axis=-2)
+
                         # Resulting nebular emission
                         combined_sed *= self.Att # Dust attenuated combined SED
                         combined_sed += (neb_att * ((1 - fesc) *
@@ -373,7 +385,7 @@ class CSP(object):
         self.SED = self.SED / self.STR[:, :, :, :, :, None]
         self.Ms = np.ones_like(self.SFR.value) * u.Msun
 
-
+        self.Nly0 = self.calc_lyman(self.wave, self.SED0).cgs
         self.Nly = self.calc_lyman(self.wave, self.SED).cgs
 
 
@@ -423,7 +435,7 @@ class CSP(object):
             new.SFR += other.SFR
             new.Ms += other.Ms
             new.Nly = self.Nly + other.Nly
-
+            new.Nly0 = self.Nly0 + other.Nly0
         assert isinstance(new, CSP)
         return new
 
@@ -435,6 +447,7 @@ class CSP(object):
             new.SFR += other.SFR
             new.Ms += other.Ms
             new.Nly = self.Nly + other.Nly
+            new.Nly0 = self.Nly0 + other.Nly0
 
         assert isinstance(new, CSP)
         return new
@@ -446,9 +459,12 @@ class CSP(object):
         new.Ms *= other
         if other == 0.:
             new.Nly = 0.
+            new.Nly0 = 0.
         else:
-            new.Nly /= other
+            new.Nly *= other
+            new.Nly0 *= other
             new.Nly = np.maximum(new.Nly, 0)
+            new.Nly0 = np.maximum(new.Nly0, 0)
         return new
 
     def __imul__(self, other):
@@ -458,9 +474,14 @@ class CSP(object):
         new.Ms *= other
         if other == 0.:
             new.Nly = 0.
+            new.Nly0 = 0.
+
         else:
-            new.Nly /= other
+            new.Nly *= other
+            new.Nly0 *= other
             new.Nly = np.maximum(new.Nly, 0)
+            new.Nly0 = np.maximum(new.Nly0, 0)
+
         return new
 
     def __div__(self, other):
@@ -470,9 +491,12 @@ class CSP(object):
         new.Ms /= other
         if other == 0.:
             new.Nly = 0.
+            new.Nly0 = 0.
         else:
             new.Nly /= other
+            new.Nly0 /= other
             new.Nly = np.maximum(new.Nly, 0)
+            new.Nly0 = np.maximum(new.Nly0, 0)
         return new
 
     def __idiv__(self, other):
@@ -482,9 +506,12 @@ class CSP(object):
         new.Ms /= other
         if other == 0.:
             new.Nly = 0.
+            new.Nly0 = 0.
         else:
             new.Nly /= other
+            new.Nly0 /= other
             new.Nly = np.maximum(new.Nly, 0)
+            new.Nly0 = np.maximum(new.Nly0, 0)
         return new
 
     def __rmul__(self, other):
@@ -494,9 +521,12 @@ class CSP(object):
         new.Ms *= other
         if other == 0.:
             new.Nly = 0.
+            new.Nly0 = 0.
         else:
-            new.Nly /= other
+            new.Nly *= other
+            new.Nly0 *= other
             new.Nly = np.maximum(new.Nly, 0)
+            new.Nly0 = np.maximum(new.Nly0, 0)
         return new
 
     def addEmissionLine(self, wavelength, EqW):
@@ -537,7 +567,7 @@ class FileFilter(Filter):
 
 
     """
-    def __init__(self, filepath, unit=u.Angstrom, maxbins=500, **kwargs):
+    def __init__(self, filepath, maxbins=500):
         """ Build filter class from ascii file
 
         Parameters
@@ -556,7 +586,7 @@ class FileFilter(Filter):
         super(FileFilter, self).__init__()
         self.path = filepath
 
-        data = np.loadtxt(self.path, **kwargs)
+        data = np.loadtxt(self.path)
         wf = data[:, 0]
         tp = data[:, 1]
         if len(data[:, 0]) > maxbins:  # Re-sample large filters for performance
@@ -566,7 +596,7 @@ class FileFilter(Filter):
             wf = wfx
             tp = tpx
 
-        self.wave = (wf * unit).to(u.Angstrom)
+        self.wave = wf * u.angstrom
         self.response = tp
 
         self.freq = (c.c / self.wave).to(u.Hz)
@@ -783,8 +813,8 @@ class FilterSet:
             except:
                 a = ''
 
-    def addFileFilter(self, path, unit=u.angstrom, maxbins=500, **kwargs):
-        self.filters.append(FileFilter(path, unit, maxbins, **kwargs))
+    def addFileFilter(self, path):
+        self.filters.append(FileFilter(path))
 
     def addTophatFilter(self, centre, width, steps=200):
         self.filters.append(TophatFilter(centre, width, steps))
@@ -1089,6 +1119,8 @@ class ObserveToFile(object):
             f.create_dataset('dust', data = SED.tauv)
             f.create_dataset('metallicities', data = SED.mi)
             f.create_dataset('fesc', data = SED.fesc)
+            f.create_dataset('wl', data=self.wl.value)
+            f.create_dataset('fwhm', data=self.fwhm.value)
 
             try:
                 s = SED.taus.shape
@@ -1113,9 +1145,6 @@ class ObserveToFile(object):
                 f[dataset].dims[4].attach_scale(f['sfh'])
                 f[dataset].dims[5].attach_scale(f['dust'])
                 f[dataset].dims[6].attach_scale(f['fesc'])
-
-            f.create_dataset('wl', data=self.wl)
-            f.create_dataset('fwhm', data=self.fwhm)
 
             # Store all CSP attributes in case they are needed later
             for attribute in SED.__dict__.keys():
