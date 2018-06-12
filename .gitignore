@@ -1,5 +1,5 @@
 error.log
-scripts/misc/*
+scripts/Misc/*
 scripts/data/ssp/*
 *.ipynb
 *.npz
@@ -18,9 +18,8 @@ misc_testing/*
 trunc_exponential.py
 *.hdf
 *.hkl
+*.pkl
 *.pickle
 dust_tests.py
-
 *.pyc
-
 *.pyc

@@ -1,6 +1,6 @@
 import numpy as np
 from six.moves import cPickle
-import hickle
+#import hickle
 #import sys
 #sys.path.append('/Users/ken/Documents/Astro/code/smpy/')
 
@@ -13,36 +13,34 @@ from astropy.cosmology import FlatLambdaCDM
 
 cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 
-
-bc03 = B.BC('/Users/ken/Astro/code/smpy/scripts/data/ssp/Miles_Atlas/Chabrier_IMF/bc2003_hr*')
+bc03 = B.BC('data/ssp/bc03/chab/lr/')
 models = S.CSP(bc03)
 
-
-ages = np.logspace(7, 10, 5) * u.yr
-sfhs = np.array([0.5, 1., 10.])*u.Gyr
+ages = np.logspace(7, 10, 10) * u.yr # Ages since onset of star-formation
+sfhs = np.array([0.25, 0.5, 1., 3., 5.])*u.Gyr # SFH timescale (decreasing exponential)
 metallicities = bc03.metallicities
-dusts = np.linspace(0.,2.,5)
-fesc = np.linspace(0, 1, 2)
+dusts = np.linspace(0., 2., 11) # Av range
 
-models.build(ages, sfhs, dusts, metallicities, fesc=fesc, verbose=True)
-hickle.dump(models, 'candels.goodss.csp.hkl', mode='w')
-
-models = hickle.load('candels.goodss.csp.hkl')
-print('models_loaded')
-
-
-filters = S.FilterSet('data/Filters/*.res')
-
-zrange = np.linspace(0, 9, 901)
-
-#Obs = S.Observe(models, filters, zrange)
-#Obs2 = S.ObserveToFile()
-Obs2.build(models, filters, zrange, 'candels.goodss.models.test.hdf', verbose=True)
+models.build(ages, sfhs, dusts, metallicities, verbose=True)
 
 """
-for key in models.__dict__.keys():
-    try:
-        print key, hf(models.__dict__[key].nbytes)
-    except:
-        continue
+Example: Save intermediate models
 """
+with open('candels.goodss.csp.pkl', 'w') as output:
+    cPickle.dump(models, output, protocol=2)
+
+"""
+Example: Load saved models
+"""
+with open('candels.goodss.csp.pkl', 'r') as input:
+    models = cPickle.load(input)
+    print('models_loaded')
+
+# Load CANDELS Filter Set
+filters = S.FilterSet('data/Filters/GS/*.txt')
+
+zrange = np.linspace(0, 9, 101) # Decrease step size when doing full fits
+
+# Convolve CSP models with filter set over redshift range
+Obs = S.ObserveToFile()
+Obs.build(models, filters, zrange, 'candels.goodss.models.test.hdf', verbose=True)

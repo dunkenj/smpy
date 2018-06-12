@@ -101,7 +101,7 @@ class CSP(object):
         nebular_old = np.loadtxt(data_path+'/nebular_emission.dat', skiprows=1)
         self.neb_cont = nebular_old[:, 1]
 
-        self.neb_lines, self.neb_metal = nebular.inoue_lines(self.wave)
+        #self.neb_lines, self.neb_metal = nebular.inoue_lines(self.wave)
         #self.neb_cont = nebular.continuum(sek)
 
         self.neb_hlines = nebular_old[:, 2]

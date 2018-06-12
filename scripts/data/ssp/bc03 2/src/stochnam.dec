@@ -1,4 +1,0 @@
-!	Use to handle file name of models with IMF populated stochastically
-	character*128 popprm,bpimf*7
-	integer isox
-	common /stochnamef/ popprm,isox,bpimf
