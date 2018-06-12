@@ -20,7 +20,8 @@ import data
 from .dust import Calzetti
 from .sfh import exponential
 from .misc import tau_madau
-import nebular
+
+#import nebular
 
 cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 

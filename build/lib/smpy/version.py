@@ -2,7 +2,7 @@ from os.path import join as pjoin
 
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
 _version_major = 0
-_version_minor = 1
+_version_minor = 2
 _version_micro = ''  # use '' for first of series, number for 1 and above
 _version_extra = 'dev'
 #_version_extra = ''  # Uncomment this for full releases
@@ -38,7 +38,7 @@ The code makes use of the `Astropy <https://astropy.readthedocs.org>`_ module th
 Currently supported simple stellar population models are:
 
 1. `Bruzual & Charlot 2003 <http://www.bruzual.org/bc03/Updated_version_2012/>`_
-2. `BPASS V1 & V2 <http://bpass.auckland.ac.nz/>`_ 
+2. `BPASS V1 & V2 <http://bpass.auckland.ac.nz/>`_
 
 
 License
@@ -71,4 +71,3 @@ PACKAGES = ['smpy',
             'smpy.tests']
 PACKAGE_DATA = {'smpy': [pjoin('data', '*')]}
 REQUIRES = ["numpy", "scipy", "h5py", "astropy", "six"]
-
