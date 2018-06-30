@@ -358,8 +358,6 @@ class BPASS2(SSP):
         super(BPASS2, self).__init__(path)
 
         #self.ages[0] = 5.
-        self.ages = np.power(10, 6+(0.1*np.arange(41)))
-        self.ages = np.insert(self.ages, 0, 1e5)
 
         self.files = glob(self.SSPpath)
         self.files.sort()
@@ -377,6 +375,9 @@ class BPASS2(SSP):
             for i, file in enumerate(self.files):
                 data = np.loadtxt(file)
 
+                ages = np.power(10, 6+(0.1*np.arange(data.shape[1]-1)))
+                ages = np.insert(ages, 0, 1e5)
+
                 wave_large = data[:,0] * u.AA
                 wave_sht = np.unique(np.logspace(np.log10(wave_large.min()/u.AA),
                                                  np.log10(wave_large.max()/u.AA), nsteps).astype('int')) *u.AA
@@ -385,22 +386,27 @@ class BPASS2(SSP):
                 sed[:,0] *= 0. # Make zero age column
                 sed_sht = rebin_sed(wave_large, sed, wave_sht)
                 self.wave_arr.append(wave_sht)
-
-
-                self.ta_arr.append(self.ages)
+                self.ta_arr.append(ages)
                 self.metal_arr.append(file)
                 self.iw_arr.append(sed_sht.shape[0])
                 self.sed_arr.append(sed_sht)
-                self.strm_arr.append(np.ones_like(self.ages))
-                self.rmtm_arr.append(np.ones_like(self.ages))
+                self.strm_arr.append(np.ones_like(ages))
+                self.rmtm_arr.append(np.ones_like(ages))
                 self.iseds.append(None)
-                metallicities[i] = float(os.path.splitext(file)[0].split('z')[-1])
+
+                metallicity_str = os.path.splitext(file)[0].split('z')[-1]
+                metallicities[i] = float(metallicity_str.replace('em', '1e-'))
                 bar.update()
-        self.metallicities = metallicities / 1000 / 0.02  # Normalise to solar metallicity
+
+
+        self.metallicities = metallicities
+        norm = (metallicities > 1e-3)
+        self.metallicities[norm] /= 1000
+        self.metallicities /= 0.02 # Normalise to solar metallicity
+
         self.ages = np.array(self.ta_arr[0]) * u.yr
         self.wave_arr = np.array(self.wave_arr) * u.AA
-        self.sed_arr = np.array(self.sed_arr).swapaxes(1, 2)[:, :] / 1e6
-        self.sed_arr *= u.Lsun / u.AA
+        self.sed_arr = (np.array(self.sed_arr).swapaxes(1, 2)[:, :] / 1e6) * (u.Lsun / u.AA)
         self.strm_arr = np.array(self.strm_arr)[:, :]
         self.rmtm_arr = np.array(self.rmtm_arr)[:, :]
         self.iseds = np.array(self.iseds)
