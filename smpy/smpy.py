@@ -6,6 +6,7 @@ import sys
 import h5py
 import types
 import glob
+import pkgutil
 
 from scipy.interpolate import griddata
 from scipy import spatial
@@ -14,8 +15,6 @@ from astropy import units as u
 from astropy import constants as c
 from astropy import cosmology as cos
 from astropy.utils.console import ProgressBar
-
-import data
 
 from .dust import Calzetti
 from .sfh import exponential
@@ -29,6 +28,8 @@ f = open("error.log", "w")
 original_stderr = sys.stderr
 sys.stderr = f
 
+data = pkgutil.get_data('hermes', 'templates/python.tpl')
+import data
 data_path = data.__path__[0]
 
 

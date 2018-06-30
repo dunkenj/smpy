@@ -13,7 +13,7 @@ from astropy.cosmology import FlatLambdaCDM
 
 cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 
-bc03 = B.BC('data/ssp/bc03/chab/lr/')
+bc03 = B.BC('data/ssp/bc03/chab/lr/', verbose=True)
 models = S.CSP(bc03)
 
 ages = np.logspace(7, 10, 10) * u.yr # Ages since onset of star-formation

@@ -30,7 +30,6 @@ fluxerr_col_end = '_FLUXERR'
 
 filts_used = None
 
-
 """
 Fitting Options
 ---------------

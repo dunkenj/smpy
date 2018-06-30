@@ -1,3 +1,3 @@
 from .version import __version__
 
-__all__ = ['ssp', 'dust', 'sfh', 'misc']
+__all__ = ['ssp', 'dust', 'sfh', 'misc', 'data']

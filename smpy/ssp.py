@@ -18,18 +18,18 @@ class Ised(object):
         This function reads data from Bruzual & Charlot binary format
         SSP files and returns the necessary data in an array The input files
         should be '.ised' files, either 2003 or 2007.
-    
+
         'ks' in the binary files is slightly different between 03/07 files
-        so the read length and index should be set appropriately, therefore 
+        so the read length and index should be set appropriately, therefore
         the function tries '03 format first and retries with the '07 format
         if the returned number of ages isn't as expected (e.g. 221 ages)
 
             Paramaters
             ----------
-            
+
             filename : str, filename (including relative/full path) of
                 Bruzual & Charlot model to be loaded into class.
-    
+
         """
 
         with open(filename, 'rb') as file:
@@ -63,19 +63,22 @@ class Ised(object):
             tmp.fromfile(file, 5)
             self.totm, self.totn, self.avs, self.jo, self.tauo = tmp
 
-            self.ids = array.array('c')
+            self.ids = array.array('b')
             self.ids.fromfile(file, 80)
+            self.ids = bytearray(self.ids)
 
             tmp = array.array('f')
             tmp.fromfile(file, 4)
             self.tcut = tmp[0]
             self.ttt = tmp[1:]
 
-            ids = array.array('c')
+            ids = array.array('b')
             ids.fromfile(file, 80)
+            ids = bytearray(ids)
 
-            self.ids = array.array('c')
+            self.ids = array.array('b')
             self.ids.fromfile(file, 80)
+            self.ids = bytearray(self.ids)
 
             self.igw = array.array('i')
             self.igw.fromfile(file, 1)
@@ -195,21 +198,27 @@ class SSP(object):
 
 class BC(SSP):
     """ Bruzual & Charlot 2003/07 SSP Models
-    
+
     """
 
-    def __init__(self, path='../ssp/bc03/salpeter/lr/'):
+    def __init__(self, path='../ssp/bc03/salpeter/lr/', verbose=False):
         """
             Paramaters
             ----------
             path : str,
                 Path to desired subset of Bruzual & Charlot models, should include
                 relevant wildcard to match multiple metallicities.
-                
+
         """
         super(BC, self).__init__(path)
 
         self.files = glob(self.SSPpath + '*.ised')
+        if len(self.files) == 0:
+            raise(Exception, 'No SSP Files found in directory')
+
+        elif verbose:
+            print('{0} .ised files found.'.format(len(self.files)))
+
         self.files.sort()
         self.iseds = []
         self.ta_arr = []
@@ -219,7 +228,7 @@ class BC(SSP):
         self.sed_arr = []
         self.strm_arr = []
         self.rmtm_arr = []
-        
+
         metallicities = np.zeros(len(self.files))
         for i, file in enumerate(self.files):
             ised_binary = Ised(file)
@@ -233,7 +242,9 @@ class BC(SSP):
             self.rmtm_arr.append(ised_binary.rmtm)
             self.iseds.append(ised_binary)
             metal = str(ised_binary.ids)[12:-3].strip()
+            print(metal)
             metallicities[i] = float(re.split("Z=?", metal)[1])
+
         self.metallicities = metallicities / 0.02  # Normalise to solar metallicity
         self.ages = np.array(self.ta_arr[0]) * u.yr
         self.ages[0] = (10000 * u.yr)  # Make non-zero but insignificant
@@ -246,20 +257,20 @@ class BC(SSP):
 
 class BPASS(SSP):
     """ BPASS
-    
+
     www.bpass.org.uk
     Eldridge & Stanway, 2009, MNRAS, 400, 1019
-    
+
     """
 
     def __init__(self, path='../ssp/bpass_v1.1/SEDS/', nsteps = 3000):
-        """ 
+        """
             Paramaters
             ----------
             path : str,
                 Path to desired subset of BPASS models, should include
                 relevant wildcard to match multiple metallicities.
-            
+
         """
         super(BPASS, self).__init__(path)
         head, tail = os.path.split(path)
@@ -274,7 +285,7 @@ class BPASS(SSP):
 
         #self.ages[0] = 5.
         self.ages = np.power(10, ages)
-        
+
         self.files = glob(self.SSPpath)
         self.files.sort()
         self.iseds = []
@@ -285,7 +296,7 @@ class BPASS(SSP):
         self.sed_arr = []
         self.strm_arr = []
         self.rmtm_arr = []
-        
+
         metallicities = np.zeros(len(self.files))
         with ProgressBar(len(self.files)) as bar:
             for i, file in enumerate(self.files):
@@ -314,7 +325,7 @@ class BPASS(SSP):
                 self.iseds.append(None)
                 metallicities[i] = float(file.split('z')[-1])
                 bar.update()
-            
+
         self.metallicities = metallicities / 1000 / 0.02  # Normalise to solar metallicity
         self.ages = np.array(self.ta_arr[0]) * u.yr
         self.wave_arr = np.array(self.wave_arr) * u.AA
@@ -327,29 +338,29 @@ class BPASS(SSP):
 
 class BPASS2(SSP):
     """ BPASS v2
-    
+
     www.bpass.org.uk
     Eldridge & Stanway, 2009, MNRAS, 400, 1019
-    
+
     """
 
     def __init__(self, path='../ssp/bpass_v1.1/SEDS/', nsteps = 3000):
-        """ 
+        """
             Parameters
             ----------
             path : str,
                 Path to desired subset of BPASS models, should include
                 relevant wildcard to match multiple metallicities.
             nsteps : int
-                Number of wavelength steps in which to interpolate 
-            
+                Number of wavelength steps in which to interpolate
+
         """
         super(BPASS2, self).__init__(path)
 
         #self.ages[0] = 5.
         self.ages = np.power(10, 6+(0.1*np.arange(41)))
         self.ages = np.insert(self.ages, 0, 1e5)
-        
+
         self.files = glob(self.SSPpath)
         self.files.sort()
         self.iseds = []
@@ -360,12 +371,12 @@ class BPASS2(SSP):
         self.sed_arr = []
         self.strm_arr = []
         self.rmtm_arr = []
-        
+
         metallicities = np.zeros(len(self.files))
         with ProgressBar(len(self.files)) as bar:
             for i, file in enumerate(self.files):
                 data = np.loadtxt(file)
-            
+
                 wave_large = data[:,0] * u.AA
                 wave_sht = np.unique(np.logspace(np.log10(wave_large.min()/u.AA),
                                                  np.log10(wave_large.max()/u.AA), nsteps).astype('int')) *u.AA
@@ -374,7 +385,7 @@ class BPASS2(SSP):
                 sed[:,0] *= 0. # Make zero age column
                 sed_sht = rebin_sed(wave_large, sed, wave_sht)
                 self.wave_arr.append(wave_sht)
-            
+
 
                 self.ta_arr.append(self.ages)
                 self.metal_arr.append(file)
@@ -396,7 +407,7 @@ class BPASS2(SSP):
 
 def rebin_sed(wave_in, sed_in, wave_out):
     """ Rebin an SED to new wavelength grid with flux density conserved
-    
+
         Parameters
         ----------
             wave_in : numpy.array or '~astropy.units.Quantity' array
@@ -405,12 +416,12 @@ def rebin_sed(wave_in, sed_in, wave_out):
                 Input grid of SEDs, with shape (N, x)
             wave_out : numpy.array or '~astropy.units.Quantity' array
                 Desired wavelength grid for rebinned SED, with length M
-    
+
         Returns
         -------
             sed_out : numpy.array or '~astropy.units.Quantity' array
                 Rebinned SEDs, with shape (M, x)
-    
+
     """
 
     edges = np.empty(len(wave_out) + 1, dtype=np.float64) * wave_in.unit
@@ -438,4 +449,3 @@ def rebin_sed(wave_in, sed_in, wave_out):
         sed_out[i, :] = avg
 
     return sed_out
-        

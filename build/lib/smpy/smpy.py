@@ -15,8 +15,6 @@ from astropy import constants as c
 from astropy import cosmology as cos
 from astropy.utils.console import ProgressBar
 
-import data
-
 from .dust import Calzetti
 from .sfh import exponential
 from .misc import tau_madau
@@ -29,6 +27,7 @@ f = open("error.log", "w")
 original_stderr = sys.stderr
 sys.stderr = f
 
+import data
 data_path = data.__path__[0]
 
 

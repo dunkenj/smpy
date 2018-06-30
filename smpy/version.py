@@ -1,5 +1,3 @@
-from os.path import join as pjoin
-
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
 _version_major = 0
 _version_minor = 2
@@ -69,5 +67,5 @@ MICRO = _version_micro
 VERSION = __version__
 PACKAGES = ['smpy',
             'smpy.tests']
-PACKAGE_DATA = {'smpy': [pjoin('data', '*')]}
+PACKAGE_DATA = {'smpy': ['data/*.txt']}
 REQUIRES = ["numpy", "scipy", "h5py", "astropy", "six"]
