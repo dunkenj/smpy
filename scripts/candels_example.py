@@ -16,6 +16,7 @@ cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 bc03 = B.BC('data/ssp/bc03/chab/lr/', verbose=True)
 models = S.CSP(bc03)
 
+
 ages = np.logspace(7, 10, 10) * u.yr # Ages since onset of star-formation
 sfhs = np.array([0.25, 0.5, 1., 3., 5.])*u.Gyr # SFH timescale (decreasing exponential)
 metallicities = bc03.metallicities
@@ -26,13 +27,13 @@ models.build(ages, sfhs, dusts, metallicities, verbose=True)
 """
 Example: Save intermediate models
 """
-with open('candels.goodss.csp.pkl', 'w') as output:
+with open('candels.goodss.csp.pkl', 'wb') as output:
     cPickle.dump(models, output, protocol=2)
 
 """
 Example: Load saved models
 """
-with open('candels.goodss.csp.pkl', 'r') as input:
+with open('candels.goodss.csp.pkl', 'rb') as input:
     models = cPickle.load(input)
     print('models_loaded')
 

@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+from six import string_types
 import numpy as np
 import copy
 import os
@@ -6,6 +7,7 @@ import sys
 import h5py
 import types
 import glob
+import pkg_resources
 
 from scipy.interpolate import griddata
 from scipy import spatial
@@ -27,9 +29,7 @@ f = open("error.log", "w")
 original_stderr = sys.stderr
 sys.stderr = f
 
-import data
-data_path = data.__path__[0]
-
+nebular_old_path = pkg_resources.resource_filename('smpy', 'data/nebular_emission.dat')
 
 class CSP(object):
     """ Class for building composite stellar populations from input SSPs
@@ -95,9 +95,7 @@ class CSP(object):
 
         # Find closest match for each tg value in ta - set tg to these values
 
-
-
-        nebular_old = np.loadtxt(data_path+'/nebular_emission.dat', skiprows=1)
+        nebular_old = np.loadtxt(nebular_old_path, skiprows=1)
         self.neb_cont = nebular_old[:, 1]
 
         #self.neb_lines, self.neb_metal = nebular.inoue_lines(self.wave)
@@ -239,7 +237,7 @@ class CSP(object):
         # Set up grid for ND-interpolation
         ti, mi = np.meshgrid(np.log10(self.ages / u.yr).value,
                              np.log10(self.metallicities))
-        self.grid = zip(mi.flatten(), ti.flatten())
+        self.grid = list(zip(mi.flatten(), ti.flatten()))
 
         tri_grid = spatial.Delaunay(self.grid)
 
@@ -264,8 +262,8 @@ class CSP(object):
             self.ta_sfh *= ta_range[None, :]
 
         # Calculate Barycentric coordinates for all ages/metallicities in SFH.
-            points = np.array(zip(np.log10(self.me_sfh.flatten()),
-                              np.log10(self.ta_sfh.flatten() / u.yr)))
+            points = np.array(list(zip(np.log10(self.me_sfh.flatten()),
+                              np.log10(self.ta_sfh.flatten() / u.yr))))
 
             #if verbose:
             #    print 'Interpolating SEDs at SFH timesteps'
@@ -1036,7 +1034,7 @@ class ObserveToFile(object):
         self.dl[self.redshifts == 0] = 10 * c.pc
 
 
-        assert type(savepath) is types.StringType, "File save path is not a string: %r" % savepath
+        assert isinstance(savepath, string_types), "File save path is not a string: %r" % savepath
         self.savepath = savepath
         if clobber:
             if os.path.isfile(self.savepath):

@@ -67,5 +67,6 @@ MICRO = _version_micro
 VERSION = __version__
 PACKAGES = ['smpy',
             'smpy.tests']
-PACKAGE_DATA = {'smpy': ['data/*.txt']}
+PACKAGE_DATA = {'smpy': ['data/*.txt',
+                         'data/*.dat']}
 REQUIRES = ["numpy", "scipy", "h5py", "astropy", "six"]
