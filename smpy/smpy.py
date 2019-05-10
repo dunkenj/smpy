@@ -694,7 +694,7 @@ class LoadEAZYFilters(object):
         self.filternames = []
 
         with open(self.path) as file:
-            for f in xrange(1000):
+            for f in range(1000):
                 x = file.readline().split()
                 if len(x) < 1:
                     break
@@ -704,7 +704,7 @@ class LoadEAZYFilters(object):
                 wavelength = []
                 response = []
                 # print nwave
-                for i in xrange(nwave):
+                for i in range(nwave):
                     N, w, r = np.array(file.readline().split()).astype('float')
                     wavelength.append(w)
                     response.append(r)
