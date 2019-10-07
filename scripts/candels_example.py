@@ -6,6 +6,8 @@ from six.moves import cPickle
 
 import smpy.smpy as S
 import smpy.ssp as B
+from smpy.sfh import dblpower
+from smpy.dust import Charlot
 
 import matplotlib.pyplot as plt
 import astropy.units as u
@@ -15,14 +17,31 @@ cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 
 bc03 = B.BC('data/ssp/bc03/chab/lr/', verbose=True)
 models = S.CSP(bc03)
+#BC = B.BC('')
 
+def make_dbl_sfhs(nalpha, nbeta, ntau,
+                  lalpha_min=-1., lalpha_max=3.,
+                  lbeta_min=-1., lbeta_max=3.,
+                  tau_min=0.1, tau_max=1.0):
 
-ages = np.logspace(7, 10, 10) * u.yr # Ages since onset of star-formation
-sfhs = np.array([0.25, 0.5, 1., 3., 5.])*u.Gyr # SFH timescale (decreasing exponential)
-metallicities = bc03.metallicities
-dusts = np.linspace(0., 2., 11) # Av range
+    alphas, betas, taus = np.meshgrid(np.logspace(lalpha_min, lalpha_max, nalpha),
+                                      -1*np.logspace(lbeta_min, lbeta_max, nbeta),
+                                      np.linspace(tau_min, tau_max, ntau))
 
-models.build(ages, sfhs, dusts, metallicities, verbose=True)
+    sfh_params = np.vstack([alphas.flatten(), betas.flatten(), taus.flatten()]).T
+    return sfh_params
+
+sfhs = make_dbl_sfhs(7, 7, 7)
+
+zrange = np.linspace(0., 2., 21.)
+zform = 20.
+
+ages = cosmo.age(zrange) - cosmo.age(zform)
+
+metallicities = 1.
+dusts = [0., 0.5, 1.] #np.linspace(0., 2., 11) # Av range
+
+models.build(ages, sfhs, dusts, metallicities, sfh_law=dblpower, verbose=True)
 
 """
 Example: Save intermediate models
@@ -39,8 +58,6 @@ with open('candels.goodss.csp.pkl', 'rb') as input:
 
 # Load CANDELS Filter Set
 filters = S.FilterSet('data/Filters/GS/*.txt')
-
-zrange = np.linspace(0, 9, 101) # Decrease step size when doing full fits
 
 # Convolve CSP models with filter set over redshift range
 Obs = S.ObserveToFile()

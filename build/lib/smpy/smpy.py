@@ -25,9 +25,9 @@ from .misc import tau_madau
 
 cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
-f = open("error.log", "w")
-original_stderr = sys.stderr
-sys.stderr = f
+# f = open("error.log", "w")
+# original_stderr = sys.stderr
+# sys.stderr = f
 
 nebular_old_path = pkg_resources.resource_filename('smpy', 'data/nebular_emission.dat')
 
@@ -158,7 +158,7 @@ class CSP(object):
 
         """
         try:
-            self.tau = u.Quantity(sfh, ndmin=1)
+            self.tau = np.array(sfh, ndmin=1)
         except:
             self.tau = sfh
 
@@ -323,20 +323,20 @@ class CSP(object):
 
 
 
-            for idT, t in enumerate(self.tau):
-                if type(t) == tuple:
-                    tau = t
-                else:
-                    tau = tuple([t])
+            for idT, tau in enumerate(self.tau):
+                # if type(t) == tuple:
+                #     tau = t
+                # else:
+                #     tau = tuple([t])
 
-                self.sfr_hist = self.sfr_func(self.ta_sfh, *tau)
+                self.sfr_hist = self.sfr_func(self.ta_sfh, tau)
                 # Enforce integrated SFR = 1 Msol.
                 self.norm = np.trapz(self.sfr_hist,
                                      self.ta_sfh, axis=-1)[:, None]
 
                 self.sfr_hist /= self.norm
                 self.weights = np.abs(self.sfr_func(self.tg[None, idG, None] \
-                                      - self.ta_sfh, *tau)) / self.norm
+                                      - self.ta_sfh, tau)) / self.norm
                 self.sfh_weights = np.ones(sfh_grid_shape) * self.weights
 
                 for idA, Av in enumerate(self.tauv):

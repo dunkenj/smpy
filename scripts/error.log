@@ -1,0 +1,126 @@
+fitting.py:229: RuntimeWarning: divide by zero encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+fitting.py:198: RuntimeWarning: invalid value encountered in multiply
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:198: RuntimeWarning: overflow encountered in true_divide
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:199: RuntimeWarning: overflow encountered in square
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:199: RuntimeWarning: invalid value encountered in square
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:199: RuntimeWarning: overflow encountered in true_divide
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:201: RuntimeWarning: invalid value encountered in true_divide
+  scale = top/bottom
+fitting.py:206: RuntimeWarning: invalid value encountered in multiply
+  chisq += ((np.abs(scale*flux_models[i,:]-flux_obs[i])**2)/(tot_err[i])**2)
+fitting.py:228: RuntimeWarning: divide by zero encountered in log10
+  Masses = np.abs(np.log10(scale*flux_corr))
+fitting.py:228: RuntimeWarning: invalid value encountered in log10
+  Masses = np.abs(np.log10(scale*flux_corr))
+fitting.py:229: RuntimeWarning: invalid value encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
+  keep = (tmp_a >= mn)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
+  keep &= (tmp_a <= mx)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
+  return n/db/n.sum(), bins
+fitting.py:320: RuntimeWarning: invalid value encountered in log10
+  restframeMags = 23.9 - 2.5*np.log10(F_rest)
+fitting.py:212: RuntimeWarning: invalid value encountered in true_divide
+  likelihood = np.abs(likelihood/likelihood.sum())
+fitting.py:243: RuntimeWarning: invalid value encountered in log10
+  Bestfit_Mass = np.abs(np.log10(scale[mi, ti, tvi, fi]*flux_corr))
+fitting.py:245: RuntimeWarning: invalid value encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+fitting.py:319: RuntimeWarning: overflow encountered in multiply
+  scale[mi, ti, tvi, fi] * flux_corr)
+fitting.py:245: RuntimeWarning: divide by zero encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+fitting.py:198: RuntimeWarning: overflow encountered in multiply
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:229: RuntimeWarning: divide by zero encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+fitting.py:245: RuntimeWarning: divide by zero encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+fitting.py:212: RuntimeWarning: invalid value encountered in true_divide
+  likelihood = np.abs(likelihood/likelihood.sum())
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
+  return n/db/n.sum(), bins
+fitting.py:320: RuntimeWarning: invalid value encountered in log10
+  restframeMags = 23.9 - 2.5*np.log10(F_rest)
+fitting.py:198: RuntimeWarning: invalid value encountered in multiply
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:198: RuntimeWarning: overflow encountered in true_divide
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:199: RuntimeWarning: overflow encountered in square
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:199: RuntimeWarning: invalid value encountered in square
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:199: RuntimeWarning: overflow encountered in true_divide
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:201: RuntimeWarning: invalid value encountered in true_divide
+  scale = top/bottom
+fitting.py:206: RuntimeWarning: invalid value encountered in multiply
+  chisq += ((np.abs(scale*flux_models[i,:]-flux_obs[i])**2)/(tot_err[i])**2)
+fitting.py:228: RuntimeWarning: divide by zero encountered in log10
+  Masses = np.abs(np.log10(scale*flux_corr))
+fitting.py:228: RuntimeWarning: invalid value encountered in log10
+  Masses = np.abs(np.log10(scale*flux_corr))
+fitting.py:229: RuntimeWarning: invalid value encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
+  keep = (tmp_a >= mn)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
+  keep &= (tmp_a <= mx)
+fitting.py:198: RuntimeWarning: overflow encountered in multiply
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:243: RuntimeWarning: invalid value encountered in log10
+  Bestfit_Mass = np.abs(np.log10(scale[mi, ti, tvi, fi]*flux_corr))
+fitting.py:245: RuntimeWarning: invalid value encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+fitting.py:319: RuntimeWarning: overflow encountered in multiply
+  scale[mi, ti, tvi, fi] * flux_corr)
+fitting.py:229: RuntimeWarning: divide by zero encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
+  return n/db/n.sum(), bins
+fitting.py:212: RuntimeWarning: invalid value encountered in true_divide
+  likelihood = np.abs(likelihood/likelihood.sum())
+fitting.py:199: RuntimeWarning: overflow encountered in square
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:199: RuntimeWarning: overflow encountered in true_divide
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:228: RuntimeWarning: divide by zero encountered in log10
+  Masses = np.abs(np.log10(scale*flux_corr))
+fitting.py:228: RuntimeWarning: invalid value encountered in log10
+  Masses = np.abs(np.log10(scale*flux_corr))
+fitting.py:229: RuntimeWarning: invalid value encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
+  keep = (tmp_a >= mn)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
+  keep &= (tmp_a <= mx)
+fitting.py:198: RuntimeWarning: invalid value encountered in multiply
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:198: RuntimeWarning: overflow encountered in true_divide
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:199: RuntimeWarning: invalid value encountered in square
+  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
+fitting.py:201: RuntimeWarning: invalid value encountered in true_divide
+  scale = top/bottom
+fitting.py:206: RuntimeWarning: invalid value encountered in multiply
+  chisq += ((np.abs(scale*flux_models[i,:]-flux_obs[i])**2)/(tot_err[i])**2)
+fitting.py:243: RuntimeWarning: invalid value encountered in log10
+  Bestfit_Mass = np.abs(np.log10(scale[mi, ti, tvi, fi]*flux_corr))
+fitting.py:245: RuntimeWarning: invalid value encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+fitting.py:320: RuntimeWarning: invalid value encountered in log10
+  restframeMags = 23.9 - 2.5*np.log10(F_rest)
+fitting.py:198: RuntimeWarning: overflow encountered in multiply
+  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+fitting.py:245: RuntimeWarning: divide by zero encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+fitting.py:319: RuntimeWarning: overflow encountered in multiply
+  scale[mi, ti, tvi, fi] * flux_corr)

@@ -19,8 +19,8 @@ filts_used : Indices of filters in model file to be used for fitting.
 """
 
 model_path = 'candels.goodss.models.test.hdf'
-output_name = 'candels_test'
-input_catalog = 'data/CANDELS.GOODSS.example.cat'
+output_name = 'candels_test.cat'
+input_catalog = 'data/CANDELS.GOODSS.z2.cat'
 input_format = 'ascii.commented_header'
 
 z_col = 'Photo_z'
@@ -46,7 +46,7 @@ flux_err : Additional fractional flux error added to all bands in quadrature
 """
 fitting_mode = 'hist'
 include_rest = True
-ncpus = 1
+ncpus = 3
 
 flux_corr = 1
 flux_err = 0.1
@@ -62,5 +62,5 @@ output_hdf : Path for output hdf5 file ('hist' mode only)
 """
 
 output_hdf_path = 'candels_test.hdf'
-output_catalog_path = 'candels_test'
+output_catalog_path = 'candels_test.cat'
 output_format = 'ascii.commented_header'

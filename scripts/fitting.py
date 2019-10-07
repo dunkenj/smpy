@@ -27,7 +27,7 @@ import importlib
 try:
     params = importlib.import_module(params_root)
     print('Successfully loaded "{0}" as params'.format(args.params))
-    reload(params)
+    #reload(params)
 except:
     print('Failed to load "{0}" as params'.format(args.params))
     raise
@@ -37,8 +37,7 @@ if quiet:
 else:
     def quietprint(*args):
         for arg in args:
-            print arg,
-        print
+            print (arg)
 
 # Fitting function definition for later use by Processess
 
@@ -140,7 +139,7 @@ def galaxyFit(inputQueue, printQueue, printlock):
 
         printlock.acquire()
 
-        print '{0:6d} {1:8d} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>4.2f} {9:>5.2f}'.format(gal+1,ID[gal], zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR))
+        print('{0:6d} {1:8d} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>4.2f} {9:>5.2f}'.format(gal+1,ID[gal], zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR)))
 
         if include_rest:
             restframe_output = ' '.join(M_scaled.astype('str'))
@@ -188,7 +187,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
 
         flux_obs = flux_obs[I]                    # and exclude from fit
         flux_err = flux_err[I]
-        flux_models = f[j,I,:]
+        flux_models = f[j,I,:,j,:]
 
         tot_err = np.sqrt(flux_err**2 + (params.flux_err*flux_obs)**2)
 
@@ -200,7 +199,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
             bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
 
         scale = top/bottom
-        scale = np.reshape(scale, (n_metal, n_tg, n_tau, n_tauv, n_fesc))
+        scale = np.reshape(scale, (n_metal, n_tau, n_tauv, n_fesc))
 
         chisq = 0.
         for i in range(len(flux_obs)):
@@ -208,7 +207,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
 
         chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
         likelihood = np.reshape(np.exp(-0.5*chisq),
-                                (n_metal, n_tg, n_tau, n_tauv, n_fesc))
+                                (n_metal, n_tau, n_tauv, n_fesc))
         likelihood[np.isnan(likelihood)] = 0.
         likelihood = np.abs(likelihood/likelihood.sum())
 
@@ -221,12 +220,13 @@ def galaxyFit2(inputQueue, printQueue, printlock):
 
         else:
             #Find the coordinate of the model with the bestfit mass
-            mi, tgi, ti, tvi, fi = np.unravel_index(minind,
-                                                       (n_metal, n_tg,
+            mi, ti, tvi, fi = np.unravel_index(minind,
+                                                       (n_metal,
                                                        n_tau, n_tauv, n_fesc))
 
+
             Masses = np.abs(np.log10(scale*flux_corr))
-            SFRs = np.log10(scale * SFR * flux_corr)
+            SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
 
             mass_hist = np.histogram(Masses.flatten(),
                                      range = (log_mass_min, log_mass_max),
@@ -240,9 +240,9 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                                      weights = likelihood.flatten(),
                                      density = True)
 
-            Bestfit_Mass = np.abs(np.log10(scale[mi, tgi, ti, tvi, fi]*flux_corr))
-            Bestfit_SFR = np.abs(np.log10(scale[mi, tgi, ti, tvi, fi] *
-                                   SFR[mi, tgi, ti, tvi, fi]*flux_corr))
+            Bestfit_Mass = np.abs(np.log10(scale[mi, ti, tvi, fi]*flux_corr))
+            Bestfit_SFR = np.abs(np.log10(scale[mi, ti, tvi, fi] *
+                                   SFR[mi, j, ti, tvi, fi]*flux_corr))
 
             if np.isnan(Bestfit_Mass) or np.isinf(chimin):
                 Bestfit_Mass = -99
@@ -254,7 +254,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                 escape_fraction = -99
 
             else:
-                tgs = tg[tgi]/1e9
+                tgs = tg[j]/1e9
                 tvs = tv[tvi]
                 taus = tau[ti]
                 mis = metallicities[mi]
@@ -275,18 +275,18 @@ def galaxyFit2(inputQueue, printQueue, printlock):
             Bestfit_Beta = -99.
 
             print_string = "{0[0]:6d} {0[1]:8d} {0[2]:>5.2f} " + \
-                           "{0[3]:>7.2f} {0[4]:>8.1f} {0[5]:>8.3f} " + \
-                           "{0[6]:>5.1f} {0[7]:>8.2f} {0[8]:>4.2f} " + \
-                           "{0[9]:>5.2f}"
+                           "{0[3]:>7.2f} {0[4]:>8.3f} " + \
+                           "{0[5]:>5.1f} {0[6]:>8.2f} {0[7]:>4.2f} " + \
+                           "{0[8]:>5.2f}"
 
             print_array = [gal+1, ID[gal], zobs[gal],
                            Bestfit_Mass, chimin,
-                           tgs, tvs, taus, mis,
+                           tvs, taus, mis,
                            Bestfit_SFR]
             print(print_string.format(print_array))
 
             output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
-                            '{chi_best} {tg} {tvs} {taus} {mis} {fesc} '+ \
+                            '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
                             '{mass_med} {mass_l68} {mass_u68} ' + \
                             '{sfr_med} {sfr_l68} {sfr_u68} ' + \
                             '{nfilts} '
@@ -297,14 +297,14 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                              'mass_best': Bestfit_Mass,
                              'sfr_best': Bestfit_SFR,
                              'chi_best': chimin,
-                             'tg': tgs, 'tvs': tvs, 'taus': taus,
+                             'tvs': tvs, 'taus': taus,
                              'mis': mis, 'fesc': escape_fraction,
                              'mass_med': m50, 'mass_l68': m16, 'mass_u68': m84,
                              'sfr_med': s50, 'sfr_l68': s16, 'sfr_u68': s84,
                              'nfilts': len(I)}
 
             output_array = [gal+1, ID[gal], zobs[gal],
-                            Bestfit_Mass, chimin, tgs, tvs, taus, mis,
+                            Bestfit_Mass, chimin, tvs, taus, mis,
                             MUV_scaled, minind, Bestfit_SFR, len(I), -99., '\n']
             output = output_string.format(**output_values)
 
@@ -315,8 +315,8 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                 output = output + restframe_output + ' \n'
 
             else:
-                F_rest = np.array(f[0, :, mi, tgi, ti, tvi, fi] *
-                                  scale[mi, tgi, ti, tvi, fi] * flux_corr)
+                F_rest = np.array(f[0, :, mi, j, ti, tvi, fi] *
+                                  scale[mi, ti, tvi, fi] * flux_corr)
                 restframeMags = 23.9 - 2.5*np.log10(F_rest)
                 restframe_output = ' '.join(restframeMags.astype('str'))
                 output = output + restframe_output + ' \n'
@@ -420,11 +420,11 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
         printlock.acquire()
 
         if calc_mode:
-            print '{0:4d} {1:6d} {2:>6.2f} {3:>8.1f} {4:>6.2f}'.format(gal+1,ID[gal],Bestfit_Mass,chimin, np.log10(Mode_Mass), '/n')
+            print('{0:4d} {1:6d} {2:>6.2f} {3:>8.1f} {4:>6.2f}'.format(gal+1,ID[gal],Bestfit_Mass,chimin, np.log10(Mode_Mass), '/n'))
         else:
-            print '{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>3d} {9:>5.2f}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR))
+            print('{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.3f} {5:>5.1f} {6:>8.2f} {7:>3d} {8:>5.2f}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tvs,taus,mis,np.log10(Bestfit_SFR)))
 
-        output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,Bestfit_restframeMags[tot],Bestfit_restframeMUV,minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
+        output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tvs,taus,mis,Bestfit_restframeMags[tot],Bestfit_restframeMUV,minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
 
         printlock.release()
         printQueue.put([output_string, massLikelihoods, muvLikelihoods, betaLikelihoods])
@@ -564,7 +564,7 @@ if __name__ == '__main__':
     """
 
 
-    print "Loading synthetic mags and mass array:"
+    print("Loading synthetic mags and mass array:")
     models = h5py.File(model_path, 'r')
     tg = models['ages'].value
     tv = models['dust'].value
@@ -617,11 +617,11 @@ if __name__ == '__main__':
     Chi-sq calculation
 
     """
-    out_string = '{0:6s} {1:8s} {2:>5s} {3:>7s} {4:>8s} {5:>8s}' + \
-                 '{6:>5s} {7:>8s} {8:>4s} {9:>5s}'
+    out_string = '{0:6s} {1:8s} {2:>5s} {3:>7s} {4:>8s}' + \
+                 '{5:>5s} {6:>8s} {7:>4s} {8:>5s}'
 
     print(out_string.format('N','ID','zobs','Best', 'chimin',
-                            'tg', 'tauv','tau','met', 'sfr'))
+                            'tauv','tau','met', 'sfr'))
 
     loop_start = time.time()
     ncpus = np.clip(ncpus, 1, multiprocessing.cpu_count())
@@ -699,7 +699,7 @@ if __name__ == '__main__':
 
     names = ['N', 'ID', 'z', 'zmodel',
              'Mass_best', 'SFR_best', 'chi_best',
-             'Age_best','Dust_best', 'SFH_best',
+             'Dust_best', 'SFH_best',
              'Metallicity_best', 'fesc_best',
              'Mass_median', 'Mass_l68', 'Mass_u68',
              'SFR_median', 'SFR_l68', 'SFR_u68',
@@ -707,7 +707,7 @@ if __name__ == '__main__':
 
     units = [None, None, None, None,
              u.Msun, u.Msun/u.yr, None,
-             u.Gyr, None, None,
+             None, None,
              None, None,
              u.Msun, u.Msun, u.Msun,
              u.Msun/u.yr, u.Msun/u.yr, u.Msun/u.yr,
@@ -715,7 +715,7 @@ if __name__ == '__main__':
 
     types = ['i4', 'i4', 'f4', 'f4',
              'f4', 'f4', 'f4',
-             'f4', 'f4', 'f4',
+             'f4', 'f4',
              'f4', 'f4',
              'f4', 'f4', 'f4',
              'f4', 'f4', 'f4',
@@ -740,8 +740,8 @@ if __name__ == '__main__':
 
     os.remove(temp_file.name)
 
-    print
-    print "Total time taken: "+str(time.time()-start)
+    print('\n')
+    print("Total time taken: "+str(time.time()-start))
 
     sys.stderr = original_stderr
     logfile.close()
