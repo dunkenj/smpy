@@ -1,7 +1,6 @@
 error.log
 scripts/Misc/*
 scripts/data/ssp/*
-!scripts/data/Filters/
 *.ipynb
 *.npz
 *.npy
@@ -24,3 +23,4 @@ trunc_exponential.py
 dust_tests.py
 *.pyc
 *.pyc
+!scripts/data/Filters/*.txt
