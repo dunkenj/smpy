@@ -1,6 +1,7 @@
 error.log
 scripts/Misc/*
 scripts/data/ssp/*
+!scripts/data/Filters/
 *.ipynb
 *.npz
 *.npy
