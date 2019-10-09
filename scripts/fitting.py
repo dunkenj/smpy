@@ -244,6 +244,10 @@ def galaxyFit2(inputQueue, printQueue, printlock):
             Bestfit_SFR = np.abs(np.log10(scale[mi, ti, tvi, fi] *
                                    SFR[mi, j, ti, tvi, fi]*flux_corr))
 
+            Bestfit_fluxes = (scale[mi, ti, tvi, fi] *
+                              f[j,:, mi, j, ti, tvi, fi] *
+                              flux_corr)
+
             if np.isnan(Bestfit_Mass) or np.isinf(chimin):
                 Bestfit_Mass = -99
                 #M_scaled[:] = -99
@@ -324,110 +328,189 @@ def galaxyFit2(inputQueue, printQueue, printlock):
             output = output + ' \n'
 
         printlock.release()
-        printQueue.put([output, mass_hist, sfr_hist])
+        printQueue.put([gal, output, mass_hist, sfr_hist, Bestfit_fluxes,
+                        [obs[gal, :], obs_err[gal, :]]])
 
-def galaxyFitPlus(inputQueue, printQueue, printlock):
+def galaxyFitMz(inputQueue, printQueue, printlock):
     for gal in iter(inputQueue.get, 'STOP'):
-        mass_range = 7, 13
+
+
+        output_string = '{0[0]} {0[1]} {0[2]} {0[3]} {0[4]} {0[5]} ' + \
+                        '{0[6]} {0[7]} {0[8]} {0[9]} {0[10]} {0[11]} ' + \
+                        '{0[12]} {0[13]} {0[14]}'
+
+        log_mass_min, log_mass_max = 7, 13
         log_sfr_min, log_sfr_max = -3, 4
 
-        j = np.argmin(np.abs(z-zobs[gal])) # Find closest model redshift
+        # Set up output arrays
+        chi_z_best = np.zeros(len(z))
 
-        fo = obs[gal,:]
-        ferr = obs_err[gal,:]
+        m_z_best = np.zeros(len(z))
+        m_z_median = np.zeros(len(z))
+        m_z_u68 = np.zeros(len(z))
+        m_z_l68 = np.zeros(len(z))
 
+        sfr_z_best = np.zeros(len(z))
+        sfr_z_median = np.zeros(len(z))
+        sfr_z_u68 = np.zeros(len(z))
+        sfr_z_l68 = np.zeros(len(z))
 
-        flux_obs[fo <= 0.] = 0.       # Set negative fluxes to zero
-        #print fo
-        I = (ferr > 0.)*(ferr < 1e6) # Find bands with no observation
-        fo = flux_obs[I]                    # and exclude from fit
-        ferr = flux_err[I]
-        fm = f[I,j,:]
-        #print flux_models[:,0,0,0,0]
+        #m_z_hist = np.zeros((len(z), 120))
+        #sfr_z_hist = np.zeros((len(z), 140))
 
-        top = 0.
-        bottom = 0.
+        flux_obs = obs[gal,:]
+        flux_err = obs_err[gal,:]
 
-        for i in range(len(fo)):
-            top += (flux_models[i,:]*flux_obs[i])/(flux_err[i]**2)
-            bottom += (flux_models[i,:]**2)/(flux_err[i]**2)
+        #flux_obs[fo <= 0.] = 0.       # Set negative fluxes to zero
+        I = np.where(flux_err > 0.)[0] # Find bands with no observation
 
-        scale = top/bottom
-        scale = np.reshape(scale, (n_metal, n_tg, n_tau, n_tauv, n_fesc))
+        if len(I) == 0:
+            output_array = [gal+1, ID[gal], zobs[gal], z[j],
+                            -99, -99, -99, -99, -99, -99, -99,
+                            -99,-99,len(I),-99,'\n']
+            output = output_string.format(output_array)
 
-        chisq = 0.
-        for i in range(len(fo)):
-            chisq += ((np.abs(scale*flux_models[i,:]-flux_obs[i])**2)/(flux_err[i])**2)
+            if include_rest:
+                M_scaled = np.ones(len(flux_obs)) * -99.
+                restframe_output = ' '.join(M_scaled.astype('str'))
+                output = output + restframe_output + ' \n'
 
-        chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
-
-        chisq -= (chisq.min() - 1)
-        likelihood = np.exp(-0.5*chisq)
-        likelihood /= likelihood.sum()
-
-        if np.isinf(chimin) or np.isnan(minind) or len(fo) == 0:
-            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} \
-            {10} {11} {12} {13} {14} {15} {16} {17} {18}'.format(gal+1,ID[gal],zobs[gal],
-                                                                 -99,-99,-99,-99,-99,-99,
-                                                                 -99, -99, -99, -99,-99,-99,-99,
-                                                                 len(I),-99,'\n')
-
-            massLikelihood = np.zeros(mass_bins+1)
-            massLikelihood[0] = gal
-            muvLikelihood = np.zeros(muv_bins+1)
-            muvLikelihood[0] = gal
-            betaLikelihood = np.zeros(beta_bins+1)
-            betaLikelihood[0] = gal
-            #tauLikelihood = np.zeros(n_tau)
-            #tauLikelihood = np.insert(tauLikelihood,0,gal)
-            printQueue.put([output_string,massLikelihood,muvLikelihood,betaLikelihood])
+            else:
+                output = output + ' \n'
+            printQueue.put(output_string)
             continue
 
-        #Find the coordinate of the model with the bestfit mass
-        si,tgi,tvi,ti,mi = np.unravel_index(minind,(mass_bins,n_tg,n_tauv,n_tau,n_ssp))
-        Bestfit_Mass = np.log10(mass_range[si]*flux_corr)
-        Bestfit_SFR = (mass_range[si]*SFR[tgi,ti,mi]*flux_corr)
-        Bestfit_Beta = beta[tgi,tvi,ti,mi]
 
-        F_rest = f[:,0]*mass_range[likelihood.argmax(0)]*flux_corr
-        restframeMags = 23.9 - 2.5*np.log10(F_rest)
+        flux_obs = flux_obs[I]                    # and exclude from fit
+        flux_err = flux_err[I]
+        tot_err = np.sqrt(flux_err**2 + (params.flux_err*flux_obs)**2)
 
-        UV_rest = UV_flux[0]*mass_range[likelihood.argmax(0)]*flux_corr
-        restframeMUV = 23.9 - 2.5*np.log10(UV_rest)
+        for j, jz in enumerate(z):
+            #j = np.argmin(np.abs(z-zobs[gal])) # Find closest model redshift
+            flux_models = f[j,I,:,j]
 
-        Bestfit_restframeMags = restframeMags[:,tgi,tvi,ti,mi]
-        Bestfit_restframeMUV = restframeMUV[tgi,tvi,ti,mi]
+            top = 0.
+            bottom = 0.
 
-        if np.isnan(Bestfit_Mass) or np.isinf(chimin):
-            Bestfit_Mass = -99
-            #M_scaled[:] = -99
-            tgs = -99
-            tvs = -99
-            taus = -99
-            mis = -99
+            for i in range(len(flux_obs)):
+                top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
+                bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
 
-        else:
-            tgs = tg[tgi]/1.e9
-            tvs = tv[tvi]
-            taus = tau[ti]/1.e9
-            mis = mi
+            scale = top/bottom
+            scale = np.reshape(scale, (n_metal, n_tau, n_tauv, n_fesc))
 
-        """
-        Likelihood array section:
-        """
-        mass_hist = np.histogram(np.log10(mass_))
+            chisq = 0.
+            for i in range(len(flux_obs)):
+                chisq += ((np.abs(scale*flux_models[i,:]-flux_obs[i])**2)/(tot_err[i])**2)
+
+            chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
+            likelihood = np.reshape(np.exp(-0.5*chisq),
+                                    (n_metal, n_tau, n_tauv, n_fesc))
+            likelihood[np.isnan(likelihood)] = 0.
+            likelihood = np.abs(likelihood/likelihood.sum())
+
+
+            if np.isinf(chimin) or np.isnan(minind):
+                output_array = [gal+1, ID[gal], zobs[gal], z[j],
+                                -99, -99, -99, -99, -99, -99,
+                                -99,-99,len(I),-99,'\n']
+                output = output_string.format(output_array)
+
+            else:
+                #Find the coordinate of the model with the bestfit mass
+                mi, ti, tvi, fi = np.unravel_index(minind,
+                                                   (n_metal,
+                                                   n_tau, n_tauv, n_fesc))
+
+                Masses = np.log10(np.abs(scale * flux_corr))
+                SFRs = np.log10(np.abs(scale * SFR[:,j] * flux_corr))
+
+                """
+                mass_hist = np.histogram(Masses.flatten(),
+                                         range = (log_mass_min, log_mass_max),
+                                         bins = 120,
+                                         weights = likelihood.flatten(),
+                                         density = True)
+
+                sfr_hist = np.histogram(SFRs.flatten(),
+                                         range = (log_sfr_min, log_sfr_max),
+                                         bins = 140,
+                                         weights = likelihood.flatten(),
+                                         density = True)
+                """
+
+                Bestfit_Mass = np.log10(np.abs(scale[mi, ti, tvi, fi]*flux_corr))
+                Bestfit_SFR = np.log10(np.abs(scale[mi, ti, tvi, fi]) *
+                                       SFR[mi, j, ti, tvi, fi]*flux_corr)
+
+
+
+            if np.isnan(Bestfit_Mass) or np.isinf(chimin):
+                Bestfit_Mass = -99
+                #M_scaled[:] = -99
+                tvs = -99
+                taus = -99
+                mis = -99
+                escape_fraction = -99
+
+            else:
+                tvs = tv[tvi]
+                taus = tau[ti]
+                mis = metallicities[mi]
+                escape_fraction = fesc[fi]
+
+            m16, m50, m84 = weighted_quantile(Masses.flatten(),
+                                              [0.16, 0.5, 0.84],
+                                              sample_weight=likelihood.flatten(),
+                                              values_sorted=False)
+            s16, s50, s84 = weighted_quantile(SFRs.flatten(),
+                                              [0.16, 0.5, 0.84],
+                                              sample_weight=likelihood.flatten(),
+                                              values_sorted=False)
+
+            chi_z_best[j] = chimin
+            m_z_best[j] = Bestfit_Mass
+            sfr_z_best[j] = Bestfit_SFR
+
+            m_z_l68[j], m_z_median[j], m_z_u68[j] = m16, m50, m84
+            sfr_z_l68[j], sfr_z_median[j], sfr_z_u68[j] = s16, s50, s84
+
+            MUV_scaled = -99.
+            Bestfit_Beta = -99.
 
         printlock.acquire()
+        j = np.argmin(np.abs(z-zobs[gal])) # Find closest model redshift
+        print_string = "{0[0]:6d} {0[1]:8d} {0[2]:>5.2f} " + \
+                       "{0[3]:>7.2f} {0[4]:>8.1f} {0[5]:>8.3f}"
 
-        if calc_mode:
-            print('{0:4d} {1:6d} {2:>6.2f} {3:>8.1f} {4:>6.2f}'.format(gal+1,ID[gal],Bestfit_Mass,chimin, np.log10(Mode_Mass), '/n'))
-        else:
-            print('{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.3f} {5:>5.1f} {6:>8.2f} {7:>3d} {8:>5.2f}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tvs,taus,mis,np.log10(Bestfit_SFR)))
+        print_array = [gal+1, ID[gal], zobs[gal],
+                       m_z_best[j], chi_z_best[j],
+                       sfr_z_best[j]]
+        print(print_string.format(print_array))
 
-        output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tvs,taus,mis,Bestfit_restframeMags[tot],Bestfit_restframeMUV,minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
+        output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
+                        '{chi_best} ' + \
+                        '{mass_med} {mass_l68} {mass_u68} ' + \
+                        '{sfr_med} {sfr_l68} {sfr_u68} ' + \
+                        '{nfilts} '
+
+        output_values = {'n': gal+1,
+                         'id': ID[gal],
+                         'zobs': zobs[gal], 'ztemp':z[j],
+                         'mass_best': Bestfit_Mass,
+                         'sfr_best': Bestfit_SFR,
+                         'chi_best': chimin,
+                         'mass_med': m50, 'mass_l68': m16, 'mass_u68': m84,
+                         'sfr_med': s50, 'sfr_l68': s16, 'sfr_u68': s84,
+                         'nfilts': len(I)}
+
+        output = output_string.format(**output_values) + ' \n'
 
         printlock.release()
-        printQueue.put([output_string, massLikelihoods, muvLikelihoods, betaLikelihoods])
+        printQueue.put([gal, output,
+                        [m_z_best, sfr_z_best, chi_z_best],
+                        [m_z_l68, m_z_median, m_z_u68]
+                        [sfr_z_l68, sfr_z_median, sfr_z_u68]])
 
 
 def getObservations(inputpath):
@@ -634,8 +717,33 @@ if __name__ == '__main__':
         output_hdf = h5py.File(output_hdf_path, 'w')
         output_hdf.create_dataset("mass_pdf", (len(ID), 120), dtype="f")
         output_hdf.create_dataset("sfr_pdf", (len(ID), 140), dtype="f")
+        output_hdf.create_dataset("fit_flux", (len(ID), f.shape[1]), dtype="f")
+        output_hdf.create_dataset("obs_flux", (len(ID), f.shape[1]), dtype="f")
+        output_hdf.create_dataset("obs_fluxerr", (len(ID), f.shape[1]),
+                                  dtype="f")
+        output_hdf.create_dataset("lambda_filt", data = models["wl"])
+        output_hdf.create_dataset("fwhm_filt", data = models["fwhm"])
+
         fitFunction = galaxyFit2
 
+    elif calc_mode == 'Mz':
+        output_hdf = h5py.File(output_hdf_path, 'w')
+
+        output_hdf.create_dataset("m_z_best", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("sfr_z_best", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("chi_z_best", (len(ID), len(z)), dtype="f")
+
+        output_hdf.create_dataset("m_z_median", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("m_z_l68", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("m_z_u68", (len(ID), len(z)), dtype="f")
+
+        output_hdf.create_dataset("sfr_z_median", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("sfr_z_u68", (len(ID), len(z)), dtype="f")
+        output_hdf.create_dataset("sfr_z_l68", (len(ID), len(z)), dtype="f")
+
+        output_hdf.create_dataset("z", data=z)
+
+        fitFunction = galaxyFitMz
     else:
         fitFunction = galaxyFit
 
@@ -650,17 +758,40 @@ if __name__ == '__main__':
 
     if calc_mode == 'hist':
         for i, gal in enumerate(ID):
-            printout, mass_hist, sfr_hist = printQueue.get()
+            j, out, mass_hist, sfr_hist, fit_flux, obs_flux = printQueue.get()
+
             if i == 0:
                 mass_centers = 0.5*(mass_hist[1][1:] + mass_hist[1][:-1])
                 sfr_centers = 0.5*(sfr_hist[1][1:] + sfr_hist[1][:-1])
 
                 output_hdf.create_dataset("mass_bins", data = mass_centers)
                 output_hdf.create_dataset("sfr_bins", data = sfr_centers)
-            output_hdf["mass_pdf"][i] = mass_hist[0]
-            output_hdf["sfr_pdf"][i] = sfr_hist[0]
-            temp_file.write( printout )
-        #tau_array.tofile(tau_file)
+
+            output_hdf["mass_pdf"][j] = mass_hist[0]
+            output_hdf["sfr_pdf"][j] = sfr_hist[0]
+            output_hdf["fit_flux"][j] = fit_flux
+            output_hdf["obs_flux"][j] = obs_flux[0]
+            output_hdf["obs_fluxerr"][j] = obs_flux[1]
+
+            temp_file.write( out )
+
+    elif calc_mode == 'Mz':
+        for i, gal in enumerate(ID):
+            j, out, pz_best, mz_median, sfrz_median = printQueue.get()
+
+            output_hdf["m_z_best"][j,:] = pz_best[0]
+            output_hdf["sfr_z_best"][j,:] = pz_best[1]
+            output_hdf["chi_z_best"][j,:] = pz_best[2]
+
+            output_hdf["m_z_l68"][j,:] = mz_median[0]
+            output_hdf["m_z_median"][j,:] = mz_median[1]
+            output_hdf["m_z_u68"][j,:] = mz_median[2]
+
+            output_hdf["sfr_z_l68"][j,:] = sfrz_median[0]
+            output_hdf["sfr_z_median"][j,:] = sfrz_median[1]
+            output_hdf["sfr_z_u68"][j,:] = sfrz_median[2]
+
+            temp_file.write( out )
     else:
         for i, gal in enumerate(ID):
             printout = printQueue.get()

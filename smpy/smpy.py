@@ -8,6 +8,7 @@ import h5py
 import types
 import glob
 import pkg_resources
+import ast
 
 from scipy.interpolate import griddata
 from scipy import spatial
@@ -77,7 +78,7 @@ class CSP(object):
                 Include metal line component in nebular emission model
         """
 
-        self.beta = None
+        self.beta = [0.]
         self.SSP = ssp
         self.metallicities = self.SSP.metallicities
         # Normalise to solar metallicity
@@ -541,6 +542,41 @@ class CSP(object):
         print((lineluminosity / binwidth).unit)
         self.Lalpha = lineluminosity
         self.SED[:, :, :, :, :,wbin] += (lineluminosity / binwidth)
+
+    def save_to_hdf(self, hdfpath):
+        with h5py.File(hdfpath, 'w') as f:
+            units = {}
+            # Store all CSP attributes in case they are needed later
+            for attribute in self.__dict__.keys():
+                if attribute not in ['SSP', 'iseds']:
+                    try:
+                        ds = f.create_dataset(attribute, data=self.__dict__[attribute])
+                        try:
+                            ds.attrs['unit'] = self.__dict__[attribute].unit.to_string()
+                            print(units[attribute])
+                        except:
+                            continue
+                    except:
+                        if callable(self.__dict__[attribute]):
+                        # in cases of functions etc.
+                            continue
+                        else:
+                            print(attribute)
+                            raise
+
+
+    def load_from_hdf(self, hdfpath):
+        with h5py.File(hdfpath, 'r') as f:
+            # Store all CSP attributes in case they are needed later
+            for attribute in f.keys():
+                try:
+                    if 'unit' in f[attribute].attrs.keys():
+                        self.__dict__[attribute] = f[attribute][()] * u.Unit(f[attribute].attrs['unit'])
+                    else:
+                        self.__dict__[attribute] = f[attribute][()]
+                except:
+                    # in cases of functions etc.
+                    continue
 
 class Filter(object):
     def __init__(self):

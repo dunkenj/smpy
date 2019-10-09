@@ -31,34 +31,45 @@ def make_dbl_sfhs(nalpha, nbeta, ntau,
     sfh_params = np.vstack([alphas.flatten(), betas.flatten(), taus.flatten()]).T
     return sfh_params
 
-sfhs = make_dbl_sfhs(7, 7, 7)
+sfhs = make_dbl_sfhs(2, 2, 2)
 
-zrange = np.linspace(0., 2., 21.)
+zrange = np.linspace(0., 2., 11.)
 zform = 20.
 
 ages = cosmo.age(zrange) - cosmo.age(zform)
 
-metallicities = 1.
+metallicities = [0.1, 1.]
 dusts = [0., 0.5, 1.] #np.linspace(0., 2., 11) # Av range
 
 models.build(ages, sfhs, dusts, metallicities, sfh_law=dblpower, verbose=True)
 
-"""
-Example: Save intermediate models
-"""
-with open('candels.goodss.csp.pkl', 'wb') as output:
-    cPickle.dump(models, output, protocol=2)
+models.save_to_hdf('test_hdf_set.hdf')
 
-"""
-Example: Load saved models
-"""
-with open('candels.goodss.csp.pkl', 'rb') as input:
-    models = cPickle.load(input)
-    print('models_loaded')
+models2 = S.CSP(bc03)
+models2.load_from_hdf('test_hdf_set.hdf')
+
+
+# """
+# Example: Save intermediate models
+# """
+# with open('candels.goodss.csp.pkl', 'wb') as output:
+#     cPickle.dump(models, output, protocol=2)
+#
+# """
+# Example: Load saved models
+# """
+# with open('candels.goodss.csp.pkl', 'rb') as input:
+#     models = cPickle.load(input)
+#     print('models_loaded')
+
+
 
 # Load CANDELS Filter Set
-filters = S.FilterSet('data/Filters/GS/*.txt')
+filters = S.FilterSet('data/Filters/CANDELS-GS/*.txt')
 
 # Convolve CSP models with filter set over redshift range
 Obs = S.ObserveToFile()
 Obs.build(models, filters, zrange, 'candels.goodss.models.test.hdf', verbose=True)
+
+Obs2 = S.ObserveToFile()
+Obs2.build(models2, filters, zrange, 'candels.goodss.models.savetest.hdf', verbose=True)
