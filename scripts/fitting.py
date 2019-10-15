@@ -8,7 +8,7 @@ import h5py
 import logging
 from astropy.table import Table, Column
 from astropy import units as u
-
+from scipy.interpolate import griddata
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -185,11 +185,15 @@ def galaxyFit2(inputQueue, printQueue, printlock):
             printQueue.put(output_string)
             continue
 
-        flux_obs = flux_obs[I]                    # and exclude from fit
-        flux_err = flux_err[I]
+        flux_obs = flux_obs[I] * zp_offsets[I]                    # and exclude from fit
+        flux_err = flux_err[I] * zp_offsets[I]
         flux_models = f[j,I,:,j,:]
 
-        tot_err = np.sqrt(flux_err**2 + (params.flux_err*flux_obs)**2)
+        if params.temp_err != None:
+            terr = griddata(terr_wl, terr_sigma, models['wl'][()][I] / (1+z[j]))
+            tot_err = np.sqrt(flux_err**2 + (terr*flux_obs)**2 + (params.flux_err*flux_obs)**2)
+        else:
+            tot_err = np.sqrt(flux_err**2 + (params.flux_err*flux_obs)**2)
 
         top = 0.
         bottom = 0.
@@ -668,6 +672,13 @@ if __name__ == '__main__':
     SFR = models['SFR']
     Ms = models['Ms']
 
+    if params.zp_offsets != None:
+        zp_offsets = Table.read(params.zp_offsets, format='ascii.no_header')['col1']
+
+    if params.temp_err != None:
+        terr_wl, terr_sigma = np.loadtxt(params.temp_err).T
+
+
     if (nfilts == filters_found) and (filts_used == None):
         f = models['fluxes']
 
@@ -694,6 +705,7 @@ if __name__ == '__main__':
     if os.path.isfile(output_path+".temp_output.txt"):
         os.remove(output_path+".temp_output.txt")
     temp_file = open(output_path+".temp_output.txt","w")
+
 
     """
     SECTION 4

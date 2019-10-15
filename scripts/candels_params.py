@@ -46,10 +46,13 @@ flux_err : Additional fractional flux error added to all bands in quadrature
 """
 fitting_mode = 'hist'
 include_rest = True
-ncpus = 1
+ncpus = 4
+
+zp_offsets = 'test_offsets.txt'
+temp_err = 'TEMPLATE_ERROR.v2.0.zfourge.txt'
 
 flux_corr = 1
-flux_err = 0.1
+flux_err = 0.
 
 """
 Output Options
