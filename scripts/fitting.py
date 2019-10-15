@@ -168,7 +168,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
 
         #flux_obs[fo <= 0.] = 0.       # Set negative fluxes to zero
         #I = np.where(flux_err > 0.)[0] # Find bands with no observation
-        I = (flux_err > 0.) * ((models['wl'][()][I] / (1+z[j])) < 3e5)
+        I = (flux_err > 0.) * ((models['wl'][()] / (1+z[j])) < 3e5)
 
         if len(I) == 0:
             output_array = [gal+1, ID[gal], zobs[gal], z[j],
