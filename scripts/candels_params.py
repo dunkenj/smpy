@@ -20,7 +20,7 @@ filts_used : Indices of filters in model file to be used for fitting.
 
 model_path = 'candels.goodss.models.savetest.hdf'
 output_name = 'candels_test.cat'
-input_catalog = 'data/CANDELS.GOODSS.z2.cat'
+input_catalog = 'data/CANDELS.GOODSS.example.cat'
 input_format = 'ascii.commented_header'
 
 z_col = 'Photo_z'
@@ -49,10 +49,11 @@ include_rest = True
 ncpus = 4
 
 zp_offsets = 'test_offsets.txt'
-temp_err = 'TEMPLATE_ERROR.v2.0.zfourge.txt'
+temp_err = None #'TEMPLATE_ERROR.v2.0.zfourge.txt'
 
 flux_corr = 1
 flux_err = 0.
+nmin_bands = 5.
 
 """
 Output Options
