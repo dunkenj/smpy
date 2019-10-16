@@ -171,10 +171,25 @@ def galaxyFit2(inputQueue, printQueue, printlock):
         I = (flux_err > 0.) * ((models['wl'][()] / (1+z[j])) < 3e5)
 
         if np.sum(I) <= params.nmin_bands:
-            output_array = [gal+1, ID[gal], zobs[gal], z[j],
-                            -99, -99, -99, -99, -99, -99, -99,
-                            -99,-99,len(I),-99,'\n']
-            output = output_string.format(output_array)
+            output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
+                            '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
+                            '{mass_med} {mass_l68} {mass_u68} ' + \
+                            '{sfr_med} {sfr_l68} {sfr_u68} ' + \
+                            '{nfilts} '
+
+            output_values = {'n': gal+1,
+                             'id': ID[gal],
+                             'zobs': zobs[gal], 'ztemp':z[j],
+                             'mass_best': -99.,
+                             'sfr_best': -99,
+                             'chi_best': -99,
+                             'tvs': -99, 'taus': -99,
+                             'mis': -99, 'fesc': -99,
+                             'mass_med': -99, 'mass_l68': -99, 'mass_u68': -99,
+                             'sfr_med': -99, 'sfr_l68': -99, 'sfr_u68': -99,
+                             'nfilts': np.sum(I)}
+
+            output = output_string.format(**output_values)
 
             if include_rest:
                 M_scaled = np.ones(len(flux_obs)) * -99.
@@ -183,7 +198,8 @@ def galaxyFit2(inputQueue, printQueue, printlock):
 
             else:
                 output = output + ' \n'
-            printQueue.put(output_string)
+            printQueue.put([gal, output, np.zeros(120), np.zeros(120), np.zeros(f.shape[1]),
+                            [obs[gal, :], obs_err[gal, :]]])
             continue
 
         flux_obs = flux_obs[I] * zp_offsets[I]                    # and exclude from fit
@@ -218,10 +234,25 @@ def galaxyFit2(inputQueue, printQueue, printlock):
 
 
         if np.isinf(chimin) or np.isnan(minind):
-            output_array = [gal+1, ID[gal], zobs[gal], z[j],
-                            -99, -99, -99, -99, -99, -99, -99,
-                            -99,-99,len(I),-99,'\n']
-            output = output_string.format(output_array)
+            output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
+                            '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
+                            '{mass_med} {mass_l68} {mass_u68} ' + \
+                            '{sfr_med} {sfr_l68} {sfr_u68} ' + \
+                            '{nfilts} '
+
+            output_values = {'n': gal+1,
+                             'id': ID[gal],
+                             'zobs': zobs[gal], 'ztemp':z[j],
+                             'mass_best': -99.,
+                             'sfr_best': -99,
+                             'chi_best': -99,
+                             'tvs': -99, 'taus': -99,
+                             'mis': -99, 'fesc': -99,
+                             'mass_med': -99, 'mass_l68': -99, 'mass_u68': -99,
+                             'sfr_med': -99, 'sfr_l68': -99, 'sfr_u68': -99,
+                             'nfilts': np.sum(I)}
+
+            output = output_string.format(**output_values)
 
         else:
             #Find the coordinate of the model with the bestfit mass
@@ -310,11 +341,11 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                              'mis': mis, 'fesc': escape_fraction,
                              'mass_med': m50, 'mass_l68': m16, 'mass_u68': m84,
                              'sfr_med': s50, 'sfr_l68': s16, 'sfr_u68': s84,
-                             'nfilts': len(I)}
+                             'nfilts': np.sum(I)}
 
             output_array = [gal+1, ID[gal], zobs[gal],
                             Bestfit_Mass, chimin, tvs, taus, mis,
-                            MUV_scaled, minind, Bestfit_SFR, len(I), -99., '\n']
+                            MUV_scaled, minind, Bestfit_SFR, np.sum(I), -99., '\n']
             output = output_string.format(**output_values)
 
         if include_rest:
