@@ -1,201 +1,78 @@
-Error in atexit._run_exitfuncs:
-Traceback (most recent call last):
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/popen_fork.py", line 29, in poll
-    pid, sts = os.waitpid(self.pid, flag)
-KeyboardInterrupt
-9: RuntimeWarning: divide by zero encountered in log10
-  SFR[mi, j, ti, tvi, fi]*flux_corr))
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:216: RuntimeWarning: invalid value encountered in true_divide
-  likelihood = np.abs(likelihood/likelihood.sum())
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
-  return n/db/n.sum(), bins
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:232: RuntimeWarning: invalid value encountered in log10
-  Masses = np.abs(np.log10(scale*flux_corr))
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:233: RuntimeWarning: invalid value encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
-  keep = (tmp_a >= mn)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
-  keep &= (tmp_a <= mx)
-Process Process-7:
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:213: RuntimeWarning: All-NaN axis encountered
+  chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
+Process Process-4:
 Traceback (most recent call last):
   File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 249, in _bootstrap
     self.run()
   File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 93, in run
     self._target(*self._args, **self._kwargs)
-  File "/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py", line 245, in galaxyFit2
-    density = True)
-  File "/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py", line 780, in histogram
-    minlength=bins).astype(ntype)
-KeyboardInterrupt
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 252, in _bootstrap
-    util._exit_function()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 314, in _exit_function
-    _run_finalizers()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 254, in _run_finalizers
-    finalizer()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 186, in __call__
-    res = self._callback(*self._args, **self._kwargs)
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/queues.py", line 198, in _finalize_join
-    thread.join()
-  File "/anaconda/envs/python3/lib/python3.6/threading.py", line 1056, in join
-    self._wait_for_tstate_lock()
-  File "/anaconda/envs/python3/lib/python3.6/threading.py", line 1072, in _wait_for_tstate_lock
-    elif lock.acquire(block, timeout):
-KeyboardInterrupt
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:216: RuntimeWarning: invalid value encountered in true_divide
-  likelihood = np.abs(likelihood/likelihood.sum())
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:233: RuntimeWarning: divide by zero encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:249: RuntimeWarning: divide by zero encountered in log10
-  SFR[mi, j, ti, tvi, fi]*flux_corr))
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
-  return n/db/n.sum(), bins
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:232: RuntimeWarning: invalid value encountered in log10
-  Masses = np.abs(np.log10(scale*flux_corr))
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:233: RuntimeWarning: invalid value encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
-  keep = (tmp_a >= mn)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
-  keep &= (tmp_a <= mx)
-Process Process-5:
+  File "/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py", line 213, in galaxyFit2
+    chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
+  File "/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/nanfunctions.py", line 406, in nanargmin
+    raise ValueError("All-NaN slice encountered")
+ValueError: All-NaN slice encountered
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:213: RuntimeWarning: All-NaN axis encountered
+  chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
+Process Process-3:
 Traceback (most recent call last):
   File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 249, in _bootstrap
     self.run()
   File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 93, in run
     self._target(*self._args, **self._kwargs)
-  File "/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py", line 233, in galaxyFit2
-    SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
-  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
-  File "/anaconda/envs/python3/lib/python3.6/site-packages/h5py/_hl/dataset.py", line 489, in __getitem__
-    if len(mshape) < len(self.shape):
-  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
-  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
-  File "/anaconda/envs/python3/lib/python3.6/site-packages/h5py/_hl/dataset.py", line 225, in shape
-    return self.id.shape
-KeyboardInterrupt
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 252, in _bootstrap
-    util._exit_function()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 314, in _exit_function
-    _run_finalizers()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 254, in _run_finalizers
-    finalizer()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 186, in __call__
-    res = self._callback(*self._args, **self._kwargs)
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/queues.py", line 198, in _finalize_join
-    thread.join()
-  File "/anaconda/envs/python3/lib/python3.6/threading.py", line 1056, in join
-    self._wait_for_tstate_lock()
-  File "/anaconda/envs/python3/lib/python3.6/threading.py", line 1072, in _wait_for_tstate_lock
-    elif lock.acquire(block, timeout):
-KeyboardInterrupt
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:233: RuntimeWarning: divide by zero encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:249: RuntimeWarning: divide by zero encountered in log10
-  SFR[mi, j, ti, tvi, fi]*flux_corr))
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:216: RuntimeWarning: invalid value encountered in true_divide
+  File "/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py", line 213, in galaxyFit2
+    chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
+  File "/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/nanfunctions.py", line 406, in nanargmin
+    raise ValueError("All-NaN slice encountered")
+ValueError: All-NaN slice encountered
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:217: RuntimeWarning: invalid value encountered in true_divide
   likelihood = np.abs(likelihood/likelihood.sum())
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:234: RuntimeWarning: divide by zero encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
 /anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
   return n/db/n.sum(), bins
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:232: RuntimeWarning: invalid value encountered in log10
-  Masses = np.abs(np.log10(scale*flux_corr))
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:233: RuntimeWarning: invalid value encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
-  keep = (tmp_a >= mn)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
-  keep &= (tmp_a <= mx)
-Process Process-8:
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:213: RuntimeWarning: All-NaN axis encountered
+  chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
+Process Process-2:
 Traceback (most recent call last):
   File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 249, in _bootstrap
     self.run()
   File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 93, in run
     self._target(*self._args, **self._kwargs)
-  File "/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py", line 193, in galaxyFit2
-    terr = griddata(terr_wl, terr_sigma, models['wl'][()][I] / (1+z[j]))
-  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
-  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
-  File "/anaconda/envs/python3/lib/python3.6/site-packages/h5py/_hl/dataset.py", line 461, in __getitem__
-    if self.shape == ():
-  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
-  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
-  File "/anaconda/envs/python3/lib/python3.6/site-packages/h5py/_hl/dataset.py", line 225, in shape
-    return self.id.shape
-KeyboardInterrupt
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 252, in _bootstrap
-    util._exit_function()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 314, in _exit_function
-    _run_finalizers()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 254, in _run_finalizers
-    finalizer()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 186, in __call__
-    res = self._callback(*self._args, **self._kwargs)
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/queues.py", line 198, in _finalize_join
-    thread.join()
-  File "/anaconda/envs/python3/lib/python3.6/threading.py", line 1056, in join
-    self._wait_for_tstate_lock()
-  File "/anaconda/envs/python3/lib/python3.6/threading.py", line 1072, in _wait_for_tstate_lock
-    elif lock.acquire(block, timeout):
-KeyboardInterrupt
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:233: RuntimeWarning: divide by zero encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:216: RuntimeWarning: invalid value encountered in true_divide
+  File "/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py", line 213, in galaxyFit2
+    chimin, minind = np.nanmin(chisq), np.nanargmin(chisq)
+  File "/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/nanfunctions.py", line 406, in nanargmin
+    raise ValueError("All-NaN slice encountered")
+ValueError: All-NaN slice encountered
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:217: RuntimeWarning: invalid value encountered in true_divide
   likelihood = np.abs(likelihood/likelihood.sum())
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:249: RuntimeWarning: divide by zero encountered in log10
-  SFR[mi, j, ti, tvi, fi]*flux_corr))
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:234: RuntimeWarning: divide by zero encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
 /anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
   return n/db/n.sum(), bins
-/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:232: RuntimeWarning: invalid value encountered in log10
-  Masses = np.abs(np.log10(scale*flux_corr))
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:250: RuntimeWarning: divide by zero encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
 /Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:233: RuntimeWarning: invalid value encountered in log10
+  Masses = np.abs(np.log10(scale*flux_corr))
+/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py:234: RuntimeWarning: invalid value encountered in log10
   SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
 /anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
   keep = (tmp_a >= mn)
 /anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
   keep &= (tmp_a <= mx)
-Process Process-6:
+Process Process-1:
 Traceback (most recent call last):
   File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 249, in _bootstrap
     self.run()
   File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 93, in run
     self._target(*self._args, **self._kwargs)
-  File "/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py", line 193, in galaxyFit2
-    terr = griddata(terr_wl, terr_sigma, models['wl'][()][I] / (1+z[j]))
-  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
-  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
-  File "/anaconda/envs/python3/lib/python3.6/site-packages/h5py/_hl/dataset.py", line 461, in __getitem__
-    if self.shape == ():
-KeyboardInterrupt
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/process.py", line 252, in _bootstrap
-    util._exit_function()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 314, in _exit_function
-    _run_finalizers()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 254, in _run_finalizers
-    finalizer()
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/util.py", line 186, in __call__
-    res = self._callback(*self._args, **self._kwargs)
-  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/queues.py", line 198, in _finalize_join
-    thread.join()
-  File "/anaconda/envs/python3/lib/python3.6/threading.py", line 1056, in join
-    self._wait_for_tstate_lock()
-  File "/anaconda/envs/python3/lib/python3.6/threading.py", line 1072, in _wait_for_tstate_lock
-    elif lock.acquire(block, timeout):
+  File "/Users/ken/surfdrive/Astro/code/smpy/scripts/fitting.py", line 154, in galaxyFit2
+    for gal in iter(inputQueue.get, 'STOP'):
+  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/queues.py", line 94, in get
+    res = self._recv_bytes()
+  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/connection.py", line 216, in recv_bytes
+    buf = self._recv_bytes(maxlength)
+  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/connection.py", line 407, in _recv_bytes
+    buf = self._recv(4)
+  File "/anaconda/envs/python3/lib/python3.6/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
 KeyboardInterrupt
