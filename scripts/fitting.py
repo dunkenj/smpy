@@ -172,47 +172,14 @@ def galaxyFit2(inputQueue, printQueue, printlock):
 
         #flux_obs[fo <= 0.] = 0.       # Set negative fluxes to zero
         #I = np.where(flux_err > 0.)[0] # Find bands with no observation
-        I = (flux_err > 0.) * ((models['wl'][()] / (1+z[j])) < 3e5)
-
-        # if np.sum(I) <= params.nmin_bands:
-        #     output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
-        #                     '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
-        #                     '{mass_med} {mass_l68} {mass_u68} ' + \
-        #                     '{sfr_med} {sfr_l68} {sfr_u68} ' + \
-        #                     '{nfilts} '
-        #
-        #     output_values = {'n': gal+1,
-        #                      'id': ID[gal],
-        #                      'zobs': zobs[gal], 'ztemp':z[j],
-        #                      'mass_best': -99.,
-        #                      'sfr_best': -99,
-        #                      'chi_best': -99,
-        #                      'tvs': -99, 'taus': -99,
-        #                      'mis': -99, 'fesc': -99,
-        #                      'mass_med': -99, 'mass_l68': -99, 'mass_u68': -99,
-        #                      'sfr_med': -99, 'sfr_l68': -99, 'sfr_u68': -99,
-        #                      'nfilts': np.sum(I)}
-        #
-        #     output = output_string.format(**output_values)
-        #
-        #     if include_rest:
-        #         M_scaled = np.ones(len(flux_obs)) * -99.
-        #         restframe_output = ' '.join(M_scaled.astype('str'))
-        #         output = output + restframe_output + ' \n'
-        #
-        #     else:
-        #         output = output + ' \n'
-        #
-        #     printQueue.put([gal, output, np.zeros(120), np.zeros(120), np.zeros_like(f[j,:, 0, j, 0, 0, 0]),
-        #                     [obs[gal, :], obs_err[gal, :]]])
-        #     continue
+        I = (flux_err > 0.) * ((filt_lambda / (1+z[j])) < 3e5)
 
         flux_obs = flux_obs[I] * zp_offsets[I]                    # and exclude from fit
         flux_err = flux_err[I] * zp_offsets[I]
         flux_models = f[j,I,:,j,:]
 
         if params.temp_err != None:
-            terr = griddata(terr_wl, terr_sigma, models['wl'][()][I] / (1+z[j]))
+            terr = griddata(terr_wl, terr_sigma, filt_lambda[I] / (1+z[j]))
             tot_err = np.sqrt(flux_err**2 + (terr*flux_obs)**2 + (params.flux_err*flux_obs)**2)
         else:
             tot_err = np.sqrt(flux_err**2 + (params.flux_err*flux_obs)**2)
@@ -237,7 +204,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
         likelihood[np.isnan(likelihood)] = 0.
         likelihood = np.abs(likelihood/likelihood.sum())
 
-        if np.isinf(chimin) or np.isnan(minind) or np.sum(I) < params.nmin_bands:
+        if np.isinf(chimin) or np.isnan(minind):
             output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
                             '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
                             '{mass_med} {mass_l68} {mass_u68} ' + \
@@ -378,7 +345,6 @@ def galaxyFit2(inputQueue, printQueue, printlock):
 
 def galaxyFitMz(inputQueue, printQueue, printlock):
     for gal in iter(inputQueue.get, 'STOP'):
-
 
         output_string = '{0[0]} {0[1]} {0[2]} {0[3]} {0[4]} {0[5]} ' + \
                         '{0[6]} {0[7]} {0[8]} {0[9]} {0[10]} {0[11]} ' + \
@@ -694,11 +660,11 @@ if __name__ == '__main__':
 
     print("Loading synthetic mags and mass array:")
     models = h5py.File(model_path, 'r')
-    tg = models['ages'].value
-    tv = models['dust'].value
-    tau = models['sfh'].value
-    metallicities = models['metallicities'].value
-    fesc = models['fesc'].value
+    tg = models['ages'][()]
+    tv = models['dust'][()]
+    tau = models['sfh'][()]
+    metallicities = models['metallicities'][()]
+    fesc = models['fesc'][()]
 
     Mshape = models['fluxes'].shape
     z = models['z']
@@ -709,6 +675,7 @@ if __name__ == '__main__':
     n_tauv = Mshape[5]
     n_fesc = Mshape[6]
 
+    filt_lambda = models['wl'][()]
     #UV_flux = synmags['UV_flux']
     SFR = models['SFR']
     Ms = models['Ms']
