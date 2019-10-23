@@ -53,7 +53,7 @@ temp_err = None #'TEMPLATE_ERROR.v2.0.zfourge.txt'
 
 flux_corr = 1
 flux_err = 0.
-nmin_bands = 12.
+nmin_bands = 14.
 
 """
 Output Options

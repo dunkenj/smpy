@@ -3,12 +3,16 @@ import array
 import os, sys
 import re
 import time
-import multiprocessing
+import multiprocessing, logging
+# mpl = multiprocessing.log_to_stderr()
+# mpl.setLevel(logging.INFO)
+
 import h5py
 import logging
 from astropy.table import Table, Column
 from astropy import units as u
 from scipy.interpolate import griddata
+
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -170,37 +174,38 @@ def galaxyFit2(inputQueue, printQueue, printlock):
         #I = np.where(flux_err > 0.)[0] # Find bands with no observation
         I = (flux_err > 0.) * ((models['wl'][()] / (1+z[j])) < 3e5)
 
-        if np.sum(I) <= params.nmin_bands:
-            output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
-                            '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
-                            '{mass_med} {mass_l68} {mass_u68} ' + \
-                            '{sfr_med} {sfr_l68} {sfr_u68} ' + \
-                            '{nfilts} '
-
-            output_values = {'n': gal+1,
-                             'id': ID[gal],
-                             'zobs': zobs[gal], 'ztemp':z[j],
-                             'mass_best': -99.,
-                             'sfr_best': -99,
-                             'chi_best': -99,
-                             'tvs': -99, 'taus': -99,
-                             'mis': -99, 'fesc': -99,
-                             'mass_med': -99, 'mass_l68': -99, 'mass_u68': -99,
-                             'sfr_med': -99, 'sfr_l68': -99, 'sfr_u68': -99,
-                             'nfilts': np.sum(I)}
-
-            output = output_string.format(**output_values)
-
-            if include_rest:
-                M_scaled = np.ones(len(flux_obs)) * -99.
-                restframe_output = ' '.join(M_scaled.astype('str'))
-                output = output + restframe_output + ' \n'
-
-            else:
-                output = output + ' \n'
-            printQueue.put([gal, output, np.zeros(120), np.zeros(120), np.zeros(f.shape[1]),
-                            [obs[gal, :], obs_err[gal, :]]])
-            continue
+        # if np.sum(I) <= params.nmin_bands:
+        #     output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
+        #                     '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
+        #                     '{mass_med} {mass_l68} {mass_u68} ' + \
+        #                     '{sfr_med} {sfr_l68} {sfr_u68} ' + \
+        #                     '{nfilts} '
+        #
+        #     output_values = {'n': gal+1,
+        #                      'id': ID[gal],
+        #                      'zobs': zobs[gal], 'ztemp':z[j],
+        #                      'mass_best': -99.,
+        #                      'sfr_best': -99,
+        #                      'chi_best': -99,
+        #                      'tvs': -99, 'taus': -99,
+        #                      'mis': -99, 'fesc': -99,
+        #                      'mass_med': -99, 'mass_l68': -99, 'mass_u68': -99,
+        #                      'sfr_med': -99, 'sfr_l68': -99, 'sfr_u68': -99,
+        #                      'nfilts': np.sum(I)}
+        #
+        #     output = output_string.format(**output_values)
+        #
+        #     if include_rest:
+        #         M_scaled = np.ones(len(flux_obs)) * -99.
+        #         restframe_output = ' '.join(M_scaled.astype('str'))
+        #         output = output + restframe_output + ' \n'
+        #
+        #     else:
+        #         output = output + ' \n'
+        #
+        #     printQueue.put([gal, output, np.zeros(120), np.zeros(120), np.zeros_like(f[j,:, 0, j, 0, 0, 0]),
+        #                     [obs[gal, :], obs_err[gal, :]]])
+        #     continue
 
         flux_obs = flux_obs[I] * zp_offsets[I]                    # and exclude from fit
         flux_err = flux_err[I] * zp_offsets[I]
@@ -232,8 +237,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
         likelihood[np.isnan(likelihood)] = 0.
         likelihood = np.abs(likelihood/likelihood.sum())
 
-
-        if np.isinf(chimin) or np.isnan(minind):
+        if np.isinf(chimin) or np.isnan(minind) or np.sum(I) < params.nmin_bands:
             output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
                             '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
                             '{mass_med} {mass_l68} {mass_u68} ' + \
@@ -252,7 +256,23 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                              'sfr_med': -99, 'sfr_l68': -99, 'sfr_u68': -99,
                              'nfilts': np.sum(I)}
 
+            output_array = [gal+1, ID[gal], zobs[gal],
+                            Bestfit_Mass, chimin, tvs, taus, mis,
+                            MUV_scaled, minind, Bestfit_SFR, np.sum(I), -99., '\n']
             output = output_string.format(**output_values)
+
+            printlock.acquire()
+            print_string = "{0[0]:6d} {0[1]:8d} {0[2]:>5.2f} " + \
+                           "{0[3]:>7.2f} {0[4]:>8.3f} " + \
+                           "{0[5]:>5.1f} {0[6]:>8.2f} {0[7]:>4.2f} " + \
+                           "{0[8]:>5.2f}"
+
+            print_array = [gal+1, ID[gal], zobs[gal],
+                           -99, -99,
+                           -99, -99, -99,
+                           -99]
+            print(print_string.format(print_array))
+            printlock.release()
 
         else:
             #Find the coordinate of the model with the bestfit mass
@@ -284,21 +304,11 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                               f[j,:, mi, j, ti, tvi, fi] *
                               flux_corr)
 
-            if np.isnan(Bestfit_Mass) or np.isinf(chimin):
-                Bestfit_Mass = -99
-                #M_scaled[:] = -99
-                tgs = -99
-                tvs = -99
-                taus = -99
-                mis = -99
-                escape_fraction = -99
-
-            else:
-                tgs = tg[j]/1e9
-                tvs = tv[tvi]
-                taus = tau[ti]
-                mis = metallicities[mi]
-                escape_fraction = fesc[fi]
+            tgs = tg[j]/1e9
+            tvs = tv[tvi]
+            taus = tau[ti]
+            mis = metallicities[mi]
+            escape_fraction = fesc[fi]
 
             m16, m50, m84 = weighted_quantile(Masses.flatten(),
                                               [0.16, 0.5, 0.84],
@@ -324,7 +334,7 @@ def galaxyFit2(inputQueue, printQueue, printlock):
                            tvs, taus, mis,
                            Bestfit_SFR]
             print(print_string.format(print_array))
-
+            printlock.release()
             output_string = '{n} {id} {zobs} {ztemp} {mass_best} {sfr_best} '+ \
                             '{chi_best} {tvs} {taus} {mis} {fesc} '+ \
                             '{mass_med} {mass_l68} {mass_u68} ' + \
@@ -363,7 +373,6 @@ def galaxyFit2(inputQueue, printQueue, printlock):
         else:
             output = output + ' \n'
 
-        printlock.release()
         printQueue.put([gal, output, mass_hist, sfr_hist, Bestfit_fluxes,
                         [obs[gal, :], obs_err[gal, :]]])
 

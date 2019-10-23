@@ -1,60 +1,40 @@
-fitting.py:220: RuntimeWarning: overflow encountered in square
-  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
-fitting.py:219: RuntimeWarning: overflow encountered in true_divide
-  top += (flux_models[i,:]*flux_obs[i])/(tot_err[i]**2)
-fitting.py:220: RuntimeWarning: overflow encountered in true_divide
-  bottom += (flux_models[i,:]**2)/(tot_err[i]**2)
-fitting.py:222: RuntimeWarning: invalid value encountered in true_divide
-  scale = top/bottom
-fitting.py:233: RuntimeWarning: invalid value encountered in true_divide
+fitting.py:238: RuntimeWarning: invalid value encountered in true_divide
   likelihood = np.abs(likelihood/likelihood.sum())
-fitting.py:264: RuntimeWarning: divide by zero encountered in log10
+fitting.py:285: RuntimeWarning: divide by zero encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
+  return n/db/n.sum(), bins
+fitting.py:301: RuntimeWarning: divide by zero encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+fitting.py:238: RuntimeWarning: invalid value encountered in true_divide
+  likelihood = np.abs(likelihood/likelihood.sum())
+fitting.py:285: RuntimeWarning: divide by zero encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+fitting.py:301: RuntimeWarning: divide by zero encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
+  return n/db/n.sum(), bins
+fitting.py:284: RuntimeWarning: invalid value encountered in log10
   Masses = np.abs(np.log10(scale*flux_corr))
-fitting.py:265: RuntimeWarning: divide by zero encountered in log10
+fitting.py:285: RuntimeWarning: invalid value encountered in log10
   SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
 /anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
   keep = (tmp_a >= mn)
 /anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
   keep &= (tmp_a <= mx)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
-  return n/db/n.sum(), bins
-fitting.py:281: RuntimeWarning: divide by zero encountered in log10
-  SFR[mi, j, ti, tvi, fi]*flux_corr))
-fitting.py:264: RuntimeWarning: invalid value encountered in log10
-  Masses = np.abs(np.log10(scale*flux_corr))
-fitting.py:265: RuntimeWarning: divide by zero encountered in log10
+fitting.py:285: RuntimeWarning: divide by zero encountered in log10
   SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-fitting.py:233: RuntimeWarning: invalid value encountered in true_divide
-  likelihood = np.abs(likelihood/likelihood.sum())
-fitting.py:281: RuntimeWarning: divide by zero encountered in log10
-  SFR[mi, j, ti, tvi, fi]*flux_corr))
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
-  return n/db/n.sum(), bins
-fitting.py:360: RuntimeWarning: divide by zero encountered in log10
-  restframeMags = 23.9 - 2.5*np.log10(F_rest)
-fitting.py:360: RuntimeWarning: invalid value encountered in log10
-  restframeMags = 23.9 - 2.5*np.log10(F_rest)
-fitting.py:233: RuntimeWarning: invalid value encountered in true_divide
-  likelihood = np.abs(likelihood/likelihood.sum())
-fitting.py:265: RuntimeWarning: divide by zero encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-fitting.py:281: RuntimeWarning: divide by zero encountered in log10
-  SFR[mi, j, ti, tvi, fi]*flux_corr))
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
-  return n/db/n.sum(), bins
-fitting.py:264: RuntimeWarning: invalid value encountered in log10
-  Masses = np.abs(np.log10(scale*flux_corr))
-fitting.py:265: RuntimeWarning: invalid value encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
-  keep = (tmp_a >= mn)
-/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
-  keep &= (tmp_a <= mx)
-fitting.py:233: RuntimeWarning: invalid value encountered in true_divide
+fitting.py:238: RuntimeWarning: invalid value encountered in true_divide
   likelihood = np.abs(likelihood/likelihood.sum())
 /anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
   return n/db/n.sum(), bins
-fitting.py:265: RuntimeWarning: divide by zero encountered in log10
-  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
-fitting.py:281: RuntimeWarning: divide by zero encountered in log10
+fitting.py:301: RuntimeWarning: divide by zero encountered in log10
   SFR[mi, j, ti, tvi, fi]*flux_corr))
+fitting.py:285: RuntimeWarning: divide by zero encountered in log10
+  SFRs = np.log10(scale * SFR[:,j,:] * flux_corr)
+fitting.py:238: RuntimeWarning: invalid value encountered in true_divide
+  likelihood = np.abs(likelihood/likelihood.sum())
+fitting.py:301: RuntimeWarning: divide by zero encountered in log10
+  SFR[mi, j, ti, tvi, fi]*flux_corr))
+/anaconda/envs/python3/lib/python3.6/site-packages/numpy/lib/function_base.py:817: RuntimeWarning: invalid value encountered in true_divide
+  return n/db/n.sum(), bins
