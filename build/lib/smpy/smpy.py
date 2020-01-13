@@ -257,8 +257,8 @@ class CSP(object):
             bar = ProgressBar(np.product(self.SED.shape[1:-1]))
 
         for idG, age in enumerate(self.tg):
-            ta_range = np.logspace(np.log10(self.ages / u.yr).min(),
-                                   np.log10(age / u.yr), timesteps)
+            ta_range = np.logspace(np.log10(self.ages / u.yr).min().value,
+                                   np.log10(age / u.yr).value, timesteps)
             self.ta_sfh = np.ones(sfh_grid_shape) * u.yr
             self.ta_sfh *= ta_range[None, :]
 
@@ -349,7 +349,7 @@ class CSP(object):
                                                       self.wave,
                                                       Av * neb_dust_weight)
 
-                        combined_sed = np.copy(self.sed_sfh) * self.sed_sfh.unit
+                        combined_sed = np.copy(self.sed_sfh) #* self.sed_sfh.unit
 
                         # Absorbed LyC photons
                         combined_sed[:, :, self.wave <= 912 * u.AA] *= fesc
