@@ -33,7 +33,7 @@ def make_dbl_sfhs(nalpha, nbeta, ntau,
 
 sfhs = make_dbl_sfhs(2, 2, 2)
 
-zrange = np.linspace(0., 2., 11.)
+zrange = np.linspace(0., 2., 11)
 zform = 20.
 
 ages = cosmo.age(zrange) - cosmo.age(zform)

@@ -349,7 +349,7 @@ class CSP(object):
                                                       self.wave,
                                                       Av * neb_dust_weight)
 
-                        combined_sed = np.copy(self.sed_sfh) #"* self.sed_sfh.unit" 
+                        combined_sed = np.copy(self.sed_sfh) #"* self.sed_sfh.unit"
 
                         # Absorbed LyC photons
                         combined_sed[:, :, self.wave <= 912 * u.AA] *= fesc
@@ -773,9 +773,9 @@ class LoadEAZYFilters(object):
                 self.filters.append(new_filter)
                 self.filternames.append(name)
                 if f == 0:
-                    self.central_wl = np.array(lambda_c)
+                    self.central_wl = np.array(lambda_c.value)
                 else:
-                    self.central_wl = np.append(self.central_wl, lambda_c)
+                    self.central_wl = np.append(self.central_wl, lambda_c.value)
 
         #self.central_wl = self.central_wl*lambda_c.unit
 
@@ -795,7 +795,7 @@ class LoadEAZYFilters(object):
         for i in sorted_id:
             print('{0:<5.0f} {1:<8.2f}' \
                   'Angstrom {2}'.format(i,
-                                        self.central_wl[i].value,
+                                        self.central_wl[i],
                                         self.filternames[i]))
         return sorted_id
 
