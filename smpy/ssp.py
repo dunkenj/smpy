@@ -214,7 +214,7 @@ class BC(SSP):
 
         self.files = glob(self.SSPpath + '*.ised')
         if len(self.files) == 0:
-            raise Exception
+            raise Exception('SSP files not found.')
 
         elif verbose:
             print('{} .ised files found.'.format(len(self.files)))

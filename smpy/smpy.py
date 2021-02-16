@@ -844,6 +844,8 @@ class FilterSet:
                     self.filters.append(FileFilter(file))
             except:
                 a = ''
+        if len(self.files) == 0:
+            raise Exception('Filter files not found.')
 
     def addFileFilter(self, path):
         self.filters.append(FileFilter(path))
