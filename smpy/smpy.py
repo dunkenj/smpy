@@ -1166,12 +1166,12 @@ class ObserveToFile(object):
 
 
             for dataset in ['fluxes', 'mags']:
-                f[dataset].dims.create_scale(f['z'], 'z')
-                f[dataset].dims.create_scale(f['sfh'], 'sfh')
-                f[dataset].dims.create_scale(f['ages'], 'ages')
-                f[dataset].dims.create_scale(f['dust'], 'dust')
-                f[dataset].dims.create_scale(f['metallicities'], 'met')
-                f[dataset].dims.create_scale(f['fesc'], 'fesc')
+                f['z'].make_scale('z')
+                f['sfh'].make_scale('sfh')
+                f['ages'].make_scale('ages')
+                f['dust'].make_scale('dust')
+                f['metallicities'].make_scale('met')
+                f['fesc'].make_scale('fesc')
 
                 f[dataset].dims[0].attach_scale(f['z'])
                 f[dataset].dims[2].attach_scale(f['metallicities'])
@@ -1199,8 +1199,8 @@ class ObserveToFile(object):
         self.fluxes = self.f['fluxes']
         self.AB = self.f['mags']
 
-        self.Ms = self.f['Ms'].value
-        self.SFR = self.f['SFR'].value
+        self.Ms = self.f['Ms'][()]
+        self.SFR = self.f['SFR'][()]
 
 
     def calcflux(self, SED, wf, tp, z, dl, units):

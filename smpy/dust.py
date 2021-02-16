@@ -41,9 +41,9 @@ def Calzetti(ta_grid, wave, Av):
     Att = np.ones(np.append(ta_grid.shape, len(wave)))
     k = np.zeros_like(wave.value)
 
-    w0 = [wave <= 1200 * u.AA]
-    w1 = [wave < 6300 * u.AA]
-    w2 = [wave >= 6300 * u.AA]
+    w0 = wave <= 1200 * u.AA
+    w1 = wave < 6300 * u.AA
+    w2 = wave >= 6300 * u.AA
     w_u = wave.to(u.um).value
 
     x1 = np.argmin(np.abs(wave - 1200 * u.AA))
