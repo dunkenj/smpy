@@ -527,7 +527,7 @@ def galaxyFitMz(inputQueue, printQueue, printlock):
 def getObservations(inputpath):
     input_data = Table.read(inputpath,format=input_format).filled(-99.)
 
-    column_names = input_data.columns.keys()
+    column_names = list(input_data.columns.keys())
 
     ID = input_data[ID_col]
     zobs = input_data[z_col]

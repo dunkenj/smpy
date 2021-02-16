@@ -27,7 +27,7 @@ import importlib
 try:
     params = importlib.import_module(params_root)
     print('Successfully loaded "{0}" as params'.format(args.params))
-    reload(params)
+    importlib.reload(params)
 except:
     print('Failed to load "{0}" as params'.format(args.params))
     raise
@@ -37,8 +37,8 @@ if quiet:
 else:
     def quietprint(*args):
         for arg in args:
-            print arg,
-        print
+            print(arg, end=' ')
+        print()
 
 # Fitting function definition for later use by Processess
 
@@ -140,7 +140,7 @@ def galaxyFit(inputQueue, printQueue, printlock):
 
         printlock.acquire()
 
-        print '{0:6d} {1:8d} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>4.2f} {9:>5.2f}'.format(gal+1,ID[gal], zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR))
+        print('{0:6d} {1:8d} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>4.2f} {9:>5.2f}'.format(gal+1,ID[gal], zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR)))
 
         if include_rest:
             restframe_output = ' '.join(M_scaled.astype('str'))
@@ -420,9 +420,9 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
         printlock.acquire()
 
         if calc_mode:
-            print '{0:4d} {1:6d} {2:>6.2f} {3:>8.1f} {4:>6.2f}'.format(gal+1,ID[gal],Bestfit_Mass,chimin, np.log10(Mode_Mass), '/n')
+            print('{0:4d} {1:6d} {2:>6.2f} {3:>8.1f} {4:>6.2f}'.format(gal+1,ID[gal],Bestfit_Mass,chimin, np.log10(Mode_Mass), '/n'))
         else:
-            print '{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>3d} {9:>5.2f}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR))
+            print('{0:6d} {1:8f} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>3d} {9:>5.2f}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR)))
 
         output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15}'.format(gal+1,int(ID[gal]),zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,Bestfit_restframeMags[tot],Bestfit_restframeMUV,minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
 
@@ -433,7 +433,7 @@ def galaxyFitPlus(inputQueue, printQueue, printlock):
 def getObservations(inputpath):
     input_data = Table.read(inputpath,format=input_format)
 
-    column_names = input_data.columns.keys()
+    column_names = list(input_data.columns.keys())
 
     ID = input_data[ID_col]
     zobs = input_data[z_col]
@@ -564,7 +564,7 @@ if __name__ == '__main__':
     """
 
 
-    print "Loading synthetic mags and mass array:"
+    print("Loading synthetic mags and mass array:")
     models = h5py.File(model_path, 'r')
     tg = models['ages'].value
     tv = models['dust'].value
@@ -736,8 +736,8 @@ if __name__ == '__main__':
     
     os.remove(temp_file.name)
 
-    print
-    print "Total time taken: "+str(time.time()-start)
+    print()
+    print("Total time taken: "+str(time.time()-start))
     
     sys.stderr = original_stderr
     logfile.close()

@@ -1,6 +1,6 @@
 import re
 import numpy as np
-import data
+from . import data
 data_path = data.__path__[0]
 
 from astropy.modeling import models
