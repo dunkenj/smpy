@@ -41,9 +41,9 @@ def Calzetti(ta_grid, wave, Av):
     Att = np.ones(np.append(ta_grid.shape, len(wave)))
     k = np.zeros_like(wave.value)
 
-    w0 = [wave <= 1200 * u.AA]
-    w1 = [wave < 6300 * u.AA]
-    w2 = [wave >= 6300 * u.AA]
+    w0 = wave <= 1200 * u.AA
+    w1 = wave < 6300 * u.AA
+    w2 = wave >= 6300 * u.AA
     w_u = wave.to(u.um).value
 
     x1 = np.argmin(np.abs(wave - 1200 * u.AA))
@@ -91,7 +91,7 @@ def SMC(ta_grid, wave, Av):
     li = [0.042, 0.08, 0.22, 9.7, 18., 25.]
 
     eta = np.zeros_like(wave)
-    for i in xrange(len(ai)):
+    for i in range(len(ai)):
         eta += dust_func(wave, ai[i], bi[i], ni[i], li[i])
 
     Rv = 2.93
@@ -109,7 +109,7 @@ def LMC(ta_grid, wave, Av):
     li = [0.046, 0.08, 0.22, 9.7, 18., 25.]
 
     eta = np.zeros_like(wave)
-    for i in xrange(len(ai)):
+    for i in range(len(ai)):
         eta += dust_func(wave, ai[i], bi[i], ni[i], li[i])
 
     Rv = 3.16
@@ -128,7 +128,7 @@ def MW(ta_grid, wave, Av):
     li = [0.047, 0.08, 0.22, 9.7, 18., 25.]
 
     eta = np.zeros_like(wave)
-    for i in xrange(len(ai)):
+    for i in range(len(ai)):
         eta += dust_func(wave, ai[i], bi[i], ni[i], li[i])
 
     Rv = 3.08

@@ -374,13 +374,13 @@ class CSP:
             li = [0.042, 0.08, 0.22, 9.7, 18., 25.]
             
             eta = numpy.zeros_like(self.wave)
-            for i in xrange(len(ai)):
+            for i in range(len(ai)):
                 eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
             
             Rv = 2.93
             Ab = self.tauv * (1 + (1/Rv))
             
-            print numpy.exp(self.tauv*eta)
+            print(numpy.exp(self.tauv*eta))
             ATT = numpy.ones([len(self.wave),len(self.ta)])
             for ti in range(0,len(self.ta)):
                 ATT[:,ti] *= numpy.power(10,-0.4*(Ab*eta))
@@ -394,7 +394,7 @@ class CSP:
             li = [0.046, 0.08, 0.22, 9.7, 18., 25.]
             
             eta = numpy.zeros_like(self.wave)
-            for i in xrange(len(ai)):
+            for i in range(len(ai)):
                 eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
 
             Rv = 3.16
@@ -413,7 +413,7 @@ class CSP:
             li = [0.047, 0.08, 0.22, 9.7, 18., 25.]
             
             eta = numpy.zeros_like(self.wave)
-            for i in xrange(len(ai)):
+            for i in range(len(ai)):
                 eta += self.dust_func(self.wave, ai[i], bi[i], ni[i], li[i])
             
             Rv = 3.08
@@ -521,7 +521,7 @@ class CSP:
 
         prgas = numpy.zeros(tgi+1)
 
-        for ai in xrange(tgi+1):
+        for ai in range(tgi+1):
             j = self.J[ai]   #Interpolation indices
             tp = self.TP[ai] #Integration timescale
 
@@ -964,7 +964,7 @@ class FileFilter(Filter):
         nmax = numpy.argmax(self.response)
         halfmax_low = self.wave[:nmax][numpy.argmin(numpy.abs(self.response[nmax] - 2*self.response[:nmax]))]
         halfmax_hi = self.wave[nmax:][numpy.argmin(numpy.abs(self.response[nmax] - 2*self.response[nmax:]))]
-        print self.wave[nmax],halfmax_low, halfmax_hi
+        print(self.wave[nmax],halfmax_low, halfmax_hi)
         self.fwhm = halfmax_hi-halfmax_low
         
         self.lambda_c = (simps(self.wave*self.response,self.wave) / 
@@ -1010,7 +1010,7 @@ class LoadEAZYFilters(object):
         self.central_wlengths = []
         
         with open(self.path) as file:
-            for f in xrange(1000):
+            for f in range(1000):
                 x = file.readline().split()
                 if len(x) < 1:
                     break
@@ -1020,7 +1020,7 @@ class LoadEAZYFilters(object):
                 wavelength = []
                 response = []
                 #print nwave
-                for i in xrange(nwave):
+                for i in range(nwave):
                 
                     N, w, r = numpy.array(file.readline().split()).astype('float')
                     wavelength.append(w)
@@ -1114,7 +1114,7 @@ class Observe:
                 self.dm = 0.
         
             if (self.SED.tg/1e9 > cosmo.age(z).value) and force_age:
-                print 'SSP age older than universe...stopping.'
+                print('SSP age older than universe...stopping.')
             else:            
                 tfluxes = []
                 tAB = []

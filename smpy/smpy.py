@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-from six import string_types
 import numpy as np
 import copy
 import os
@@ -32,7 +30,7 @@ cosmo = cos.FlatLambdaCDM(H0=70, Om0=0.3)
 
 nebular_old_path = pkg_resources.resource_filename('smpy', 'data/nebular_emission.dat')
 
-class CSP(object):
+class CSP:
     """ Class for building composite stellar populations from input SSPs
 
     Attributes
@@ -578,7 +576,7 @@ class CSP(object):
                     # in cases of functions etc.
                     continue
 
-class Filter(object):
+class Filter:
     def __init__(self):
         self.wave = []
         self.freq = []
@@ -617,7 +615,7 @@ class FileFilter(Filter):
             minimal gain in accuracy.
 
         """
-        super(FileFilter, self).__init__()
+        super().__init__()
         self.path = filepath
 
         data = np.loadtxt(self.path)
@@ -666,7 +664,7 @@ class TophatFilter(Filter):
             convolution.
 
         """
-        super(TophatFilter, self).__init__()
+        super().__init__()
         self.centre = centre.to(u.angstrom)
         self.width = width.to(u.angstrom)
         self.steps = steps
@@ -691,7 +689,7 @@ class TophatFilter(Filter):
         self.fwhm = self.width
 
 
-class LoadEAZYFilters(object):
+class LoadEAZYFilters:
     """ Load EAZY filter file into easily accessible library
 
     Attributes
@@ -788,13 +786,13 @@ class LoadEAZYFilters(object):
             sorted_id = np.where(np.abs(self.central_wl - searchterm) <
                                  error*searchterm)[0]
 
-        print('{0:<5s} {1:<10s}' \
-              'Angstrom {2}'.format('Index',
+        print('{:<5s} {:<10s}' \
+              'Angstrom {}'.format('Index',
                                     'Lambda_c',
                                     'Name'))
         for i in sorted_id:
-            print('{0:<5.0f} {1:<8.2f}' \
-                  'Angstrom {2}'.format(i,
+            print('{:<5.0f} {:<8.2f}' \
+                  'Angstrom {}'.format(i,
                                         self.central_wl[i],
                                         self.filternames[i]))
         return sorted_id
@@ -846,6 +844,8 @@ class FilterSet:
                     self.filters.append(FileFilter(file))
             except:
                 a = ''
+        if len(self.files) == 0:
+            raise Exception('Filter files not found.')
 
     def addFileFilter(self, path):
         self.filters.append(FileFilter(path))
@@ -861,7 +861,7 @@ class FilterSet:
                 self.filters.append(EAZYset.filters[x])
 
 
-class Observe(object):
+class Observe:
     """ Mock photometry class
 
         Attributes
@@ -1016,7 +1016,7 @@ class Observe(object):
         return self.fluxes[items]
 
 
-class ObserveToFile(object):
+class ObserveToFile:
     """ Mock photometry class
 
         Attributes
@@ -1070,7 +1070,7 @@ class ObserveToFile(object):
         self.dl[self.redshifts == 0] = 10 * c.pc
 
 
-        assert isinstance(savepath, string_types), "File save path is not a string: %r" % savepath
+        assert isinstance(savepath, str), "File save path is not a string: %r" % savepath
         self.savepath = savepath
         if clobber:
             if os.path.isfile(self.savepath):
@@ -1091,8 +1091,8 @@ class ObserveToFile(object):
                 self.wl[j] = filt.lambda_c
                 self.fwhm[j] = filt.fwhm
 
-                print('Filter {0}' \
-                      '(Central WL = {1:.1f}):'.format(j+1,
+                print('Filter {}' \
+                      '(Central WL = {:.1f}):'.format(j+1,
                                                        filt.lambda_c))
 
                 # Find SED wavelength entries within filter range
@@ -1166,12 +1166,12 @@ class ObserveToFile(object):
 
 
             for dataset in ['fluxes', 'mags']:
-                f[dataset].dims.create_scale(f['z'], 'z')
-                f[dataset].dims.create_scale(f['sfh'], 'sfh')
-                f[dataset].dims.create_scale(f['ages'], 'ages')
-                f[dataset].dims.create_scale(f['dust'], 'dust')
-                f[dataset].dims.create_scale(f['metallicities'], 'met')
-                f[dataset].dims.create_scale(f['fesc'], 'fesc')
+                f['z'].make_scale('z')
+                f['sfh'].make_scale('sfh')
+                f['ages'].make_scale('ages')
+                f['dust'].make_scale('dust')
+                f['metallicities'].make_scale('met')
+                f['fesc'].make_scale('fesc')
 
                 f[dataset].dims[0].attach_scale(f['z'])
                 f[dataset].dims[2].attach_scale(f['metallicities'])
@@ -1199,8 +1199,8 @@ class ObserveToFile(object):
         self.fluxes = self.f['fluxes']
         self.AB = self.f['mags']
 
-        self.Ms = self.f['Ms'].value
-        self.SFR = self.f['SFR'].value
+        self.Ms = self.f['Ms'][()]
+        self.SFR = self.f['SFR'][()]
 
 
     def calcflux(self, SED, wf, tp, z, dl, units):

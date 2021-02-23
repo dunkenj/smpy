@@ -11,7 +11,7 @@ from mkCSPs import *
 
 SHARDS = FilterSet('../../HFF/transmCurves_SHARDS/shards_f*.res')
 gs = glob('../smpy-fit/GOODS-S_18_FilterCurves/Filter*.txt')
-print gs
+print(gs)
 SHARDS.addFileFilter(gs[2])
 SHARDS.addFileFilter(gs[3])
 SHARDS.addFileFilter(gs[4])

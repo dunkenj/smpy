@@ -3,7 +3,7 @@
 
 # In[1]:
 
-get_ipython().magic(u'pylab inline')
+get_ipython().magic('pylab inline')
 from pylab import *
 from mkCSPs import *
 
@@ -14,7 +14,7 @@ from mkCSPs import *
 
 SHARDS = FilterSet('../../HFF/transmCurves_SHARDS/shards_f*.res')
 gs = glob('../smpy-fit/GOODS-S_18_FilterCurves/Filter*.txt')
-print gs
+print(gs)
 #for filt in gs:
 #    SHARDS.addFileFilter(filt)
 

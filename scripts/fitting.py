@@ -30,10 +30,10 @@ if os.path.isfile(params_root+".pyc"):
 import importlib
 try:
     params = importlib.import_module(params_root)
-    print('Successfully loaded "{0}" as params'.format(args.params))
+    print('Successfully loaded "{}" as params'.format(args.params))
     #reload(params)
 except:
-    print('Failed to load "{0}" as params'.format(args.params))
+    print('Failed to load "{}" as params'.format(args.params))
     raise
 
 if quiet:
@@ -60,10 +60,10 @@ def galaxyFit(inputQueue, printQueue, printlock):
             if include_rest:
                 M_scaled = np.ones(len(fo)) * -99.
                 restframe_output = ' '.join(M_scaled.astype('str'))
-                output_string = '{0} {1} {2} {3} {4} {5} {6} {7}' \
-                                ' {8} {9} {10} {11} {12} {13} {14} {15} {16}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99, -99, -99,-99,len(I),-99,z[j],restframe_output,'\n')
+                output_string = '{} {} {} {} {} {} {} {}' \
+                                ' {} {} {} {} {} {} {} {} {}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99, -99, -99,-99,len(I),-99,z[j],restframe_output,'\n')
             else:
-                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99,-99, -99,-99,len(I),-99,'\n')
+                output_string = '{} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99,-99, -99,-99,len(I),-99,'\n')
             printQueue.put(output_string)
             continue
 
@@ -93,9 +93,9 @@ def galaxyFit(inputQueue, printQueue, printlock):
             if include_rest:
                 M_scaled = np.ones(len(flux_obs)) * -99.
                 restframe_output = ' '.join(M_scaled.astype('str'))
-                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99, -99, -99,-99,len(I),-99,z[j],restframe_output,'\n')
+                output_string = '{} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99, -99, -99,-99,len(I),-99,z[j],restframe_output,'\n')
             else:
-                output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99,-99, -99,-99,len(I),-99,'\n')
+                output_string = '{} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(gal+1,ID[gal],zobs[gal],-99,-99,-99,-99,-99,-99,-99, -99,-99,len(I),-99,'\n')
             printQueue.put(output_string)
             continue
 
@@ -143,13 +143,13 @@ def galaxyFit(inputQueue, printQueue, printlock):
 
         printlock.acquire()
 
-        print('{0:6d} {1:8d} {2:>5.2f} {3:>7.2f} {4:>8.1f} {5:>8.3f} {6:>5.1f} {7:>8.2f} {8:>4.2f} {9:>5.2f}'.format(gal+1,ID[gal], zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR)))
+        print('{:6d} {:8d} {:>5.2f} {:>7.2f} {:>8.1f} {:>8.3f} {:>5.1f} {:>8.2f} {:>4.2f} {:>5.2f}'.format(gal+1,ID[gal], zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis,np.log10(Bestfit_SFR)))
 
         if include_rest:
             restframe_output = ' '.join(M_scaled.astype('str'))
-            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,z[j],restframe_output,'\n')
+            output_string = '{} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,z[j],restframe_output,'\n')
         else:
-            output_string = '{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
+            output_string = '{} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(gal+1,ID[gal],zobs[gal],Bestfit_Mass,chimin,tgs,tvs,taus,mis, MUV_scaled, minind,Bestfit_SFR,len(I),Bestfit_Beta,'\n')
 
         printlock.release()
         printQueue.put(output_string)
@@ -527,7 +527,7 @@ def galaxyFitMz(inputQueue, printQueue, printlock):
 def getObservations(inputpath):
     input_data = Table.read(inputpath,format=input_format).filled(-99.)
 
-    column_names = input_data.columns.keys()
+    column_names = list(input_data.columns.keys())
 
     ID = input_data[ID_col]
     zobs = input_data[z_col]
@@ -561,7 +561,7 @@ def getObservations(inputpath):
     """
     return ID, zobs, fluxes, fluxerrs, k, filter_names
 
-class _function_wrapper(object):
+class _function_wrapper:
     """
     This is a hack to make the likelihood function pickleable when ``args``
     or ``kwargs`` are also included.
@@ -830,7 +830,7 @@ if __name__ == '__main__':
     temp_file.close()
     models.close()
     output_hdf.close()
-    print("Fitting time taken: {0:.2f} {1}".format(time.time()-loop_start,
+    print("Fitting time taken: {:.2f} {}".format(time.time()-loop_start,
                                                    '\n'))
 
     """
