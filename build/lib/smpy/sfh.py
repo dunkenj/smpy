@@ -42,13 +42,14 @@ def truncated(t, tstop):
     return sfh
 
 
-def truncated_exp(t, tau, tstop):
+def truncated_exp(t, sl):
     """ Truncated exponential star formation history
 
     Star-formation is exponential, tstop, of the total
     time since onset of star-formation history np.max(t).
 
     """
+    tau, tstop = sl
     sfh = np.exp(-1 * t / tau) / abs(tau)
     cut = np.argmin(np.abs(t - tstop*np.max(t))) # Nearest whole timestep.
     np.rollaxis(sfh, -1)[cut:] = 0.

@@ -836,7 +836,7 @@ class FilterSet:
     def __init__(self, path=None):
         self.directory = path
         self.filters = []
-        if type(self.directory) == str:
+        if self.directory != None:
             try:
                 self.files = glob.glob(self.directory)
                 self.files.sort()
@@ -844,8 +844,8 @@ class FilterSet:
                     self.filters.append(FileFilter(file))
             except:
                 a = ''
-        if len(self.files) == 0:
-            raise Exception('Filter files not found.')
+            if len(self.files) == 0:
+                raise Exception('Filter files not found.')
 
     def addFileFilter(self, path):
         self.filters.append(FileFilter(path))

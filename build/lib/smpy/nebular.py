@@ -1,6 +1,6 @@
 import re
 import numpy as np
-import data
+from . import data
 data_path = data.__path__[0]
 
 from astropy.modeling import models
@@ -11,9 +11,9 @@ from astropy import constants as c
 metallicities = np.array([2e-2, 8e-3, 4e-3, 4e-4, 1e-5, 1e-7])
 metallicities /= metallicities[0]
 
-inoue = np.loadtxt('{0}/{1}'.format(data_path, 'LineRatio_dusty.txt'))
+inoue = np.loadtxt('{}/{}'.format(data_path, 'LineRatio_dusty.txt'))
 
-names = open('{0}/{1}'.format(data_path, 'LineList.txt'), 'r')
+names = open('{}/{}'.format(data_path, 'LineList.txt'))
 line_names = ['_'.join(re.split(' ', n.rstrip())[1:]) for n in
               names.readlines()]
 

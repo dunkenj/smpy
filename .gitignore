@@ -1,6 +1,9 @@
 error.log
 scripts/Misc/*
-scripts/data/ssp/*
+scripts/data/ssp/
+scripts/BaSeL3.1_Atlas/
+scripts/Miles_Atlas/
+scripts/Stelib_Atlas/
 *.ipynb
 *.npz
 *.npy

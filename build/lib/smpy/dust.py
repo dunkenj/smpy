@@ -2,7 +2,7 @@ import numpy as np
 from astropy import units as u
 #from astropy import constants as c
 
-""" 
+"""
 Functional Forms:
 
 """
@@ -13,7 +13,7 @@ def dust_func(lam, ai, bi, ni, li):
     Pei et al. 1992
 
     """
-    lam = np.array(lam) / 1e4
+    lam = lam.to(u.um).value
     ki = np.power((lam / li), ni) + np.power((li / lam), ni) + bi
     eta_i = ai / ki
     return eta_i
@@ -31,9 +31,9 @@ Attenuation and Extinction Laws
 
 def Charlot(ta_grid, wave, Av, mu=0.3):
     Att = np.ones(np.append(ta_grid.shape, len(wave)))
-    tv = ((Av / 1.0857) * np.ones_like(ta_grid))
+    tv = ((Av / 1.0857) * np.ones(ta_grid.shape))
     tv[ta_grid > 1e7 * u.yr] *= mu
-    lam = ((5500 * u.AA / wave) ** 0.7)
+    lam = ((5500 * u.AA / wave.to(u.AA)).value ** 0.7)
     Att *= (np.exp(-1 * np.outer(tv, lam))).reshape(Att.shape)
     return Att
 
@@ -41,9 +41,9 @@ def Calzetti(ta_grid, wave, Av):
     Att = np.ones(np.append(ta_grid.shape, len(wave)))
     k = np.zeros_like(wave.value)
 
-    w0 = [wave <= 1200 * u.AA]
-    w1 = [wave < 6300 * u.AA]
-    w2 = [wave >= 6300 * u.AA]
+    w0 = wave <= 1200 * u.AA
+    w1 = wave < 6300 * u.AA
+    w2 = wave >= 6300 * u.AA
     w_u = wave.to(u.um).value
 
     x1 = np.argmin(np.abs(wave - 1200 * u.AA))
@@ -90,8 +90,8 @@ def SMC(ta_grid, wave, Av):
     ni = [2., 4., 2., 2., 2., 2.]
     li = [0.042, 0.08, 0.22, 9.7, 18., 25.]
 
-    eta = np.zeros_like(wave)
-    for i in xrange(len(ai)):
+    eta = np.zeros(wave.shape)
+    for i in range(len(ai)):
         eta += dust_func(wave, ai[i], bi[i], ni[i], li[i])
 
     Rv = 2.93
@@ -109,7 +109,7 @@ def LMC(ta_grid, wave, Av):
     li = [0.046, 0.08, 0.22, 9.7, 18., 25.]
 
     eta = np.zeros_like(wave)
-    for i in xrange(len(ai)):
+    for i in range(len(ai)):
         eta += dust_func(wave, ai[i], bi[i], ni[i], li[i])
 
     Rv = 3.16
@@ -121,14 +121,14 @@ def LMC(ta_grid, wave, Av):
 
 
 def MW(ta_grid, wave, Av):
-    Att = np.ones(np.append(ta_grid.shape, len(wave)))    
+    Att = np.ones(np.append(ta_grid.shape, len(wave)))
     ai = [165., 14., 0.045, 0.002, 0.002, 0.012]
     bi = [90., 4., -1.95, -1.95, -1.8, 0.]
     ni = [2., 6.5, 2., 2., 2., 2.]
     li = [0.047, 0.08, 0.22, 9.7, 18., 25.]
 
     eta = np.zeros_like(wave)
-    for i in xrange(len(ai)):
+    for i in range(len(ai)):
         eta += dust_func(wave, ai[i], bi[i], ni[i], li[i])
 
     Rv = 3.08
@@ -137,7 +137,7 @@ def MW(ta_grid, wave, Av):
     Att *= np.power(10, -0.4 * Ab * eta)
     return Att
 
-def flexible(ta_grid, wave, Av, delta = 0., e_bump = 0., 
+def flexible(ta_grid, wave, Av, delta = 0., e_bump = 0.,
              lambda_central=2175*u.AA, delta_lambda=350*u.AA):
     Att = np.ones(np.append(ta_grid.shape, len(wave)))
     k = np.zeros_like(wave.value)
@@ -159,6 +159,6 @@ def flexible(ta_grid, wave, Av, delta = 0., e_bump = 0.,
 
     bump = drude_profile(wave, e_bump, lambda_central, delta_lambda)
 
-    tv = Av * (k + bump) * (wave/5500*u.AA)**delta / 4.05 
+    tv = Av * (k + bump) * (wave/5500*u.AA)**delta / 4.05
     Att *= np.power(10, -0.4 * tv)
     return Att

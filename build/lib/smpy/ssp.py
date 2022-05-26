@@ -7,7 +7,7 @@ from glob import glob
 from astropy import units as u
 from astropy.utils.console import ProgressBar
 
-class Ised(object):
+class Ised:
     def __init__(self, path):
         self.file = path
 
@@ -188,7 +188,7 @@ class Ised(object):
             self.rmtm = np.array(rmtm)
 
 
-class SSP(object):
+class SSP:
     """ Base class for SSP objects
     """
 
@@ -210,14 +210,14 @@ class BC(SSP):
                 relevant wildcard to match multiple metallicities.
 
         """
-        super(BC, self).__init__(path)
+        super().__init__(path)
 
         self.files = glob(self.SSPpath + '*.ised')
         if len(self.files) == 0:
-            raise(Exception, 'No SSP Files found in directory')
+            raise Exception('SSP files not found.')
 
         elif verbose:
-            print('{0} .ised files found.'.format(len(self.files)))
+            print('{} .ised files found.'.format(len(self.files)))
 
         self.files.sort()
         self.iseds = []
@@ -272,9 +272,9 @@ class BPASS(SSP):
                 relevant wildcard to match multiple metallicities.
 
         """
-        super(BPASS, self).__init__(path)
+        super().__init__(path)
         head, tail = os.path.split(path)
-        readme = open(head+'/'+'sed.bpass.readme.txt','r')
+        readme = open(head+'/'+'sed.bpass.readme.txt')
         ages = [1]
         for line in readme.readlines():
             if 'log(Age/yrs)=' in line:
@@ -355,7 +355,7 @@ class BPASS2(SSP):
                 Number of wavelength steps in which to interpolate
 
         """
-        super(BPASS2, self).__init__(path)
+        super().__init__(path)
 
         #self.ages[0] = 5.
 
